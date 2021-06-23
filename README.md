@@ -3,6 +3,7 @@ Research and Analysis into sbmm and tracking personal stats
 
 
 To build, need a creds.py with:
+
     username = 'your email address'
     password = 'your password'
     driverpath = 'path to selenium chromedriver'
