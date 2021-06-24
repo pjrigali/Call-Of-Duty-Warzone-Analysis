@@ -99,14 +99,11 @@ class CallofDuty:
                                       savedf=True)
         
         self.match_id_lst = set(self.whole['matchID'])
-        self.name_uno_dict = self.get_match_id_set(self.whole)
-        self.my_uno = list(set(self.whole[self.whole['username'] == 'Claim']['uno']))[0]
-        self.our_df, self.other_df = self.get_our_and_other_df(self.whole)
+        self.name_uno_dict = self._get_match_id_set(self.whole)
+        self.my_uno = self.name_uno_dict[user_inputs['gamertag']]
+        self.our_df, self.other_df = self._get_our_and_other_df(self.whole)
     
-    def evaluate_df(self,
-                    link: str = 'Personal_Match_Data_v2.csv',
-                    ) -> pd.DataFrame:
-        
+    def _evaluate_df(self, link: str = 'Personal_Match_Data_v2.csv') -> pd.DataFrame:
         df = pd.read_csv(self.repo + link, index_col='Unnamed: 0')
         start_time_lst = list(df['utcStartSeconds'])
         df['startDateTime'] = [datetime.datetime.utcfromtimestamp(i) for i in start_time_lst]
@@ -129,239 +126,23 @@ class CallofDuty:
         
         return df
     
-    # def evaluate_df(self,
-    #                 link: str = None,
-    #                 prebuilt: bool = True,
-    #                 ):
-    #
-    #     cols = [
-    #         # Match Related
-    #         'dateTime', 'startDate', 'startTime', 'endDate', 'endTime', 'weekday', 'map', 'mode', 'matchID',
-    #         'duration', 'playerCount',
-    #         # identification
-    #         'teamCount', 'teamPlacement', 'placementPercent', 'team', 'username', 'uno',
-    #         # Kill related
-    #         'kills', 'assists', 'deaths', 'headshots', 'kdRatio', 'executions',
-    #         'longestStreak', 'damageDone', 'damageTaken', 'gulagDeaths', 'gulagKills',
-    #         'wallBangs',
-    #         # Score based
-    #         'medalXp', 'matchXp', 'scoreXp', 'totalXp', 'score', 'scorePerMinute',
-    #         'totalMissionXpEarned', 'totalMissionWeaponXpEarned',
-    #         # Mission based
-    #         'missionsComplete', 'objectiveTeamWiped',
-    #         'objectiveLastStandKill', 'objectiveBrCacheOpen', 'objectiveMunitionsBoxTeammateUsed',
-    #         'objectiveBrDownEnemyCircle3', 'objectiveBrDownEnemyCircle2',
-    #         'objectiveBrMissionPickupTablet', 'objectiveBrKioskBuy', 'missions',
-    #         # Telometrics
-    #         'distanceTraveled', 'percentTimeMoving', 'teamSurvivalTime', 'timePlayed',
-    #         # Weapon related
-    #         'tactical', 'lethal', 'primaryWeaponName', 'primaryWeaponAttachments',
-    #         'secondaryWeaponName', 'secondaryWeaponAttachments',
-    #     ]
-    #
-    #     if prebuilt:
-    #         df_open = pd.read_csv(self.repo + link, index_col='Unnamed: 0')
-    #         df_open['dateTime'] = [datetime.datetime.strptime(i, '%Y-%m-%d %H:%M') for i in df_open['dateTime']]
-    #         return df_open.sort_values(by='dateTime').reset_index(drop=True)[cols]
-    #
-    #     else:
-    #         def convert_to_date_or_time(text, index: int = None, str_output: bool = True):
-    #             if str_output:
-    #                 return str(datetime.datetime.fromtimestamp(text).strftime('%Y-%m-%d %H:%M').split(" ", 1)[index])
-    #             else:
-    #                 return datetime.datetime.strptime(text, "%Y-%m-%d")
-    #
-    #         def convert_to_str(text):
-    #             return str(text)
-    #
-    #         dfn = pd.read_csv(self.repo + link, index_col='Unnamed: 0')
-    #         column_lst = ['map', 'mode', 'matchID', 'duration', 'playerCount', 'teamCount', 'kills', 'medalXp',
-    #                       'objectiveTeamWiped', 'objectiveLastStandKill', 'matchXp', 'scoreXp', 'wallBangs', 'score',
-    #                       'totalXp',
-    #                       'headshots', 'assists', 'challengeXp', 'scorePerMinute', 'distanceTraveled',
-    #                       'teamSurvivalTime',
-    #                       'deaths', 'objectiveMunitionsBoxTeammateUsed', 'objectiveBrDownEnemyCircle3', 'kdRatio',
-    #                       'objectiveBrDownEnemyCircle2', 'objectiveBrMissionPickupTablet', 'bonusXp',
-    #                       'objectiveBrKioskBuy',
-    #                       'gulagDeaths', 'timePlayed', 'executions', 'gulagKills', 'objectiveBrCacheOpen', 'miscXp',
-    #                       'longestStreak', 'teamPlacement', 'damageDone', 'damageTaken', 'team', 'username', 'uno',
-    #                       'missionsComplete', 'totalMissionXpEarned', 'totalMissionWeaponXpEarned',
-    #                       ]
-    #
-    #         for col in column_lst:
-    #             dfn[col] = [convert_to_str(i) for i in dfn[col]]
-    #
-    #         for gun in ['primaryWeapon', 'secondaryWeapon']:
-    #             gun_name_lst = []
-    #             attachments = []
-    #             for i in dfn[gun]:
-    #                 temp_dict = literal_eval(i)
-    #                 if temp_dict != 0:
-    #                     gun_name_lst.append(temp_dict['name'])
-    #                     attachments.append(
-    #                         ' '.join([i['name'] for i in temp_dict['attachments'] if i['name'] is not None]))
-    #                 else:
-    #                     gun_name_lst.append(' ')
-    #                     attachments.append(' ')
-    #             dfn[gun + 'Name'] = gun_name_lst
-    #             dfn[gun + 'Attachments'] = attachments
-    #
-    #         for perk in ['perks', 'extraPerks']:
-    #             perk_lst = []
-    #             for i in dfn[perk]:
-    #                 temp_dict = literal_eval(i)
-    #                 if temp_dict != 0:
-    #                     perk_lst.append(' '.join([i['name'] for i in temp_dict if i['name'] is not None]))
-    #                 else:
-    #                     perk_lst.append(' ')
-    #             dfn[perk] = perk_lst
-    #
-    #         for equip in ['tactical', 'lethal']:
-    #             equip_lst = []
-    #             for i in dfn[equip]:
-    #                 temp_dict = literal_eval(i)
-    #                 if temp_dict != 0:
-    #                     equip_lst.append(temp_dict['name'])
-    #                 else:
-    #                     equip_lst.append(' ')
-    #             dfn[equip] = equip_lst
-    #
-    #         mission_lst = []
-    #         for mission in df['missionStatsByType']:
-    #             temp_dict = literal_eval(mission)
-    #             missions = ' '
-    #             if temp_dict != 0:
-    #                 missions = ' '.join([i + str(int(temp_dict[i]['count'])) for i in temp_dict.keys()])
-    #             mission_lst.append(missions)
-    #         dfn['missions'] = mission_lst
-    #
-    #         dfn['dateTime'] = (dfn['date'] + ' ' + dfn['time']).astype(str)
-    #         dfn['dateTime'] = [datetime.datetime.strptime(i, '%Y-%m-%d %H:%M') for i in dfn['dateTime']]
-    #         dfn['startDate'] = [convert_to_date_or_time(i, 0) for i in dfn['utcStartSeconds']]
-    #         dfn['startTime'] = [convert_to_date_or_time(i, 1) for i in dfn['utcStartSeconds']]
-    #         dfn['endDate'] = [convert_to_date_or_time(i, 0) for i in dfn['utcEndSeconds']]
-    #         dfn['endTime'] = [convert_to_date_or_time(i, 1) for i in dfn['utcEndSeconds']]
-    #         dfn['percentTimeMoving'] = [str(round(i, 2)) for i in dfn['percentTimeMoving']]
-    #         day_dic = {0: 'Monday', 1: 'Tuesday', 2: 'Wednesday', 3: 'Thursday', 4: 'Friday', 5: 'Saturday',
-    #                    6: 'Sunday'}
-    #         dfn['weekday'] = [day_dic[i.date().weekday()] for i in dfn['date']]
-    #         dfn['placementPercent'] = (1 - dfn['teamPlacement'] / dfn['teamCount']).round(2)
-    #
-    #         new_cols = ['startDate', 'startTime', 'endDate', 'endTime', 'weekday', 'percentTimeMoving',
-    #                     'primaryWeaponName',
-    #                     'primaryWeaponAttachments', 'secondaryWeaponName', 'secondaryWeaponAttachments', 'perks',
-    #                     'extraPerks',
-    #                     'tactical', 'lethal', 'missions']
-    #
-    #         dfn_output = dfn[column_lst + new_cols]
-    #         dfn_output.to_csv(self.repo + link.split('.')[0] + '_Prebuilt.' + link.split('.')[1])
-    #         df_open = pd.read_csv(self.repo + link.split('.')[0] + '_Prebuilt.' + link.split('.')[1],
-    #                               index_col='Unnamed: 0')
-    #         df_open['dateTime'] = [datetime.datetime.strptime(i, '%Y-%m-%d %H:%M') for i in df_open['dateTime']]
-    #
-    #         large_damage_taken = list(df_open[df_open['damageTaken'] > 100000].index)
-    #         for i in large_damage_taken:
-    #             df_open.loc[i, 'damageTaken'] = df_open.loc[i, 'damageDone']
-    #
-    #         return df_open.sort_values(by='dateTime').reset_index(drop=True)[cols]
-    
-    @staticmethod
-    def get_match_id_set(df: pd.DataFrame) -> dict:
-        temp = df[['uno', 'username']].copy().drop_duplicates(subset=['uno', 'username'],
-                                                              keep='first',
-                                                              ignore_index=True)
-        return {j['username']: j['uno'] for i, j in temp.iterrows()}
-    
-    def get_our_and_other_df(self,
-                             df: pd.DataFrame,
-                             name: str = None,
-                             ):
+    def _get_match_id_set(self, data: pd.DataFrame) -> dict:
+        comb_set = set(data['uno'] + '-splitpoint-' + data['username'])
+        return {i.split('-splitpoint-')[1]: i.split('-splitpoint-')[0] for i in comb_set}
+        
+    def _get_our_and_other_df(self, data: pd.DataFrame, name: str = None):
         if name:
             uno = self.name_uno_dict[name]
         else:
             uno = self.my_uno
             
-        mid, team = list(df[df['uno'] == uno]['matchID']), list(df[df['uno'] == uno]['team'])
-        our_match_team = {match: team[ind] for ind, match in enumerate(mid)}
-        our_lst = sum([[i for i in df[(df['matchID'] == ind) & (df['team'] == our_match_team[ind])].index] for ind in
-                       our_match_team.keys()], [])
-        whole_index = df.index
-        other_lst = [i for i in whole_index if i not in our_lst]
-        return df.iloc[our_lst], df.iloc[other_lst]
-    
-    @staticmethod
-    def get_placement_data(df: pd.DataFrame,
-                           place,
-                           map_specfic: str = None,
-                           ) -> pd.DataFrame:
-        # mp_escape or mp_don
+        base_lst = data['matchID'] + '-splitpoint-' + data['team']
+        base_our_lst = data[data['uno'] == uno]['matchID'] + '-splitpoint-' + data[data['uno'] == uno]['team']
+        our_lst = {i: True for i in base_our_lst}
+        comb_dic = {i: True for i, j in enumerate(base_lst) if j in our_lst}
+        other = [i for i in data.index if i not in comb_dic]
+        return data.iloc[list(comb_dic.keys())], data.iloc[other]
         
-        if type(place) == int:
-            if map_specfic:
-                return df[(df['teamPlacement'] == place) & (df['map'] == map_specfic)]
-            else:
-                return df[df['teamPlacement'] == place]
-        else:
-            if map_specfic:
-                return df[
-                    (place[0] <= df['teamPlacement']) & (df['teamPlacement'] <= place[1]) & (df['map'] == map_specfic)]
-            else:
-                return df[(place[0] <= df['teamPlacement']) & (df['teamPlacement'] <= place[1])]
-    
-    @staticmethod
-    def regress(xtrain,
-                ytrain,
-                xtest,
-                ytest,
-                test=False,
-                plotn=False
-                ):
-        
-        X = add_constant(xtrain)
-        result = np.linalg.lstsq(X, ytrain, rcond=None)
-        alpha, beta = result[0]
-        
-        # coef = np.linalg.inv(X.T.dot(X)).dot(X.T).dot(ytrain)
-        r2 = np.corrcoef(xtrain, ytrain)[0, 1] ** 2  # r^2
-        
-        y_hat = beta * xtrain + alpha
-        res = ytrain - y_hat
-        var_beta_hat = np.linalg.inv(X.T @ X) * ((res.T @ res) / (len(xtrain) - 2))
-        std_error = tuple(np.diag(var_beta_hat) ** .5)
-        t, p = stats.ttest_ind(ytrain, xtrain, equal_var=False)  # t test and p value
-        p_m = stats.norm.ppf(.95) * (np.std(xtrain) / np.sqrt(len(xtrain)))
-        conf = (np.mean(xtrain) - p_m, np.mean(xtrain) + p_m)
-        
-        x_fit = np.linspace(np.floor(xtrain.min()), np.ceil(xtrain.max()), 2)
-        y_fit = alpha * x_fit + beta
-        
-        if plotn:
-            plt.scatter(xtrain, ytrain, marker='o')
-            plt.plot(x_fit, y_fit, 'r--')
-            plt.title('Training Best-fit linear model')
-            plt.show()
-        
-        if test:
-            pred = np.dot(add_constant(xtest), result[0])
-            resid = np.dot(add_constant(xtest), result[0]) - ytest
-            mse = np.mean(np.square(ytest - xtest))
-            rmse = np.sqrt(mse)
-            mae = np.mean(np.abs(xtest - ytest))
-            
-            if plotn:
-                plt.scatter(pred, resid, marker='o')
-                plt.title('Test Best-fit linear model')
-                plt.show()
-            
-            print('Intercept, Beta, R2, Standard Error, T-Statistic, P-Values, Confidence Inter')
-            print('MSE, RMSE, MAE')
-            print('Predicted, Residuals')
-            return (((alpha, beta), r2, std_error, t, p, conf), (mse, rmse, mae), (pred, resid))
-        
-        else:
-            print('Intercept, Beta, R2, Standard Error, T-Statistic, P-Values, Confidence Inter')
-            return ((alpha, beta), r2, std_error, t, p, conf)
-    
     def findHackers(self,
                     y,
                     df,
