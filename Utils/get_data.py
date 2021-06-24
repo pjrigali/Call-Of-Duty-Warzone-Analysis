@@ -104,7 +104,7 @@ def get_daily_hourly_weekday_stats(person: str,
     weekday_info = weekday_info[weekday_info['weekDayMatchCount'] > 0]
     weekday_info['dailyKD'] = (weekday_info['weekDayKills'] / weekday_info['weekDayDeaths']).round(2)
     weekday_info.index = [str(i) for i in weekday_info.index]
-    weekday_info = weekday_info.reindex(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday','Sunday'])
+    weekday_info = weekday_info.reindex(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'])
     
     # day_dic = {0: 'Monday', 1: 'Tuesday', 2: 'Wednesday', 3: 'Thursday', 4: 'Friday', 5: 'Saturday', 6: 'Sunday'}
     # hours = range(24)
@@ -156,17 +156,17 @@ def get_weapons(data: pd.DataFrame,
 
     col_lst = [col for col in data.columns if 'yWeapon' in col and 'Attach' not in col]
     gun_set = set(sum([list(data[col]) for col in col_lst], []))
-    gun_dict_n = {gun: [0, 0, 0, 0] for gun in gun_set}
+    gun_dict_n = {gun: [0] * len(columns) for gun in gun_set}
     for col in col_lst:
         for gun in gun_set:
             temp_n = list(data[data[col] == gun][columns].sum())
-            gun_dict_n[gun] = [gun_dict_n[gun][0] + temp_n[0],
-                               gun_dict_n[gun][1] + temp_n[1],
-                               gun_dict_n[gun][2] + temp_n[0],
-                               gun_dict_n[gun][3] + temp_n[3]]
+            gun_dict_n[gun] = [gun_dict_n[gun][i] + temp_n[i] for i in range(len(columns))]
 
     gun_df = pd.DataFrame.from_dict(gun_dict_n, orient='index', columns=columns).sort_values(sort_by, ascending=False)
-    gun_df['kd'] = gun_df['kills'] / gun_df['deaths']
+    
+    if 'kills' in columns and 'deaths' in columns:
+        gun_df['kd'] = gun_df['kills'] / gun_df['deaths']
+        
     gun_df.index = [gun_dict[gun] if gun in gun_dict.keys() else gun for gun in gun_df.index]
     
     if save:
