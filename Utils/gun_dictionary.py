@@ -1,4 +1,4 @@
-_gun_dict = {
+gun_dict = {
             # Modern Warfare
             'iw8_ar_tango21': 'RAM-7', 'iw8_ar_mike4': 'M4A1',
             'iw8_ar_valpha': 'AS VAL', 'iw8_ar_falpha': 'FR 5.56',
