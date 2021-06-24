@@ -1,4 +1,5 @@
 import pandas as pd
+from Utils.gun_dictionary import gun_dict
 
 
 def get_person_data(person_lst: list,
@@ -130,3 +131,45 @@ def get_daily_hourly_weekday_stats(person: str,
         weekday_info.to_csv('weekday_info.csv')
     
     return daily_info, hourly_info, weekday_info
+
+
+def get_weapons(data: pd.DataFrame,
+                person: str = None,
+                uno_dict: dict = None,
+                map_choice: str = None,
+                columns: list = None,
+                sort_by: str = None,
+                save: bool = False,
+                ) -> pd.DataFrame:
+    
+    if person:
+        data = data[data['uno'] == uno_dict[person]].copy()
+    
+    if map_choice:
+        data = data.iloc[[i for i, j in enumerate(data['map']) if map_choice in j]].copy()
+        
+    if columns is None:
+        columns = ['kills', 'deaths', 'headshots', 'assists']
+        
+    if sort_by is None:
+        sort_by = columns[0]
+
+    col_lst = [col for col in data.columns if 'yWeapon' in col and 'Attach' not in col]
+    gun_set = set(sum([list(data[col]) for col in col_lst], []))
+    gun_dict_n = {gun: [0, 0, 0, 0] for gun in gun_set}
+    for col in col_lst:
+        for gun in gun_set:
+            temp_n = list(data[data[col] == gun][columns].sum())
+            gun_dict_n[gun] = [gun_dict_n[gun][0] + temp_n[0],
+                               gun_dict_n[gun][1] + temp_n[1],
+                               gun_dict_n[gun][2] + temp_n[0],
+                               gun_dict_n[gun][3] + temp_n[3]]
+
+    gun_df = pd.DataFrame.from_dict(gun_dict_n, orient='index', columns=columns).sort_values(sort_by, ascending=False)
+    gun_df['kd'] = gun_df['kills'] / gun_df['deaths']
+    gun_df.index = [gun_dict[gun] if gun in gun_dict.keys() else gun for gun in gun_df.index]
+    
+    if save:
+        gun_df.to_csv('weapon_info.csv')
+    
+    return gun_df
