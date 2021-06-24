@@ -1,5 +1,7 @@
 import pandas as pd
+import numpy as np
 from Utils.gun_dictionary import gun_dict
+pd.set_option('display.max_columns', None)
 
 
 def get_person_data(person_lst: list,
@@ -173,3 +175,32 @@ def get_weapons(data: pd.DataFrame,
         gun_df.to_csv('weapon_info.csv')
     
     return gun_df
+
+
+def get_lobby_difficulty(data: pd.DataFrame,
+                         eval_criteria: list = None,
+                         ) -> pd.DataFrame:
+    
+    data_ind = np.array(data['map'])
+    
+    if eval_criteria is None:
+        eval_criteria = ['matchID', 'team', 'kills', 'deaths', 'distanceTraveled', 'percentTimeMoving']
+    
+    match_info = np.array(data[eval_criteria])[[i for i, j in enumerate(data_ind) if 'mp_e' in j]]
+    match_ids_team = match_info[:, :2]
+    match_ids = np.unique(match_ids_team[:, 0])
+    base_dic = {}
+    base_len_lst = []
+    for i, j in enumerate(match_ids):
+        teams = match_info[np.where(match_ids_team[:, 0] == j), :][0]
+        team_names = np.unique(teams[:, 1]).tolist()
+        base_dic[j] = np.stack([np.sum(teams[np.where(teams[:, 1] == team)][:, 2:6],
+                                       axis=0) for team in team_names], axis=0)
+        base_len_lst.append(len(team_names))
+
+    base_sum_dict = {key: np.sum(base_dic[key], axis=0).tolist() for key in base_dic.keys()}
+    
+    base_df = pd.DataFrame.from_dict(base_sum_dict, orient='index', columns=eval_criteria[2:])
+    base_df['teamCount'] = base_len_lst
+    base_df['percentTimeMoving'] = base_df['percentTimeMoving'] / base_df['teamCount']
+    return base_df
