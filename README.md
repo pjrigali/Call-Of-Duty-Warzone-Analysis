@@ -8,4 +8,6 @@ To build, need a creds.py with:
     password: 'your password',
     driverpath: 'path to selenium chromedriver',
     repo: 'local data directory',
-    codtrackerid: 'your cod tracker id'}
+    codtrackerid: 'your cod tracker id',
+    gamertag: 'your gamertag',
+    squad: ['friend gamertag', ...]}
