@@ -8,6 +8,7 @@ import pandas as pd
 import numpy as np
 import datetime
 import time
+from typing import List
 import matplotlib.pyplot as plt
 
 from Utils.get_data import get_person_data, get_daily_hourly_weekday_stats, get_weapons, get_lobby_difficulty
@@ -16,6 +17,9 @@ from Utils.scrape import refresh_data
 from Utils.creds import user_inputs
 from Utils.outlier import stack, outlierStd, outlierCD, outlierDev, outlierDistance, outlierHist, outlierKNN, outlierRegression
 from Utils.regress import regression_calcs, regress
+from Utils.analysis import placement_descriptive_stats, first_top5_bottom_stats, bucket, previous_next_placement
+from Utils.analysis import weekly_stats, daily_stats, match_difficulty, squad_score_card
+from Utils.plots import personal_plot, lobby_plot, squad_plot
 pd.set_option('display.max_columns', None)
 
 
@@ -32,6 +36,7 @@ class CallofDuty:
         self.DRIVER_PATH: str = user_inputs['driverpath']
         self.repo: str = user_inputs['repo']
         self.CodTrackerID: str = user_inputs['codtrackerid']
+        self.squad: List[str] = user_inputs['squad']
         self.gun_dic: dict = gun_dict
         self.whole: pd.DataFrame = self._evaluate_df()
         self.last_match_date_time = list(self.whole['startDateTime'])[-1]
@@ -48,7 +53,7 @@ class CallofDuty:
         self.my_uno = self.name_uno_dict[user_inputs['gamertag']]
         self.our_df, self.other_df = self._get_our_and_other_df(self.whole)
     
-    def _evaluate_df(self, link: str = 'Personal_Match_Data_v2.csv') -> pd.DataFrame:
+    def _evaluate_df(self, link: str = 'Personal_Match_Data_v3.csv') -> pd.DataFrame:
         df = pd.read_csv(self.repo + link, index_col='Unnamed: 0')
         start_time_lst = list(df['utcStartSeconds'])
         df['startDateTime'] = [datetime.datetime.utcfromtimestamp(i) for i in start_time_lst]
@@ -125,69 +130,6 @@ class CallofDuty:
         
         return pot, df.iloc[pot]
     
-    @staticmethod
-    def normalize(arr: np.ndarray,
-                  multi: bool = False,
-                  ):
-        
-        if multi:
-            return np.array([(arr[:, i] - np.min(arr[:, i])) / (np.max(arr[:, i]) - np.min(arr[:, i])) for i in
-                             range(arr.shape[1])]).T
-        else:
-            return np.around((arr - np.min(arr)) / (np.max(arr) - np.min(arr)).T, 3)
-    
-    def match_difficulty(self,
-                         df,
-                         plotn: bool = False
-                         ):
-        
-        ind = set(df['matchID'])
-        match_indexes = {match: list(df[df['matchID'] == match].index) for match in ind}
-        
-        def calcs(df, tc):
-            one = df['kills'].mean()
-            two = df['damageDone'].mean()
-            three = df['headshots'].mean()
-            four = df['missionsComplete'].sum() / tc
-            five = df['scorePerMinute'].mean()
-            six = df['kdRatio'].mean()
-            return [round(i, 3) for i in [one, two, three, four, five, six]]
-        
-        result = {match: [] for match in ind}
-        for match in ind:
-            temp_df = df.iloc[match_indexes[match]]
-            team_count = list(temp_df['teamCount'])[0]
-            difficulty = []
-            for spot, rank in enumerate([.25, .5, 1.0]):
-                threshold = np.ceil(team_count * rank)
-                if spot == 0:
-                    difficulty.append(calcs(temp_df[temp_df['teamPlacement'] <= threshold], team_count))
-                    continue
-                elif spot == 1:
-                    difficulty.append(calcs(temp_df[temp_df['teamPlacement'] <= threshold], team_count))
-                    continue
-                else:
-                    difficulty.append(calcs(temp_df, team_count))
-                    continue
-            result[match] = difficulty
-        
-        final = {match: [[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]] for match in ind}
-        for rank in [0, 1, 2]:
-            for criteria in [0, 1, 2, 3, 4, 5]:
-                temp_lst_n = self.normalize(np.array([result[match][rank][criteria] for match in ind]), False)
-                for stat, match in enumerate(ind):
-                    final[match][rank][criteria] = temp_lst_n[stat]
-        
-        hardness = {match: np.around(np.mean(final[match]), 3) for match in ind}
-        
-        if plotn:
-            plt.title('Normailized Match Difficulty')
-            plt.plot(range(len(ind)), list(hardness.values()))
-            plt.xticks(range(len(ind)), [str(i) for i in ind], rotation=-90)
-            plt.show()
-        
-        return hardness
-    
 
 if __name__ == '__main__':
     start_timen = time.time()
@@ -195,7 +137,7 @@ if __name__ == '__main__':
     print(''), print('Cod Built'), print("--- %s seconds ---" % round((time.time() - start_timen), 2))
     
     start_timen = time.time()
-    people = ['Claim', 'MONEYMIKE0410', 'LeoxGemini', 'TheKing109', 'Rhino5378', 'spectator95']
+    people = ['Claim', 'MONEYMIKE0410', 'LeoxGemini', 'TheKing109', 'Rhino5378', 'spectator95', 'IAmLordeYahYaYa']
     person_info = get_person_data(person_lst=people,
                                   data=cod.our_df,
                                   uno_dict=cod.name_uno_dict,
@@ -208,7 +150,7 @@ if __name__ == '__main__':
                                                                            data=cod.our_df,
                                                                            save=False)
     print(''), print('Daily, Hourly, and Weekday_info Built'), print("--- %s seconds ---" % round((time.time() - start_timen), 2))
-   
+
     start_timen = time.time()
     weapon_info = get_weapons(data=cod.our_df,
                               person='Claim',
@@ -218,11 +160,89 @@ if __name__ == '__main__':
                               sort_by=None,
                               save=False)
     print(''), print('Weapon_info Built'), print("--- %s seconds ---" % round((time.time() - start_timen), 2))
-    
+
     start_timen = time.time()
     lobby_info = get_lobby_difficulty(data=cod.other_df,
                                       eval_criteria=None)
     print(''), print('Lobby_info Built'), print("--- %s seconds ---" % round((time.time() - start_timen), 2))
+
+    start_timen = time.time()
+    placement_info = placement_descriptive_stats(our_data=cod.our_df,
+                                                 other_data=cod.our_df,
+                                                 col='kdRatio',
+                                                 _map='mp_e',
+                                                 _name='Claim',
+                                                 _dic=cod.name_uno_dict,
+                                                 _internal=True)
+    print(''), print('Placement_info Built'), print("--- %s seconds ---" % round((time.time() - start_timen), 2))
+
+    start_timen = time.time()
+    winners_info = first_top5_bottom_stats(data=cod.whole,
+                                           col='kdRatio',
+                                           _map='mp_e')
+    print(''), print('Winners_info Built'), print("--- %s seconds ---" % round((time.time() - start_timen), 2))
+
+    start_timen = time.time()
+    bucket_info = bucket(data=cod.whole,
+                         placement=[0, 6],
+                         col_lst=['kdRatio', 'scorePerMinute', 'percentTimeMoving', 'kills', 'deaths'],
+                         _map='mp_e')
+    bucket_info['ourPlace'] = [np.mean(cod.our_df[cod.our_df['matchID'] == id]['teamPlacement']) for id in
+                               bucket_info.index]
+    bucket_corr = bucket_info.corr(method='pearson')['ourPlace'].sort_values()
+    print(''), print('Bucket_info Built'), print("--- %s seconds ---" % round((time.time() - start_timen), 2))
+
+    start_timen = time.time()
+    previous_next_info = previous_next_placement(data=cod.our_df,
+                                                 _map='mp_e')
+    print(''), print('Previous_next_info Built'), print("--- %s seconds ---" % round((time.time() - start_timen), 2))
+
+    start_timen = time.time()
+    weekly_stats = weekly_stats(data=cod.our_df,
+                                _map='mp_e',
+                                uno_dic=cod.name_uno_dict,
+                                name='Claim')
+    print(''), print('Weekly_stats Built'), print("--- %s seconds ---" % round((time.time() - start_timen), 2))
+
+    start_timen = time.time()
+    daily_stats = daily_stats(data=cod.our_df,
+                              _map='mp_e',
+                              uno_dic=cod.name_uno_dict,
+                              name='Claim')
+    print(''), print('Daily_stats Built'), print("--- %s seconds ---" % round((time.time() - start_timen), 2))
+
+    start_timen = time.time()
+    hardness_info = match_difficulty(our_df=cod.our_df,
+                                     other_df=cod.other_df,
+                                     _map='mp_e',
+                                     test=False,
+                                     mu_lst=None,
+                                     sum_lst=None)
+    print(''), print('Match Difficulty Built'), print("--- %s seconds ---" % round((time.time() - start_timen), 2))
+    # ['teamPlacement', 'kdRatio', 'kills', 'deaths', 'objectiveBrDownEnemyCircle1', 'objectiveBrDownEnemyCircle2',
+    #  'objectiveBrDownEnemyCircle3', 'objectiveBrDownEnemyCircle4', 'objectiveBrDownEnemyCircle5',
+    #  'objectiveBrDownEnemyCircle6', 'headshots', 'assists', 'percentTimeMoving', 'distanceTraveled', 'timePlayed',
+    #  'damageDone', 'damageTaken', 'longestStreak', 'scorePerMinute', 'missionsComplete', 'matchID']
+
+    personal_plot(data=cod.our_df,
+                  username='Claim',
+                  user_dic=cod.name_uno_dict,
+                  col_lst=[],
+                  _map='mp_e')
+
+    squad_plot(data=cod.our_df,
+               username='Claim',
+               username_lst=['Claim', 'MONEYMIKE0410', 'LeoxGemini', 'TheKing109', 'Rhino5378', 'spectator95', 'IAmLordeYahYaYa', 'ninjanapes'],
+               user_dic=cod.name_uno_dict,
+               col_lst=['kdRatio', 'kills', 'deaths', 'placementPercent', 'headshots', 'damageDone', 'damageTaken'],
+               _map='mp_e')
+
+    lobby_plot(data=cod.other_df,
+               _map='mp_e')
+
+    people = ['Claim', 'MONEYMIKE0410', 'LeoxGemini', 'TheKing109', 'Rhino5378', 'spectator95', 'IAmLordeYahYaYa',
+              'ninjanapes']
+    squad_info = squad_score_card(data=cod.our_df, usernames=people, username_dic=cod.name_uno_dict, _map='mp_e')
 
     cod
     
