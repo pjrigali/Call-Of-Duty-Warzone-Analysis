@@ -2,10 +2,12 @@
 Research and Analysis into sbmm and tracking personal stats
 
 
-To build, need a creds.py with:
+To build, need a creds.py inside Utils, with:
 
     {username: 'your email address',
     password: 'your password',
     driverpath: 'path to selenium chromedriver',
     repo: 'local data directory',
-    codtrackerid: 'your cod tracker id'}
+    codtrackerid: 'your cod tracker id',
+    gamertag: 'your gamertag',
+    squad: ['friend gamertag', ...]}
