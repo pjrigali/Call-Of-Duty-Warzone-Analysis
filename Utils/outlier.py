@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from scipy import stats
 from yellowbrick.regressor import CooksDistance
 from statsmodels.tools import add_constant
+pd.set_option('display.max_columns', None)
 
 
 def stack(x: np.array,
