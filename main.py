@@ -11,12 +11,12 @@ import time
 from typing import List
 import matplotlib.pyplot as plt
 
-from Utils.get_data import get_person_data, get_daily_hourly_weekday_stats, get_weapons, get_lobby_difficulty
 from Utils.gun_dictionary import gun_dict
 from Utils.scrape import refresh_data
 from Utils.creds import user_inputs
 from Utils.outlier import stack, outlierStd, outlierCD, outlierDev, outlierDistance, outlierHist, outlierKNN, outlierRegression
 from Utils.regress import regression_calcs, regress
+from Utils.analysis import get_person_data, get_daily_hourly_weekday_stats, get_weapons
 from Utils.analysis import placement_descriptive_stats, first_top5_bottom_stats, bucket, previous_next_placement
 from Utils.analysis import weekly_stats, daily_stats, match_difficulty, squad_score_card
 from Utils.plots import personal_plot, lobby_plot, squad_plot
@@ -137,8 +137,7 @@ if __name__ == '__main__':
     print(''), print('Cod Built'), print("--- %s seconds ---" % round((time.time() - start_timen), 2))
     
     start_timen = time.time()
-    people = ['Claim', 'MONEYMIKE0410', 'LeoxGemini', 'TheKing109', 'Rhino5378', 'spectator95', 'IAmLordeYahYaYa']
-    person_info = get_person_data(person_lst=people,
+    person_info = get_person_data(person_lst=cod.squad,
                                   data=cod.our_df,
                                   uno_dict=cod.name_uno_dict,
                                   map_choice='mp_escape'
@@ -160,11 +159,6 @@ if __name__ == '__main__':
                               sort_by=None,
                               save=False)
     print(''), print('Weapon_info Built'), print("--- %s seconds ---" % round((time.time() - start_timen), 2))
-
-    start_timen = time.time()
-    lobby_info = get_lobby_difficulty(data=cod.other_df,
-                                      eval_criteria=None)
-    print(''), print('Lobby_info Built'), print("--- %s seconds ---" % round((time.time() - start_timen), 2))
 
     start_timen = time.time()
     placement_info = placement_descriptive_stats(our_data=cod.our_df,
@@ -240,9 +234,10 @@ if __name__ == '__main__':
     lobby_plot(data=cod.other_df,
                _map='mp_e')
 
-    people = ['Claim', 'MONEYMIKE0410', 'LeoxGemini', 'TheKing109', 'Rhino5378', 'spectator95', 'IAmLordeYahYaYa',
-              'ninjanapes']
-    squad_info = squad_score_card(data=cod.our_df, usernames=people, username_dic=cod.name_uno_dict, _map='mp_e')
+    squad_info = squad_score_card(data=cod.our_df,
+                                  usernames=cod.squad,
+                                  username_dic=cod.name_uno_dict,
+                                  _map='mp_e')
 
     cod
     
