@@ -2,7 +2,7 @@
 Research and Analysis into sbmm and tracking personal stats
 
 
-To build, need a creds.py with:
+To build, need a creds.py inside Utils, with:
 
     {username: 'your email address',
     password: 'your password',
