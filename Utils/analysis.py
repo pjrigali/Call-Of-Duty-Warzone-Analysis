@@ -210,7 +210,7 @@ def daily_stats(data: pd.DataFrame,
     base_df['win ratio'] = base_df['wins'] / base_df['games']
     base_df['kill ratio'] = base_df['kills'] / base_df['games']
     base_df['death ratio'] = base_df['deaths'] / base_df['games']
-    base_df.index = data['startDate'].sort_values().unique()[1:]
+    base_df.index = data['startDate'].sort_values().unique()#[1:]
     
     return base_df
 
@@ -302,3 +302,25 @@ def match_difficulty(other_df: pd.DataFrame,
         diff = pd.DataFrame([(j - minn) / (maxn - minn) for j in lst], columns=['difficulty'], index=match_dic_df.index)
         diff['ourPlacement'] = match_dic_df['ourPlacement']
         return diff
+
+
+def squad_score_card(data: pd.DataFrame, usernames: List[str], username_dic: dict, _map: str) -> pd.DataFrame:
+    base_df = data.iloc[[i for i, j in enumerate(list(data['map'])) if _map in str(j)]]
+    col_lst = ['kdRatio', 'kills', 'deaths', 'damageDone', 'damageTaken', 'percentTimeMoving', 'distanceTraveled',
+               'objectiveTeamWiped', 'objectiveReviver', 'missionsComplete', 'headshots', 'score', 'scorePerMinute']
+    col_lst = col_lst + ['objectiveBrDownEnemyCircle' + str(i) for i in [6, 5, 4, 3, 2, 1]]
+
+    people_dic = {}
+    for person in usernames:
+        temp_df = base_df[base_df['uno'] == username_dic[person]]
+        temp_lst = [np.mean(temp_df[col]) for col in col_lst]
+        head_ratio = np.mean(temp_df['headshots']) / np.mean(temp_df['kills'])
+        max_kills = np.max(temp_df['kills'])
+        max_deaths = np.max(temp_df['deaths'])
+        max_streak = np.max(temp_df['longestStreak'])
+        people_dic[person] = temp_lst + [head_ratio] + [max_kills] + [max_deaths] + [max_streak]
+
+    col_lst_n = col_lst + ['headshotRatio'] + ['maxKills'] + ['maxDeaths'] + ['longestStreak']
+    people_df = pd.DataFrame.from_dict(people_dic, orient='columns')
+    people_df.index = col_lst_n
+    return people_df.fillna(0)
