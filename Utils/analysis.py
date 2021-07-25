@@ -2,25 +2,28 @@ import pandas as pd
 import numpy as np
 from scipy import stats
 from typing import List
+
 from Utils.gun_dictionary import gun_dict
+from Utils.outlier import _stack, outlier_hist, outlier_std, outlier_var, outlier_distance, outlier_knn
+from Utils.outlier import outlier_cooks_distance, outlier_regression
 
 
 def placement_descriptive_stats(our_data: pd.DataFrame,
                                 other_data: pd.DataFrame,
                                 col: str,
                                 _map: str = None,
-                                _name: str = None,
-                                _dic: dict = None,
+                                username: str = None,
+                                username_dic: dict = None,
                                 _internal: bool = False,
                                 ) -> pd.DataFrame:
     
-    if _name:
-        our_data_n = our_data[our_data['uno'] == _dic[_name]]
+    if username:
+        our_data_n = our_data[our_data['uno'] == username_dic[username]]
     else:
         our_data_n = our_data.copy()
         
     if _internal:
-        other_data_n = other_data[other_data['uno'] == _dic[_name]]
+        other_data_n = other_data[other_data['uno'] == username_dic[username]]
     else:
         other_data_n = other_data.copy()
     
@@ -68,7 +71,10 @@ def first_top5_bottom_stats(data: pd.DataFrame,
     return base_df
 
 
-def bucket(data: pd.DataFrame, placement: list, col_lst: list, _map: str) -> pd.DataFrame:
+def bucket(data: pd.DataFrame,
+           placement: list,
+           col_lst: list,
+           _map: str) -> pd.DataFrame:
     data = data.iloc[[i for i, j in enumerate(list(data['map'])) if _map in str(j)]]
 
     if len(placement) == 1:
@@ -107,8 +113,7 @@ def bucket(data: pd.DataFrame, placement: list, col_lst: list, _map: str) -> pd.
 
 
 def previous_next_placement(data: pd.DataFrame,
-                            _map: str,
-                            ) -> pd.DataFrame:
+                            _map: str) -> pd.DataFrame:
     
     data = data.iloc[[i for i, j in enumerate(list(data['map'])) if _map in str(j)]].reset_index(drop=True)
     placement_lst = data['teamPlacement'].unique()
@@ -128,12 +133,11 @@ def previous_next_placement(data: pd.DataFrame,
 
 def weekly_stats(data: pd.DataFrame,
                  _map: str,
-                 uno_dic: dict,
-                 name: str
-                 ) -> pd.DataFrame:
+                 username_dic: dict,
+                 username: str) -> pd.DataFrame:
     
     data = data.iloc[[i for i, j in enumerate(list(data['map'])) if _map in str(j)]]
-    data = data[data['uno'] == uno_dic[name]].sort_values('startDate').reset_index(drop=True)
+    data = data[data['uno'] == username_dic[username]].sort_values('startDate').reset_index(drop=True)
 
     kills_lst, deaths_lst, top_five_lst, wins_lst, games_lst = [], [], [], [], []
     kills, deaths, top_fives, wins, games = 0, 0, 0, 0, 0
@@ -173,12 +177,11 @@ def weekly_stats(data: pd.DataFrame,
 
 def daily_stats(data: pd.DataFrame,
                 _map: str,
-                uno_dic: dict,
-                name: str
-                ) -> pd.DataFrame:
+                username_dic: dict,
+                username: str) -> pd.DataFrame:
 
     data = data.iloc[[i for i, j in enumerate(list(data['map'])) if _map in str(j)]]
-    data = data[data['uno'] == uno_dic[name]].sort_values('startDateTime').reset_index(drop=True)
+    data = data[data['uno'] == username_dic[username]].sort_values('startDateTime').reset_index(drop=True)
     
     kills_lst, deaths_lst, top_five_lst, wins_lst, games_lst = [], [], [], [], []
     kills, deaths, top_fives, wins, games = 0, 0, 0, 0, 0
@@ -221,8 +224,7 @@ def match_difficulty(other_df: pd.DataFrame,
                      _map: str = 'mp_e',
                      test: bool = False,
                      mu_lst: List[str] = None,
-                     sum_lst: List[str] = None
-                     ) -> pd.DataFrame:
+                     sum_lst: List[str] = None) -> pd.DataFrame:
 
     if test:
         col_lst = ['duration', 'playerCount', 'teamCount', 'kills', 'medalXp', 'objectiveLastStandKill', 'matchXp',
@@ -306,16 +308,16 @@ def match_difficulty(other_df: pd.DataFrame,
 
 
 def squad_score_card(data: pd.DataFrame,
-                     usernames: List[str],
-                     username_dic: dict,
-                     _map: str) -> pd.DataFrame:
+                     _map: str,
+                     username_lst: List[str],
+                     username_dic: dict) -> pd.DataFrame:
     base_df = data.iloc[[i for i, j in enumerate(list(data['map'])) if _map in str(j)]]
     col_lst = ['kdRatio', 'kills', 'deaths', 'damageDone', 'damageTaken', 'percentTimeMoving', 'distanceTraveled',
                'objectiveTeamWiped', 'objectiveReviver', 'missionsComplete', 'headshots', 'score', 'scorePerMinute']
     col_lst = col_lst + ['objectiveBrDownEnemyCircle' + str(i) for i in [6, 5, 4, 3, 2, 1]]
 
     people_dic = {}
-    for person in usernames:
+    for person in username_lst:
         temp_df = base_df[base_df['uno'] == username_dic[person]]
         temp_lst = [np.mean(temp_df[col]) for col in col_lst]
         head_ratio = np.mean(temp_df['headshots']) / np.mean(temp_df['kills'])
@@ -362,16 +364,16 @@ def get_person_data(person_lst: list,
 
 def get_daily_hourly_weekday_stats(person: str,
                                    data: pd.DataFrame,
-                                   map_choice: str = 'mp_escape',
+                                   _map: str = 'mp_e',
                                    save: bool = False,
                                    combined_item: str = 'kdRatio',
                                    combined_method: str = 'mean',
                                    ):
-    def daily_stats(_df: pd.DataFrame,
-                    _map: str = 'mp_escape',
+    def daily_stats(data: pd.DataFrame,
+                    _map: str = 'mp_e',
                     ):
 
-        dfn = _df.iloc[[i for i, j in enumerate(list(_df['map'])) if _map in str(j)]]
+        dfn = data.iloc[[i for i, j in enumerate(list(data['map'])) if _map in str(j)]]
         _matches = set(list(dfn['matchID']))
         if len(_matches) > 0:
             wins, top_fives = [], []
@@ -394,8 +396,8 @@ def get_daily_hourly_weekday_stats(person: str,
 
     days_lst = data['startDate'].unique()
     daily_info = pd.DataFrame.from_dict(
-        {day: daily_stats(_df=data[data['startDate'] == day],
-                          _map=map_choice) for day in days_lst},
+        {day: daily_stats(data=data[data['startDate'] == day],
+                          _map=_map) for day in days_lst},
         orient='index',
         columns=['dailyKills', 'dailyDeaths', 'dailyWins', 'dailyTopFives', 'dailyMatchCount',
                  'dailyAverageTeamPlacement']
@@ -408,8 +410,8 @@ def get_daily_hourly_weekday_stats(person: str,
     hours_lst = list(data['startTime'])
     hourly_info = pd.DataFrame.from_dict(
         {hour: daily_stats(
-            _df=data.iloc[[i for i, j in enumerate(hours_lst) if hour == int(str(j).split(':')[0])]],
-            _map=map_choice) for hour in hours},
+            data=data.iloc[[i for i, j in enumerate(hours_lst) if hour == int(str(j).split(':')[0])]],
+            _map=_map) for hour in hours},
         orient='index',
         columns=['hourlyKills', 'hourlyDeaths', 'hourlyWins', 'hourlyTopFives', 'hourlyMatchCount',
                  'hourlyAverageTeamPlacement']
@@ -421,8 +423,8 @@ def get_daily_hourly_weekday_stats(person: str,
 
     weekdays_lst = data['weekDay'].unique()
     weekday_info = pd.DataFrame.from_dict(
-        {weekday: daily_stats(_df=data[data['weekDay'] == weekday],
-                              _map=map_choice) for weekday in weekdays_lst},
+        {weekday: daily_stats(data=data[data['weekDay'] == weekday],
+                              _map=_map) for weekday in weekdays_lst},
         orient='index',
         columns=['weekDayKills', 'weekDayDeaths', 'weekDayWins', 'weekDayTopFives', 'weekDayMatchCount',
                  'weekDayAverageTeamPlacement']
@@ -459,51 +461,10 @@ def get_daily_hourly_weekday_stats(person: str,
     return daily_info, hourly_info, weekday_info
 
 
-# def get_weapons(data: pd.DataFrame,
-#                 person: str = None,
-#                 uno_dict: dict = None,
-#                 map_choice: str = None,
-#                 columns: list = None,
-#                 sort_by: str = None,
-#                 save: bool = False,
-#                 ) -> pd.DataFrame:
-#     if person:
-#         data = data[data['uno'] == uno_dict[person]].copy()
-#
-#     if map_choice:
-#         data = data.iloc[[i for i, j in enumerate(data['map']) if map_choice in j]].copy()
-#
-#     if columns is None:
-#         columns = ['kills', 'deaths', 'headshots', 'assists']
-#
-#     if sort_by is None:
-#         sort_by = columns[0]
-#
-#     col_lst = [col for col in data.columns if 'yWeapon' in col and 'Attach' not in col]
-#     gun_set = set(sum([list(data[col]) for col in col_lst], []))
-#     gun_dict_n = {gun: [0] * len(columns) for gun in gun_set}
-#     for col in col_lst:
-#         for gun in gun_set:
-#             temp_n = list(data[data[col] == gun][columns].sum())
-#             gun_dict_n[gun] = [gun_dict_n[gun][i] + temp_n[i] for i in range(len(columns))]
-#
-#     gun_df = pd.DataFrame.from_dict(gun_dict_n, orient='index', columns=columns).sort_values(sort_by, ascending=False)
-#
-#     if 'kills' in columns and 'deaths' in columns:
-#         gun_df['kd'] = gun_df['kills'] / gun_df['deaths']
-#
-#     gun_df.index = [gun_dict[gun] if gun in gun_dict.keys() else gun for gun in gun_df.index]
-#
-#     if save:
-#         gun_df.to_csv('weapon_info.csv')
-#
-#     return gun_df
-
-
 def get_weapons(data: pd.DataFrame,
+                _map: str,
                 username: str,
-                username_dic: dict,
-                _map: str) -> pd.DataFrame:
+                username_dic: dict) -> pd.DataFrame:
 
     data = data.iloc[[i for i, j in enumerate(list(data['map'])) if _map in str(j)]]
     data = data[data['uno'] == username_dic[username]].sort_values('startDateTime').reset_index(drop=True)
@@ -524,8 +485,8 @@ def get_weapons(data: pd.DataFrame,
     gun_dic_2 = {i: {'kills': 0,
                      'deaths': 0,
                      'assists': 0,
-                     'headshots': 0, 'weaponType': i.split('_')[1]} for i in gun_dict.keys() if i != 'none' and i != 'nan'}
-
+                     'headshots': 0,
+                     'weaponType': i.split('_')[1]} for i in gun_dict.keys() if i != 'none' and i != 'nan'}
     for i in gun_dic.keys():
         temp_df = data[['primaryWeapon_' + i.split('_')[1], 'secondaryWeapon_' + i.split('_')[1], 'kills', 'deaths', 'headshots', 'assists']].iloc[gun_dic[i]]
         for j in gun_dic_2.keys():
@@ -537,3 +498,33 @@ def get_weapons(data: pd.DataFrame,
     base_df = pd.DataFrame.from_dict(gun_dic_2, orient='index')
     base_df.index = [gun_dict[i] for i in list(base_df.index)]
     return base_df
+
+
+def find_hackers(data: pd.DataFrame,
+                 y_column: str,
+                 col_lst: list,
+                 _map: str) -> np.ndarray:
+
+    data = data.iloc[[i for i, j in enumerate(list(data['map'])) if _map in str(j)]]
+    _std = 3
+    y_n = np.array(data[y_column])
+    ind = []
+    for col in col_lst:
+        x_n = np.array(data[col])
+        x_y = _stack(x_n, y_n, False)
+        analysis = [list(outlier_var(arr=x_n, _per=0.95, plus=True)),
+                    list(outlier_std(arr=x_n, _std=_std, plus=True)),
+                    list(outlier_distance(arr=x_y, _std=_std, plus=True)),
+            #         list(outlier_hist(arr=x_n, _per=0.75)),
+            #         list(outlier_knn(arr=x_y, plus=True)),
+            #         list(outlier_cooks_distance(arr=x_y, return_df=False)),
+            #         list(outlier_regression(arr=x_y, _std=_std))
+                    ]
+        ind.append(sum(analysis, []))
+
+    temp_dict = {i: 0 for i in set(sum(ind, []))}
+    for i in sum(ind, []):
+        temp_dict[i] += 1
+
+    ind = np.array([i for i in temp_dict.keys() if temp_dict[i] >= 3 * len(col_lst)])
+    return ind
