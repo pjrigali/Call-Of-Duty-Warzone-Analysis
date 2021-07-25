@@ -327,7 +327,7 @@ def squad_score_card(data: pd.DataFrame,
     col_lst_n = col_lst + ['headshotRatio'] + ['maxKills'] + ['maxDeaths'] + ['longestStreak']
     people_df = pd.DataFrame.from_dict(people_dic, orient='columns')
     people_df.index = col_lst_n
-    return people_df.fillna(0)
+    return people_df.fillna(0).round(2)
 
 
 def get_person_data(person_lst: list,
@@ -459,42 +459,81 @@ def get_daily_hourly_weekday_stats(person: str,
     return daily_info, hourly_info, weekday_info
 
 
+# def get_weapons(data: pd.DataFrame,
+#                 person: str = None,
+#                 uno_dict: dict = None,
+#                 map_choice: str = None,
+#                 columns: list = None,
+#                 sort_by: str = None,
+#                 save: bool = False,
+#                 ) -> pd.DataFrame:
+#     if person:
+#         data = data[data['uno'] == uno_dict[person]].copy()
+#
+#     if map_choice:
+#         data = data.iloc[[i for i, j in enumerate(data['map']) if map_choice in j]].copy()
+#
+#     if columns is None:
+#         columns = ['kills', 'deaths', 'headshots', 'assists']
+#
+#     if sort_by is None:
+#         sort_by = columns[0]
+#
+#     col_lst = [col for col in data.columns if 'yWeapon' in col and 'Attach' not in col]
+#     gun_set = set(sum([list(data[col]) for col in col_lst], []))
+#     gun_dict_n = {gun: [0] * len(columns) for gun in gun_set}
+#     for col in col_lst:
+#         for gun in gun_set:
+#             temp_n = list(data[data[col] == gun][columns].sum())
+#             gun_dict_n[gun] = [gun_dict_n[gun][i] + temp_n[i] for i in range(len(columns))]
+#
+#     gun_df = pd.DataFrame.from_dict(gun_dict_n, orient='index', columns=columns).sort_values(sort_by, ascending=False)
+#
+#     if 'kills' in columns and 'deaths' in columns:
+#         gun_df['kd'] = gun_df['kills'] / gun_df['deaths']
+#
+#     gun_df.index = [gun_dict[gun] if gun in gun_dict.keys() else gun for gun in gun_df.index]
+#
+#     if save:
+#         gun_df.to_csv('weapon_info.csv')
+#
+#     return gun_df
+
+
 def get_weapons(data: pd.DataFrame,
-                person: str = None,
-                uno_dict: dict = None,
-                map_choice: str = None,
-                columns: list = None,
-                sort_by: str = None,
-                save: bool = False,
-                ) -> pd.DataFrame:
-    if person:
-        data = data[data['uno'] == uno_dict[person]].copy()
+                username: str,
+                username_dic: dict,
+                _map: str) -> pd.DataFrame:
 
-    if map_choice:
-        data = data.iloc[[i for i, j in enumerate(data['map']) if map_choice in j]].copy()
+    data = data.iloc[[i for i, j in enumerate(list(data['map'])) if _map in str(j)]]
+    data = data[data['uno'] == username_dic[username]].sort_values('startDateTime').reset_index(drop=True)
+    # col_lst = ['primaryWeapon_' + str(i), 'primaryWeaponAttachements_' + str(i), 'secondaryWeapon_' + str(i),
+    #            'secondaryWeaponAttachements_' + str(i)]
 
-    if columns is None:
-        columns = ['kills', 'deaths', 'headshots', 'assists']
+    gun_dic = {}
+    for i in range(1, 14):
+        temp_df = data['primaryWeaponAttachements_' + str(i)].fillna(0)
+        ind_lst = []
+        for ind, j in enumerate(temp_df):
+            if j != 0:
+                n = j.count('none')
+                if n == 0:
+                    ind_lst.append(ind)
+        gun_dic['primaryWeaponAttachements_' + str(i)] = ind_lst
 
-    if sort_by is None:
-        sort_by = columns[0]
+    gun_dic_2 = {i: {'kills': 0,
+                     'deaths': 0,
+                     'assists': 0,
+                     'headshots': 0, 'weaponType': i.split('_')[1]} for i in gun_dict.keys() if i != 'none' and i != 'nan'}
 
-    col_lst = [col for col in data.columns if 'yWeapon' in col and 'Attach' not in col]
-    gun_set = set(sum([list(data[col]) for col in col_lst], []))
-    gun_dict_n = {gun: [0] * len(columns) for gun in gun_set}
-    for col in col_lst:
-        for gun in gun_set:
-            temp_n = list(data[data[col] == gun][columns].sum())
-            gun_dict_n[gun] = [gun_dict_n[gun][i] + temp_n[i] for i in range(len(columns))]
+    for i in gun_dic.keys():
+        temp_df = data[['primaryWeapon_' + i.split('_')[1], 'secondaryWeapon_' + i.split('_')[1], 'kills', 'deaths', 'headshots', 'assists']].iloc[gun_dic[i]]
+        for j in gun_dic_2.keys():
+            for weapon_col in ['primaryWeapon_' + i.split('_')[1], 'secondaryWeapon_' + i.split('_')[1]]:
+                t = temp_df[temp_df[weapon_col] == j]
+                for k in ['kills', 'deaths', 'headshots', 'assists']:
+                    gun_dic_2[j][k] += np.sum(t[k])
 
-    gun_df = pd.DataFrame.from_dict(gun_dict_n, orient='index', columns=columns).sort_values(sort_by, ascending=False)
-
-    if 'kills' in columns and 'deaths' in columns:
-        gun_df['kd'] = gun_df['kills'] / gun_df['deaths']
-
-    gun_df.index = [gun_dict[gun] if gun in gun_dict.keys() else gun for gun in gun_df.index]
-
-    if save:
-        gun_df.to_csv('weapon_info.csv')
-
-    return gun_df
+    base_df = pd.DataFrame.from_dict(gun_dic_2, orient='index')
+    base_df.index = [gun_dict[i] for i in list(base_df.index)]
+    return base_df
