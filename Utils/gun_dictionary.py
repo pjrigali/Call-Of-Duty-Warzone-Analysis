@@ -5,7 +5,7 @@ gun_dict = {
     'iw8_ar_valpha': 'AS VAL',
     'iw8_ar_falpha': 'FR 5.56',
     'iw8_ar_mcharlie': 'M13',
-    'iw8_ar_akilo47': 'AK-47',
+    'iw8_ar_akilo47': 'AK-47 - mw',
     'iw8_ar_asierra12': 'Oden',
     'iw8_ar_galima': 'AMAX',
     'iw8_ar_sierra552': 'Grau',
@@ -64,7 +64,7 @@ gun_dict = {
     "iw8_fists": "Fists",
     # Cold War
     "iw8_ar_t9accurate": "Krig",
-    "iw8_ar_t9damage": "AK-47",
+    "iw8_ar_t9damage": "AK-47 - cw",
     "iw8_ar_t9fastfire": "FFAR",
     "iw8_ar_t9fasthandling": "Groza",
     "iw8_ar_t9longburst": "M16",
