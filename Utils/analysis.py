@@ -528,3 +528,36 @@ def find_hackers(data: pd.DataFrame,
 
     ind = np.array([i for i in temp_dict.keys() if temp_dict[i] >= 3 * len(col_lst)])
     return ind
+
+
+def meta_weapons(data: pd.DataFrame,
+                 _map: str) -> pd.DataFrame:
+
+    data = data.iloc[[i for i, j in enumerate(list(data['map'])) if _map in str(j)]]
+    data = data[data['teamPlacement'] <= 5]
+    dates = list(data['startDate'].unique())
+
+    date_gun_dic = {}
+    for date in dates:
+        gun_dic_3 = {i: {'kills': 0, 'deaths': 0, 'assists': 0, 'headshots': 0, 'count': 0} for i in gun_dict.keys() if i != 'none' and i != 'nan'}
+        temp_df = data[data['startDate'] == date].reset_index(drop=True)
+        gun_dic = {}
+        for i in range(1, 14):
+            temp = temp_df['primaryWeaponAttachements_' + str(i)].fillna(0)
+            gun_dic['primaryWeaponAttachements_' + str(i)] = [ind for ind, j in enumerate(temp) if j != 0 and j.count('none') == 0]
+
+        for i in gun_dic.keys():
+            temp = temp_df[['primaryWeapon_' + i.split('_')[1], 'secondaryWeapon_' + i.split('_')[1], 'kills', 'deaths', 'headshots', 'assists']].iloc[gun_dic[i]]
+            for weapon_name in gun_dic_3.keys():
+                for weapon_col in ['primaryWeapon_' + i.split('_')[1], 'secondaryWeapon_' + i.split('_')[1]]:
+                    t = temp[temp[weapon_col] == weapon_name]
+                    if t.empty is False:
+                        for k in ['kills', 'deaths', 'headshots', 'assists']:
+                            gun_dic_3[weapon_name][k] += np.sum(t[k])
+                        gun_dic_3[weapon_name]['count'] += len(t)
+        date_gun_dic[date] = gun_dic_3
+
+    base_df = pd.DataFrame.from_dict(date_gun_dic, orient='index')
+    base_df.columns = [gun_dict[i] for i in list(base_df.columns)]
+    return base_df.sort_index()
+
