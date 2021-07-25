@@ -369,9 +369,9 @@ def get_daily_hourly_weekday_stats(person: str,
                                    combined_item: str = 'kdRatio',
                                    combined_method: str = 'mean',
                                    ):
+
     def daily_stats(data: pd.DataFrame,
-                    _map: str = 'mp_e',
-                    ):
+                    _map: str = 'mp_e'):
 
         dfn = data.iloc[[i for i, j in enumerate(list(data['map'])) if _map in str(j)]]
         _matches = set(list(dfn['matchID']))
@@ -468,32 +468,32 @@ def get_weapons(data: pd.DataFrame,
 
     data = data.iloc[[i for i, j in enumerate(list(data['map'])) if _map in str(j)]]
     data = data[data['uno'] == username_dic[username]].sort_values('startDateTime').reset_index(drop=True)
-    # col_lst = ['primaryWeapon_' + str(i), 'primaryWeaponAttachements_' + str(i), 'secondaryWeapon_' + str(i),
-    #            'secondaryWeaponAttachements_' + str(i)]
 
+    col_names = []
     gun_dic = {}
     for i in range(1, 14):
-        temp_df = data['primaryWeaponAttachements_' + str(i)].fillna(0)
-        ind_lst = []
-        for ind, j in enumerate(temp_df):
-            if j != 0:
-                n = j.count('none')
-                if n == 0:
-                    ind_lst.append(ind)
-        gun_dic['primaryWeaponAttachements_' + str(i)] = ind_lst
+        name = 'primaryWeaponAttachements_' + str(i)
+        gun_dic[name] = [ind for ind, j in enumerate(data[name]) if j != 0 and j.count('none') == 0]
+        col_names.append(['primaryWeapon_' + str(i), 'secondaryWeapon_' + str(i)])
 
+    # col_names_flat = sum(col_names, [])
+    gun_dict_keys_lst = [i for i in list(gun_dict.keys()) if i != 'none' and i != 'nan']
     gun_dic_2 = {i: {'kills': 0,
                      'deaths': 0,
                      'assists': 0,
                      'headshots': 0,
-                     'weaponType': i.split('_')[1]} for i in gun_dict.keys() if i != 'none' and i != 'nan'}
-    for i in gun_dic.keys():
-        temp_df = data[['primaryWeapon_' + i.split('_')[1], 'secondaryWeapon_' + i.split('_')[1], 'kills', 'deaths', 'headshots', 'assists']].iloc[gun_dic[i]]
-        for j in gun_dic_2.keys():
-            for weapon_col in ['primaryWeapon_' + i.split('_')[1], 'secondaryWeapon_' + i.split('_')[1]]:
-                t = temp_df[temp_df[weapon_col] == j]
-                for k in ['kills', 'deaths', 'headshots', 'assists']:
-                    gun_dic_2[j][k] += np.sum(t[k])
+                     'weaponType': i.split('_')[1],
+                     'count': 0} for i in gun_dict_keys_lst}
+
+    for i, j in enumerate(gun_dic.keys()):
+        temp_df = data[['primaryWeapon_' + j.split('_')[1], 'secondaryWeapon_' + j.split('_')[1], 'kills', 'deaths', 'headshots', 'assists']].iloc[gun_dic[j]]
+        for weapon_name in gun_dict_keys_lst:
+            for weapon_col in col_names[i]:
+                t = temp_df[temp_df[weapon_col] == weapon_name]
+                if t.empty is False:
+                    for k in ['kills', 'deaths', 'headshots', 'assists']:
+                        gun_dic_2[j][k] += np.sum(t[k])
+                    gun_dic_2[j]['count'] += len(t)
 
     base_df = pd.DataFrame.from_dict(gun_dic_2, orient='index')
     base_df.index = [gun_dict[i] for i in list(base_df.index)]
@@ -531,33 +531,71 @@ def find_hackers(data: pd.DataFrame,
 
 
 def meta_weapons(data: pd.DataFrame,
-                 _map: str) -> pd.DataFrame:
-
+                 _map: str,
+                 top_five: bool = None,
+                 top_one: bool = None) -> List[pd.DataFrame]:
     data = data.iloc[[i for i, j in enumerate(list(data['map'])) if _map in str(j)]]
-    data = data[data['teamPlacement'] <= 5]
+
+    if top_five:
+        data = data[data['teamPlacement'] <= 5].fillna(0).reset_index(drop=True)
+    elif top_one:
+        data = data[data['teamPlacement'] <= 1].fillna(0).reset_index(drop=True)
+    else:
+        data = data.fillna(0).reset_index(drop=True)
+
     dates = list(data['startDate'].unique())
+    col_names = []
+    gun_dic = {}
+    for i in range(1, 14):
+        name = 'primaryWeaponAttachements_' + str(i)
+        gun_dic[name] = [ind for ind, j in enumerate(data[name]) if j != 0 and j.count('none') == 0]
+        col_names.append(['primaryWeapon_' + str(i), 'secondaryWeapon_' + str(i)])
 
-    date_gun_dic = {}
+    gun_dic_keys1 = list(gun_dic.keys())
+    gun_dict_keys_lst = [i for i in list(gun_dict.keys()) if i != 'none' and i != 'nan']
+    date_gun_dic = {date: {i: {'kills': 0, 'deaths': 0, 'count': 0} for i in gun_dict_keys_lst} for date in dates}
+    date_dic = {date: list(data[data['startDate'] == date].index) for date in dates}
     for date in dates:
-        gun_dic_3 = {i: {'kills': 0, 'deaths': 0, 'assists': 0, 'headshots': 0, 'count': 0} for i in gun_dict.keys() if i != 'none' and i != 'nan'}
-        temp_df = data[data['startDate'] == date].reset_index(drop=True)
-        gun_dic = {}
-        for i in range(1, 14):
-            temp = temp_df['primaryWeaponAttachements_' + str(i)].fillna(0)
-            gun_dic['primaryWeaponAttachements_' + str(i)] = [ind for ind, j in enumerate(temp) if j != 0 and j.count('none') == 0]
+        lst1 = date_dic[date]
+        for i, j in enumerate(gun_dic_keys1):
+            lst2 = gun_dic[j]
+            temp = data.iloc[[x for x in lst1 if x in lst2]]
+            if temp.empty is False:
+                for weapon_name in gun_dict_keys_lst:
+                    for weapon_col in col_names[i]:
+                        t = temp[temp[weapon_col] == weapon_name]
+                        if t.empty is False:
+                            date_gun_dic[date][weapon_name]['kills'] += np.sum(t['kills'])
+                            date_gun_dic[date][weapon_name]['deaths'] += np.sum(t['deaths'])
+                            date_gun_dic[date][weapon_name]['count'] += len(t)
 
-        for i in gun_dic.keys():
-            temp = temp_df[['primaryWeapon_' + i.split('_')[1], 'secondaryWeapon_' + i.split('_')[1], 'kills', 'deaths', 'headshots', 'assists']].iloc[gun_dic[i]]
-            for weapon_name in gun_dic_3.keys():
-                for weapon_col in ['primaryWeapon_' + i.split('_')[1], 'secondaryWeapon_' + i.split('_')[1]]:
-                    t = temp[temp[weapon_col] == weapon_name]
-                    if t.empty is False:
-                        for k in ['kills', 'deaths', 'headshots', 'assists']:
-                            gun_dic_3[weapon_name][k] += np.sum(t[k])
-                        gun_dic_3[weapon_name]['count'] += len(t)
-        date_gun_dic[date] = gun_dic_3
+    # for date in dates:
+    #     for i, j in enumerate(gun_dic_keys1):
+    #         temp_df = data.iloc[gun_dic[j]]
+    #         temp = temp_df[temp_df['startDate'] == date]
+    #         if temp.empty is False:
+    #             for weapon_name in gun_dict_keys_lst:
+    #                 for weapon_col in col_names[i]:
+    #                     t = temp[temp[weapon_col] == weapon_name]
+    #                     if t.empty is False:
+    #                         date_gun_dic[date][weapon_name]['kills'] += np.sum(t['kills'])
+    #                         date_gun_dic[date][weapon_name]['deaths'] += np.sum(t['deaths'])
+    #                         date_gun_dic[date][weapon_name]['count'] += len(t)
 
-    base_df = pd.DataFrame.from_dict(date_gun_dic, orient='index')
+    base_df = pd.DataFrame.from_dict(date_gun_dic, orient='index').sort_index()
     base_df.columns = [gun_dict[i] for i in list(base_df.columns)]
-    return base_df.sort_index()
+
+    ind_lst = list(base_df.index)
+    final_df = pd.DataFrame()
+    for ind in ind_lst:
+        row = base_df.loc[ind]
+        count_lst = [row.loc[weapon_name]['count'] for weapon_name in base_df.columns]
+        final_df = pd.concat([final_df, pd.DataFrame([count_lst], columns=base_df.columns, index=[ind])])
+    final_df_sum = final_df.sum(axis=1)
+    final_df_sum.loc[final_df_sum == 0] = 1
+    final_df = final_df.div(final_df_sum, axis=0)
+
+    return [base_df, final_df]
+
+
 
