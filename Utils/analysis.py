@@ -467,7 +467,7 @@ def get_weapons(data: pd.DataFrame,
                 username_dic: dict) -> pd.DataFrame:
 
     data = data.iloc[[i for i, j in enumerate(list(data['map'])) if _map in str(j)]]
-    data = data[data['uno'] == username_dic[username]].sort_values('startDateTime').reset_index(drop=True)
+    data = data[data['uno'] == username_dic[username]].sort_values('startDateTime').reset_index(drop=True).fillna(0)
 
     col_names = []
     gun_dic = {}
@@ -486,14 +486,14 @@ def get_weapons(data: pd.DataFrame,
                      'count': 0} for i in gun_dict_keys_lst}
 
     for i, j in enumerate(gun_dic.keys()):
-        temp_df = data[['primaryWeapon_' + j.split('_')[1], 'secondaryWeapon_' + j.split('_')[1], 'kills', 'deaths', 'headshots', 'assists']].iloc[gun_dic[j]]
+        temp_df = data.iloc[gun_dic[j]]
         for weapon_name in gun_dict_keys_lst:
             for weapon_col in col_names[i]:
                 t = temp_df[temp_df[weapon_col] == weapon_name]
                 if t.empty is False:
                     for k in ['kills', 'deaths', 'headshots', 'assists']:
-                        gun_dic_2[j][k] += np.sum(t[k])
-                    gun_dic_2[j]['count'] += len(t)
+                        gun_dic_2[weapon_name][k] += np.sum(t[k])
+                    gun_dic_2[weapon_name]['count'] += len(t)
 
     base_df = pd.DataFrame.from_dict(gun_dic_2, orient='index')
     base_df.index = [gun_dict[i] for i in list(base_df.index)]
