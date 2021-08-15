@@ -2,7 +2,10 @@ import pandas as pd
 import numpy as np
 from scipy import stats
 from typing import List
+import datetime
+import matplotlib.pyplot as plt
 
+from Utils.base import normalize, running_mean, cum_mean
 from Utils.gun_dictionary import gun_dict
 from Utils.outlier import _stack, outlier_hist, outlier_std, outlier_var, outlier_distance, outlier_knn
 from Utils.outlier import outlier_cooks_distance, outlier_regression
@@ -596,6 +599,3 @@ def meta_weapons(data: pd.DataFrame,
     final_df = final_df.div(final_df_sum, axis=0)
 
     return [base_df, final_df]
-
-
-
