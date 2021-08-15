@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from typing import List
 
 
 def normalize(arr: np.ndarray,
@@ -29,7 +30,8 @@ def filter_df(data: pd.DataFrame,
               _mode: str = None,
               _uno: int = None,
               username_dic: dict = None,
-              username: str = None) -> pd.DataFrame:
+              username: str = None,
+              username_lst: List[str] = None) -> pd.DataFrame:
 
     if _map:
         data = data[data['map'] == _map]
@@ -43,4 +45,9 @@ def filter_df(data: pd.DataFrame,
     if _uno:
         data = data[data['uno'] == _uno]
 
-    return data.reset_index(drop=True).sort_values('startDateTime', ascending=True)
+    if username_lst:
+        u_lst = [username_dic[i] for i in username_lst]
+        data_lst = list(data['uno'])
+        data = data.iloc[[i for i, j in enumerate(data_lst) if str(j) in u_lst]]
+
+    return data.sort_values('startDateTime', ascending=True).reset_index(drop=True)
