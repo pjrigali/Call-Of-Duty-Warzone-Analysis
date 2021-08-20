@@ -50,5 +50,3 @@ class DocumentFilter:
             data = data.iloc[[i for i, j in enumerate(data_lst) if str(j) in u_lst]]
 
         self.data: pd.DataFrame = data.sort_values('startDateTime', ascending=True).reset_index(drop=True)
-
-
