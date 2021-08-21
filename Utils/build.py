@@ -85,40 +85,37 @@ def get_our_and_other_df(data: pd.DataFrame, _my_uno: str, name_uno_dict: dict, 
     squad_uno_lst = [name_uno_dict[i] for i in squad_name_lst]
     for _map in ['mp_e', 'mp_d']:
         our_data_n = our_df[our_df['map'] == _map]
-        temp = our_data_n.set_index('uno').loc[squad_uno_lst]
-        our_data_dic[_map] = {col: np.mean(temp[col].fillna(0.0)) for col in col_lst}
+        temp = our_data_n.set_index('uno').loc[squad_uno_lst].fillna(0.0)
+        our_data_dic[_map] = {col: np.mean(temp[col]) for col in col_lst}
 
-    col_dic = {'mp_d':
-                   {'above': ['deaths', 'objectiveBrKioskBuy', 'missionsComplete',
-                              'objectiveMedalScoreKillSsRadarDrone'],
-                    'below': ['headshots', 'kills', 'kdRatio', 'scorePerMinute', 'percentTimeMoving',
-                              'longestStreak', 'damageDone', 'objectiveLastStandKill',
-                              'objectiveBrDownEnemyCircle1',
-                              'objectiveBrDownEnemyCircle2', 'objectiveBrDownEnemyCircle3',
-                              'objectiveBrDownEnemyCircle4', 'objectiveBrDownEnemyCircle5',
-                              'objectiveBrDownEnemyCircle6', 'objectiveTeamWiped', 'headshotRatio',
-                              'objectiveBrCacheOpen']},
-               'mp_e':
-                   {'above': ['deaths', 'objectiveBrKioskBuy', 'damageTaken', 'missionsComplete',
-                              'objectiveMunitionsBoxTeammateUsed', 'objectiveBrCacheOpen',
-                              'objectiveMedalScoreKillSsRadarDrone'],
-                    'below': ['headshots', 'kills', 'kdRatio', 'scorePerMinute', 'distanceTraveled',
-                              'percentTimeMoving', 'longestStreak', 'damageDone', 'objectiveLastStandKill',
-                              'objectiveBrDownEnemyCircle1', 'objectiveBrDownEnemyCircle2',
-                              'objectiveBrDownEnemyCircle3', 'objectiveBrDownEnemyCircle5',
-                              'objectiveBrDownEnemyCircle6', 'objectiveTeamWiped', 'objectiveReviver',
-                              'headshotRatio']}
-               }
+    col_dic = {'mp_d': {'above': ['deaths', 'objectiveBrKioskBuy', 'missionsComplete',
+                                  'objectiveMedalScoreKillSsRadarDrone'],
+                        'below': ['headshots', 'kills', 'kdRatio', 'scorePerMinute', 'percentTimeMoving',
+                                  'longestStreak', 'damageDone', 'objectiveLastStandKill',
+                                  'objectiveBrDownEnemyCircle1',
+                                  'objectiveBrDownEnemyCircle2', 'objectiveBrDownEnemyCircle3',
+                                  'objectiveBrDownEnemyCircle4', 'objectiveBrDownEnemyCircle5',
+                                  'objectiveBrDownEnemyCircle6', 'objectiveTeamWiped', 'headshotRatio',
+                                  'objectiveBrCacheOpen']},
+               'mp_e': {'above': ['deaths', 'objectiveBrKioskBuy', 'damageTaken', 'missionsComplete',
+                                  'objectiveMunitionsBoxTeammateUsed', 'objectiveBrCacheOpen',
+                                  'objectiveMedalScoreKillSsRadarDrone'],
+                        'below': ['headshots', 'kills', 'kdRatio', 'scorePerMinute', 'distanceTraveled',
+                                  'percentTimeMoving', 'longestStreak', 'damageDone', 'objectiveLastStandKill',
+                                  'objectiveBrDownEnemyCircle1', 'objectiveBrDownEnemyCircle2',
+                                  'objectiveBrDownEnemyCircle3', 'objectiveBrDownEnemyCircle5',
+                                  'objectiveBrDownEnemyCircle6', 'objectiveTeamWiped', 'objectiveReviver',
+                                  'headshotRatio']}}
 
     dic = {i: [] for i in list(other_df.index)}
     for _map in ['mp_e', 'mp_d']:
-        t = other_df.iloc[list(np.where(other_df['map'] == _map)[0])]
+        t = other_df.iloc[list(np.where(other_df['map'] == _map)[0])].fillna(0.0)
         for direction in ['above', 'below']:
             for criteria in col_dic[_map][direction]:
                 if direction == 'above':
-                    tt = list(t[t[criteria].fillna(0.0) < our_data_dic[_map][criteria]].index)
+                    tt = list(t[t[criteria] < our_data_dic[_map][criteria]].index)
                 else:
-                    tt = list(t[t[criteria].fillna(0.0) > our_data_dic[_map][criteria]].index)
+                    tt = list(t[t[criteria] > our_data_dic[_map][criteria]].index)
                 tt_dic = {i: True for i in tt}
                 for key in list(t.index):
                     if key in tt_dic:
