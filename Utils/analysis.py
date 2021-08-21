@@ -289,21 +289,24 @@ def match_difficulty(other_df: pd.DataFrame,
         return diff
 
 
-def get_daily_hourly_weekday_stats(doc_filter: DocumentFilter) -> List[pd.DataFrame]:
+def get_daily_hourly_weekday_stats(doc_filter: DocumentFilter):
     data = doc_filter.df
+    hour_index_lst = ['00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00', '08:00', '09:00',
+                      '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00',
+                      '20:00', '21:00', '22:00', '23:00']
+    weekday_index_lst = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
     if doc_filter.map_choice == 'mp_d':
         num = 10
     else:
         num = 5
 
-    def _stat_calc(df: pd.DataFrame):
+    def _stat_calc(df: pd.DataFrame) -> list:
         _matches = set(df['matchID'])
         if len(_matches) > 0:
             wins, top_fives = [], []
             for match in _matches:
-                place = int(list(df[df['matchID'] == match]['teamPlacement'])[0])
-
+                place = int(np.mean(df[df['matchID'] == match]['teamPlacement']))
                 if place == 1:
                     wins.append(1)
                 elif (1 < place) & (place >= num):
@@ -312,8 +315,8 @@ def get_daily_hourly_weekday_stats(doc_filter: DocumentFilter) -> List[pd.DataFr
                     wins.append(0)
                     top_fives.append(0)
 
-            return [int(df['kills'].sum()), int(df['deaths'].sum()), sum(wins), sum(top_fives), len(_matches),
-                    df['teamPlacement'].mean()]
+            return [int(df['kills'].sum()), int(df['deaths'].sum()), np.sum(wins), np.sum(top_fives), len(_matches),
+                    np.mean(df['teamPlacement'])]
         else:
             return [0, 0, 0, 0, 0, 0]
 
@@ -326,15 +329,13 @@ def get_daily_hourly_weekday_stats(doc_filter: DocumentFilter) -> List[pd.DataFr
     daily_info = daily_info.sort_index()
 
     hours = range(24)
-    hours_lst = list(data['startTime'])
+    hours_lst = data['startDateTime']
     col_lst = ['hourlyKills', 'hourlyDeaths', 'hourlyWins', 'hourlyTopFives', 'hourlyMatchCount',
                'hourlyAverageTeamPlacement']
-    hourly_dic = {hour: _stat_calc(df=data.iloc[[i for i, j in enumerate(hours_lst) if hour == int(str(j).split(':')[0])]]) for hour in hours}
+    hourly_dic = {h: _stat_calc(df=data.iloc[[i for i, j in enumerate(hours_lst) if h == j.hour]]) for h in hours}
     hourly_info = pd.DataFrame.from_dict(hourly_dic, orient='index', columns=col_lst)
     hourly_info['hourlyKD'] = (hourly_info['hourlyKills'] / hourly_info['hourlyDeaths']).fillna(0).round(2)
-    hourly_info.index = ['00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00', '08:00', '09:00',
-                         '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00',
-                         '20:00', '21:00', '22:00', '23:00']
+    hourly_info.index = hour_index_lst
 
     weekdays_lst = data['weekDay'].unique()
     col_lst = ['weekDayKills', 'weekDayDeaths', 'weekDayWins', 'weekDayTopFives', 'weekDayMatchCount',
@@ -344,28 +345,43 @@ def get_daily_hourly_weekday_stats(doc_filter: DocumentFilter) -> List[pd.DataFr
     weekday_info = weekday_info[weekday_info['weekDayMatchCount'] > 0]
     weekday_info['dailyKD'] = (weekday_info['weekDayKills'] / weekday_info['weekDayDeaths']).round(2)
     weekday_info.index = [str(i) for i in weekday_info.index]
-    weekday_info = weekday_info.reindex(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'])
+    weekday_info = weekday_info.reindex(weekday_index_lst)
 
-    # day_dic = {0: 'Monday', 1: 'Tuesday', 2: 'Wednesday', 3: 'Thursday', 4: 'Friday', 5: 'Saturday', 6: 'Sunday'}
-    # hours = range(24)
-    # dic = {}
-    # for weekday in day_dic.values():
-    #     dfn = data[data['weekDay'] == weekday].reset_index(drop=True)
-    #     temp_dic = {}
-    #     for _hour in hours:
-    #         lst = []
-    #         for i, j in enumerate(dfn['startDateTime']):
-    #             if j.hour == _hour:
-    #                 lst.append(dfn.loc[i, 'kills'])
-    #         temp_dic[_hour] = sum(lst)
-    #     dic[weekday] = temp_dic
-    #
-    # temp_df = pd.DataFrame.from_dict(dic)
-    # temp_df.index = ['00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00', '08:00', '09:00',
-    #                  '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00',
-    #                  '20:00', '21:00', '22:00', '23:00']
+    hours = range(24)
+    final_dic = {}
+    for val in ['kills', 'deaths', 'kdRatio', 'wins', 'top_' + str(num), 'count', 'averagePlacement']:
+        dic = {}
+        for weekday in weekday_index_lst:
+            dfn = data[data['weekDay'] == weekday].reset_index(drop=True)
+            temp_dic = {}
+            for _hour in hours:
+                lst = []
+                for i, j in enumerate(dfn['startDateTime']):
+                    if j.hour == _hour:
+                        if val == 'wins':
+                            row = dfn.loc[i, 'teamPlacement']
+                            if row == 1:
+                                lst.append(1)
+                        elif val == 'top_' + str(num):
+                            row = dfn.loc[i, 'teamPlacement']
+                            if (row > 1) & (row <= num):
+                                lst.append(1)
+                        elif val == 'count':
+                            lst.append(1)
+                        elif val == 'averagePlacement':
+                            lst.append(dfn.loc[i, 'teamPlacement'])
+                        else:
+                            lst.append(dfn.loc[i, val])
+                if (val == 'averagePlacement') | (val == 'kdRatio'):
+                    temp_dic[_hour] = np.mean(lst)
+                else:
+                    temp_dic[_hour] = sum(lst)
+            dic[weekday] = temp_dic
+        temp_df = pd.DataFrame.from_dict(dic)
+        temp_df.index = hour_index_lst
+        final_dic[val] = temp_df
 
-    return [daily_info, hourly_info, weekday_info]
+    return [daily_info, hourly_info, weekday_info, final_dic]
 
 
 def get_weapons(doc_filter: DocumentFilter) -> pd.DataFrame:
