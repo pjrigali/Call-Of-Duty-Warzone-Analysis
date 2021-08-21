@@ -1,15 +1,11 @@
+from typing import List
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-from scipy import stats
 from yellowbrick.regressor import CooksDistance
 from statsmodels.tools import add_constant
-pd.set_option('display.max_columns', None)
 
 
-def _stack(x: np.array,
-           y: np.array,
-           multi: bool = False) -> np.ndarray:
+def _stack(x: np.array, y: np.array, multi: bool = False) -> np.ndarray:
     lst = []
     if multi:
         for i in range((x.shape[1])):
@@ -20,7 +16,7 @@ def _stack(x: np.array,
     return np.where(np.isnan(lst), 0, lst)
 
 
-def _cent(x: list, y: list) -> list:
+def _cent(x: list, y: list) -> List[float]:
     return [np.sum(x) / len(x), np.sum(y) / len(y)]
 
 
@@ -38,7 +34,6 @@ def outlier_std(arr: np.array = None,
         arr = np.array(data[y_column].fillna(0).astype(float))
 
     arr = np.nan_to_num(arr)
-
     if plus:
         arrn = np.mean(arr, axis=0) + np.std(arr, ddof=1) * _std
     else:
@@ -450,8 +445,7 @@ def outlier_cooks_distance(arr: np.ndarray = None,
 
     if return_df:
         base_lst = [ind, distance, result.p_values_, result.influence_threshold_, result.outlier_percentage_]
-        return pd.DataFrame(base_lst,
-                            columns=['Indexes', 'Distances', 'P-Values', 'Influence Threshold', 'Outlier Percentage'])
+        col_lst = ['Indexes', 'Distances', 'P-Values', 'Influence Threshold', 'Outlier Percentage']
+        return pd.DataFrame(base_lst, columns=col_lst)
     else:
         return ind
-
