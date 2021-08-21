@@ -1,4 +1,4 @@
-from typing import List, Optional, Union
+from typing import Optional, Union
 import pandas as pd
 import numpy as np
 from statsmodels import regression
@@ -15,7 +15,7 @@ def regression_calcs(df: pd.DataFrame,
                      confidence_interval_lower: Optional[Union[float, None]] = None,
                      confidence_interval_higher: Optional[Union[float, None]] = None,
                      p_value: Optional[Union[float, None]] = 0.05,
-                     sort_value: Optional[Union[List[str, bool], None]] = None,
+                     sort_value: Union[list, None] = None,
                      ) -> pd.DataFrame:
 
     if p_value is None:

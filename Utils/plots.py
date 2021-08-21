@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 from typing import List
 from scipy.stats import norm
-from Utils.base import normalize, running_mean, cum_mean
+from Utils.base import normalize, running_mean, cumulative_mean
 
 
 def histo(x: np.ndarray,
@@ -111,7 +111,11 @@ def histo(x: np.ndarray,
     plt.show()
 
 
-def personal_plot(data: pd.DataFrame, username: str, user_dic: dict, col_lst: List[str], _map: str) -> None:
+def personal_plot(data: pd.DataFrame,
+                  username: str,
+                  user_dic: dict,
+                  col_lst: List[str],
+                  _map: str) -> None:
     uno = user_dic[username]
     base_df = data.iloc[[i for i, j in enumerate(list(data['map'])) if _map in str(j)]]
     base_df = base_df[base_df['uno'] == uno]
@@ -200,7 +204,8 @@ def personal_plot(data: pd.DataFrame, username: str, user_dic: dict, col_lst: Li
     plt.show()
 
 
-def lobby_plot(data: pd.DataFrame, _map: str) -> None:
+def lobby_plot(data: pd.DataFrame,
+               _map: str) -> None:
     base_df = data.iloc[[i for i, j in enumerate(list(data['map'])) if _map in str(j)]]
     dates = list(base_df['startDate'].unique())
     games = list(base_df['matchID'].unique())
@@ -380,7 +385,12 @@ def lobby_plot(data: pd.DataFrame, _map: str) -> None:
     plt.show()
 
 
-def squad_plot(data: pd.DataFrame, username: str, username_lst: List[str], user_dic: dict, col_lst: List[str], _map: str) -> None:
+def squad_plot(data: pd.DataFrame,
+               username: str,
+               username_lst: List[str],
+               user_dic: dict,
+               col_lst: List[str],
+               _map: str) -> None:
     base_df = data.iloc[[i for i, j in enumerate(list(data['map'])) if _map in str(j)]]
 
     if username not in username_lst:
@@ -569,3 +579,45 @@ def squad_plot(data: pd.DataFrame, username: str, username_lst: List[str], user_
 # ax2.plot(x,
 #          p)
 # plt.show()
+
+    # dic = {'whole': {'first': {}, 'top five': {}, 'bottom': {}}, 'other': {'first': {}, 'top five': {}, 'bottom': {}}, 'our': {'first': {}, 'top five': {}, 'bottom': {}}}
+    # for i in [6,5,4,3,2,1]:
+    #     winners_info = first_top5_bottom_stats(data=cod.whole,
+    #                                            col='objectiveBrDownEnemyCircle'+str(i),
+    #                                            _map='mp_e')
+    #     dic['whole']['first'][i] = winners_info.loc['first']['mu']
+    #     dic['whole']['top five'][i] = winners_info.loc['top five']['mu']
+    #     dic['whole']['bottom'][i] = winners_info.loc['bottom']['mu']
+    #
+    #     winners_info = first_top5_bottom_stats(data=cod.other_df,
+    #                                            col='objectiveBrDownEnemyCircle'+str(i),
+    #                                            _map='mp_e')
+    #     dic['other']['first'][i] = winners_info.loc['first']['mu']
+    #     dic['other']['top five'][i] = winners_info.loc['top five']['mu']
+    #     dic['other']['bottom'][i] = winners_info.loc['bottom']['mu']
+    #
+    #     winners_info = first_top5_bottom_stats(data=cod.our_df,
+    #                                            col='objectiveBrDownEnemyCircle'+str(i),
+    #                                            _map='mp_e')
+    #     dic['our']['first'][i] = winners_info.loc['first']['mu']
+    #     dic['our']['top five'][i] = winners_info.loc['top five']['mu']
+    #     dic['our']['bottom'][i] = winners_info.loc['bottom']['mu']
+    # dic_df = pd.DataFrame.from_dict(dic, orient='index')
+    # color_dic = {'whole': 'grey', 'other': 'skyblue', 'our': 'tab:orange'}
+    # f, ax = plt.subplots(figsize=(10, 7))
+    # for i in ['whole', 'other', 'our']:
+    #     temp = dic_df.loc[i]
+    #     plt.plot(temp['first'].values(), label=i + ' first', color=color_dic[i], alpha=1, linestyle=(0, (3, 0)),
+    #              linewidth=2)
+    #     plt.plot(temp['top five'].values(), label=i + ' top five', color=color_dic[i], alpha=.75, linestyle=(0, (3, 3)),
+    #              linewidth=2)
+    #     plt.plot(temp['bottom'].values(), label=i + ' bottom', color=color_dic[i], alpha=.25, linestyle=(0, (3, 6)),
+    #              linewidth=2)
+    # ax.set_xticklabels([7, 6, 5, 4, 3, 2, 1])
+    # # plt.xticks(x)
+    # plt.legend()
+    # plt.grid(alpha=.75, linestyle=(0, (1, 3)), linewidth=.5)
+    # plt.title('Average Kills Per Circle', fontsize='xx-large')
+    # plt.xlabel('Circle', fontsize='large')
+    # plt.ylabel('Average Kills', fontsize='large')
+    # plt.show()
