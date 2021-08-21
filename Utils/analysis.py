@@ -379,7 +379,7 @@ def get_daily_hourly_weekday_stats(doc_filter: DocumentFilter):
             dic[weekday] = temp_dic
         temp_df = pd.DataFrame.from_dict(dic)
         temp_df.index = hour_index_lst
-        final_dic[val] = temp_df
+        final_dic[val] = temp_df.fillna(0.0)
 
     return [daily_info, hourly_info, weekday_info, final_dic]
 
