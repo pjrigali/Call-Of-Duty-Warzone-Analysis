@@ -5,7 +5,7 @@ import time
 from typing import List
 import matplotlib.pyplot as plt
 
-from Utils.base import filter_df, running_mean, cum_mean, normalize
+from Utils.base import running_mean, cumulative_mean, normalize
 
 
 def find_hackers_from_hacker_df(data: pd.DataFrame,
