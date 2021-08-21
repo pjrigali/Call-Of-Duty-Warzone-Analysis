@@ -1,13 +1,11 @@
 # Call-Of-Duty-Warzone-Analysis
-Research and Analysis into sbmm and tracking personal stats
+A module for analysis of _Call of Duty Warzone_ matches.
 
+To build, need a credentials.py inside the _Call-Of-Duty-Warzone-Analysis_ directory, with:
+```python
+user_inputs = {'repo': 'local data directory',
+               'gamertag': 'your gamertag',
+               'squad': ['friend gamertag1', 'friend gamertag2', '... etc'],
+               'file_name': 'Personal_Match_Data_v4.csv'}
+```
 
-To build, need a creds.py inside Utils, with:
-
-    {username: 'your email address',
-    password: 'your password',
-    driverpath: 'path to selenium chromedriver',
-    repo: 'local data directory',
-    codtrackerid: 'your cod tracker id',
-    gamertag: 'your gamertag',
-    squad: ['friend gamertag', ...]}
