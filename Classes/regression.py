@@ -13,16 +13,31 @@ class Regression:
 
     def __init__(self, doc_filter, x_column, y_column):
 
-        x = add_constant(np.array(doc_filter.df[x_column], dtype=float))
+        if type(x_column) == str:
+            x = add_constant(np.array(doc_filter.df[x_column], dtype=float))
+        else:
+            x = np.array(doc_filter.df[x_column], dtype=float)
+
         y = np.array(doc_filter.df[y_column])
         model = regression.linear_model.OLS(y, x).fit()
 
+        if type(x_column) == str:
+            self._constant_coef = model.params[0]
+            self._item_coef = model.params[1]
+            self._coefficients = None
+            self._lower_conf = model.conf_int()[1, :2][0]
+            self._upper_conf = model.conf_int()[1, :2][1]
+            self._pvalue = model.pvalues[1]
+        else:
+            self._constant_coef = None
+            self._item_coef = None
+            self._coefficients = model.params
+            self._confidence_bounds = model.conf_int()
+            self._lower_conf = None
+            self._upper_conf = None
+            self._pvalue = model.pvalues
+
         self._r2 = model.rsquared
-        self._constant_coef = model.params[0]
-        self._item_coef = model.params[1]
-        self._lower_conf = model.conf_int()[1, :2][0]
-        self._upper_conf = model.conf_int()[1, :2][1]
-        self._pvalue = model.pvalues[1]
         self._resid = model.resid
         self._bse = model.bse
         self._mse = model.mse_model
@@ -71,3 +86,11 @@ class Regression:
     @property
     def ess(self):
         return self._ess
+
+    @property
+    def confidence(self):
+        return self._coefficients
+
+    @property
+    def coefficients(self):
+        return self._confidence_bounds
