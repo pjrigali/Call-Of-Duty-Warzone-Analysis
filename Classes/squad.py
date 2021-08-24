@@ -152,7 +152,7 @@ class Squad:
                 self._squad_stats[teammate].verdansk[_mode].stats['username'] = teammate
                 lst.append(self._squad_stats[teammate].rebirth[_mode].stats)
                 lst.append(self._squad_stats[teammate].verdansk[_mode].stats)
-        self._squad_df = pd.DataFrame(lst).fillna(0.0)
+        self._squad_df = pd.DataFrame(lst).fillna(0.0).set_index(['username', 'map', 'mode'])
 
     def __repr__(self):
         return 'Squad Stats'
