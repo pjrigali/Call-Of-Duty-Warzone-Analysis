@@ -4,7 +4,9 @@ import numpy as np
 import datetime
 
 
-def evaluate_df(file_name: str, repo: str) -> pd.DataFrame:
+def _evaluate_df(file_name: str, repo: str) -> pd.DataFrame:
+    """Loads, Cleans, and Builds a DataFrame"""
+
     df = pd.read_csv(repo + file_name, index_col='Unnamed: 0').drop_duplicates(keep='first')
 
     # Create startDateTime
@@ -69,13 +71,17 @@ def evaluate_df(file_name: str, repo: str) -> pd.DataFrame:
     return df.sort_values('startDateTime', ascending=True).reset_index(drop=True)
 
 
-def get_match_id_set(data: pd.DataFrame) -> dict:
+def _get_match_id_set(data: pd.DataFrame) -> dict:
+    """Return a dict {gamertag: uno, gamertag1: uno1, etc}"""
+
     comb_set = set(data['uno'] + '-splitpoint-' + data['username'])
     return {i.split('-splitpoint-')[1]: i.split('-splitpoint-')[0] for i in comb_set}
 
 
 def _get_hacker_probability(our_df: pd.DataFrame, other_df: pd.DataFrame, name_uno_dict: dict,
                             squad_name_lst: List[str]) -> list:
+    """Calculates a Hacker Probability based on how stats relate to player and their squad makes"""
+
     col_lst = ['headshots', 'kills', 'deaths', 'kdRatio', 'scorePerMinute', 'distanceTraveled',
                'objectiveBrKioskBuy', 'percentTimeMoving', 'longestStreak', 'damageDone', 'damageTaken',
                'missionsComplete', 'objectiveLastStandKill', 'objectiveBrDownEnemyCircle1',
@@ -130,7 +136,10 @@ def _get_hacker_probability(our_df: pd.DataFrame, other_df: pd.DataFrame, name_u
     return [np.mean(np.nan_to_num(i)) for i in dic_values_lst]
 
 
-def get_our_and_other_df(data: pd.DataFrame, _my_uno: str, name_uno_dict: dict, squad_name_lst: List[str]):
+def _get_our_and_other_df(data: pd.DataFrame, _my_uno: str, name_uno_dict: dict, squad_name_lst: List[str]):
+    """Returns two DataFrames. First is all data related to the player and their teammates,
+       Second is everyone who is not a teammate"""
+
     base_lst = data['matchID'] + '-splitpoint-' + data['team']
     base_our_lst = data[data['uno'] == _my_uno]['matchID'] + '-splitpoint-' + data[data['uno'] == _my_uno]['team']
     our_lst = {i: True for i in base_our_lst}
