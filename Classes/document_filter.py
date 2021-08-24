@@ -78,6 +78,7 @@ class DocumentFilter:
         self._username = username
         self._uno = uno
         self._username_lst = username_lst
+        self._username_dic = username_dic
 
     def __repr__(self):
         return 'DocumentFilter'
@@ -121,3 +122,8 @@ class DocumentFilter:
     def ids(self) -> Optional[List[str]]:
         """Returns match ids from the filtered DataFrame"""
         return self._id_lst
+
+    @property
+    def username_dic(self) -> Optional[dict]:
+        """Returns username: uno dict"""
+        return self._username_dic
