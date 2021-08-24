@@ -31,13 +31,6 @@ def evaluate_df(file_name: str, repo: str) -> pd.DataFrame:
     headshot_lst = list(df['headshots'])
     kill_lst = list(df['kills'])
     ran = range(len(df))
-    # headshot_ratio_lst = []
-    # for ind in ran:
-    #     if headshot_lst[ind] == 0 or kill_lst[ind] == 0:
-    #         headshot_ratio_lst.append(0.0)
-    #     else:
-    #         headshot_ratio_lst.append(headshot_lst[ind] / kill_lst[ind])
-    # df['headshotRatio'] = headshot_ratio_lst
     hs_r = [0.0 if headshot_lst[ind] == 0 or kill_lst[ind] == 0 else headshot_lst[ind] / kill_lst[ind] for ind in ran]
     df['headshotRatio'] = hs_r
 
@@ -144,7 +137,6 @@ def get_our_and_other_df(data: pd.DataFrame, _my_uno: str, name_uno_dict: dict, 
     comb_dic = {i: True for i, j in enumerate(base_lst) if j in our_lst}
     other = [i for i in data.index if i not in comb_dic]
     our_df, other_df = data.iloc[list(comb_dic.keys())].copy(), data.iloc[other].copy()
-
     our_df['hackerProb'] = 0.0
     other_df['hackerProb'] = _get_hacker_probability(our_df=our_df, other_df=other_df, name_uno_dict=name_uno_dict,
                                                      squad_name_lst=squad_name_lst)

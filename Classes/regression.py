@@ -3,8 +3,10 @@ import numpy as np
 from statsmodels import regression
 from statsmodels.tools import add_constant
 from Classes.documnent_filter import DocumentFilter
+from dataclasses import dataclass
 
 
+@dataclass
 class Regression:
     """
     Calculate a linear regression.
