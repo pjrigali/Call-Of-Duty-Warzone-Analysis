@@ -6,6 +6,28 @@ from Classes.documnent_filter import DocumentFilter
 
 
 class Regression:
+    """
+    Calculate a linear regression.
+
+    Parameters
+    ----------
+    doc_filter : DocumentFilter
+        Input DocumentFilter.
+    x_column : str, or List[str]
+        Name of column or columns to be used in regression analysis
+    y_column : str
+        Name of column to be used as y variable in regression.
+
+    Examples
+    --------
+
+    >>> from Classes.document_filter import DocumentFilter
+    >>> from Classes.regression import Regression
+    >>> doc = DocumentFilter(original_df=cod.our_df, map_choice='mp_e', mode_choice='quad')
+    >>> model = Regression(doc_filter=doc, x_column='kills', y_column='placementPercent')
+
+    This will return a Regression object with regression resault information.
+    """
 
     doc_filter: DocumentFilter
     x_column: Union[str, List[str]]
@@ -49,48 +71,60 @@ class Regression:
 
     @property
     def r2(self):
+        """Returns R Squared"""
         return self._r2
 
     @property
     def constant_coefficient(self):
+        """Returns Constant Coefficient, if only one x_column is provided"""
         return self._constant_coef
 
     @property
     def x_coefficient(self):
+        """Returns X Coefficient, if only one x_column is provided"""
         return self._item_coef
 
     @property
     def lower_confidence(self):
+        """Returns Lower Confidence Value, if only one x_column is provided"""
         return self._lower_conf
 
     @property
     def upper_confidence(self):
+        """Returns Upper Confidence Value, if only one x_column is provided"""
         return self._upper_conf
 
     @property
     def pvalue(self):
+        """Returns P Value or Values"""
         return self._pvalue
 
     @property
     def residuals(self):
+        """Returns residuals"""
         return self._resid
 
     @property
     def mse(self):
+        """Returns Mean Squared Error"""
         return self._mse
 
     @property
     def ssr(self):
+        """Returns Sum of Squared Residuals"""
         return self._ssr
 
     @property
     def ess(self):
+        """Returns Sum of Squared Error"""
         return self._ess
 
     @property
     def confidence(self):
+        """Returns Confidence Values, if more than one x_column is provided"""
         return self._coefficients
 
     @property
     def coefficients(self):
+        """Returns Coefficient Values, if more than one x_column is provided"""
         return self._confidence_bounds

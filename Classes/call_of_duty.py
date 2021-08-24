@@ -7,6 +7,25 @@ from Utils.gun_dictionary import gun_dict
 
 
 class CallofDuty:
+    """
+    Calculate stats for all maps/modes for each squad memeber.
+
+    Parameters
+    ----------
+    hacker_data : bool, default is False.
+        This Requires a seperate csv with hacker data saved. This data can be collected by finding hackers after
+        the fact and scraping there data from CodTracker, this can then be used to find hackers in other games.
+    squad_data : bool, default is False.
+        If True, will build the Squad class.
+
+    Examples
+    --------
+
+    >>> from Classes.call_of_duty import CallofDuty
+    >>> cod = CallofDuty(hacker_data=False, squad_data=True)
+
+    This will calculate and build the CallofDuty class.
+    """
 
     def __init__(self, hacker_data: bool = False, squad_data: bool = False):
         self._User = User(info=user_inputs)
@@ -33,44 +52,55 @@ class CallofDuty:
 
     @property
     def whole(self) -> pd.DataFrame:
+        """Returns the unedited player matches DataFrame"""
         return self._whole
 
     @property
-    def gun_dictionary(self) -> pd.DataFrame:
+    def gun_dictionary(self) -> dict:
+        """Returns a dict of gun names"""
         return self._gun_dic
 
     @property
-    def last_match_date_time(self) -> pd.DataFrame:
+    def last_match_date_time(self):
+        """Returns a Timestamp of the latest game in the players data. Useful when scraping from Cod Tracker"""
         return self._last_match_date_time
 
     @property
-    def name_uno_dict(self) -> pd.DataFrame:
+    def name_uno_dict(self) -> dict:
+        """Returns a dict of gamertags and respective unos"""
         return self._name_uno_dict
 
     @property
-    def my_uno(self) -> pd.DataFrame:
+    def my_uno(self) -> str:
+        """Returns the user uno value"""
         return self._my_uno
 
     @property
     def our_df(self) -> pd.DataFrame:
+        """Returns a DataFrame of all data related to player and there teammates"""
         return self._our_df
 
     @property
     def other_df(self) -> pd.DataFrame:
+        """Returns a DataFrame of all data related to other teams in a lobby"""
         return self._other_df
 
     @property
     def hacker_df(self) -> pd.DataFrame:
+        """If a hacker DataFrame is provided, will return just the hacker DataFrame"""
         return self._hacker_df
 
     @property
-    def name_uno_dict_hacker(self) -> pd.DataFrame:
+    def name_uno_dict_hacker(self) -> dict:
+        """If a hacker DataFrame is provided, will return the gamertags: unos for the hacker DataFrame"""
         return self._name_uno_dict_hacker
 
     @property
-    def user(self) -> pd.DataFrame:
+    def user(self) -> User:
+        """Returns a User class object of related info to the user"""
         return self._User
 
     @property
-    def squad(self) -> pd.DataFrame:
+    def squad(self) -> Squad:
+        """Returns a Squad class object of stats related to the user squad mates"""
         return self._Squad

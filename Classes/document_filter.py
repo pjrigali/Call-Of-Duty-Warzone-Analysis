@@ -5,7 +5,37 @@ import pandas as pd
 
 @dataclass
 class DocumentFilter:
+    """
+    Get a selection from a DataFrame.
 
+    Uses a set of filters to return a desired set of data to be used in later analysis.
+
+    Parameters
+    ----------
+    original_df : pd.DataFrame
+        Input DataFrame to be filtered.
+    map_choice : str, default is None
+        Map filter. Either 'mp_e' for Rebirth and 'mp_d' for Verdansk.
+    mode_choice : str, default is None
+        Mode filter. Either 'solo', 'duo', 'trio', or 'quad'.
+    username : str, default is None
+        Filter by a players username. Can cause errors if same username as another player.
+    uno : str, default is None
+        Filter by a players uno.
+    username_dic : dict, default is None
+        Required if 'username' or 'username_lst' is used. {username1: uno1, username2: uno2, etc}.
+    username_lst : List[str], default is None
+        Filter using a list of usernames.
+
+    Examples
+    --------
+
+    >>> from Classes.document_filter import DocumentFilter
+    >>> doc = DocumentFilter(original_df=cod.our_df, map_choice='mp_e', mode_choice='quad')
+
+    This will return any data with map = rebirth and mode = Quads.
+    By specifiying 'cod.our_df', this will only return data related to the user.
+    """
     def __init__(self,
                  original_df: pd.DataFrame,
                  map_choice: Optional[str] = None,
@@ -51,32 +81,40 @@ class DocumentFilter:
 
     @property
     def df(self) -> pd.DataFrame:
+        """Returns the filtered DataFrame"""
         return self._df
 
     @property
     def map_choice(self) -> Optional[str]:
+        """Returns the map used to filter"""
         return self._map
 
     @property
     def mode_choice(self) -> Optional[str]:
+        """Returns the mode used to filter"""
         return self._mode
 
     @property
     def uno(self) -> Optional[str]:
+        """Returns the uno used to filter"""
         return self._uno
 
     @property
     def username(self) -> Optional[str]:
+        """Returns the username used to filter"""
         return self._username
 
     @property
     def username_lst(self) -> Optional[List[str]]:
+        """Returns the username list used to filter"""
         return self._username_lst
 
     @property
     def unique_ids(self) -> Optional[List[str]]:
+        """Returns unique match ids from the filtered DataFrame"""
         return self._unique_id_lst
 
     @property
     def ids(self) -> Optional[List[str]]:
+        """Returns match ids from the filtered DataFrame"""
         return self._id_lst

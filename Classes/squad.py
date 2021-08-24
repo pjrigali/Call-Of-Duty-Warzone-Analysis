@@ -1,6 +1,7 @@
-from typing import List, Optional, Dict
+from typing import List, Dict
 import pandas as pd
 import numpy as np
+from dataclasses import dataclass
 from Classes.document_filter import DocumentFilter
 
 mu_lst = ['headshots', 'kills', 'deaths', 'kdRatio', 'longestStreak', 'scorePerMinute', 'distanceTraveled',
@@ -9,12 +10,14 @@ mu_lst = ['headshots', 'kills', 'deaths', 'kdRatio', 'longestStreak', 'scorePerM
           'objectiveTeamWiped', 'objectiveLastStandKill', 'objectiveBrDownEnemyCircle1',
           'objectiveBrDownEnemyCircle2', 'objectiveBrDownEnemyCircle3', 'objectiveBrDownEnemyCircle4',
           'objectiveBrDownEnemyCircle5', 'objectiveBrDownEnemyCircle6', 'placementPercent', 'headshotRatio']
+"""A list of columns to compute the mean for"""
 
 sum_lst = ['headshots', 'kills', 'deaths', 'distanceTraveled', 'damageDone', 'damageTaken', 'missionsComplete',
            'timePlayed', 'objectiveBrCacheOpen', 'objectiveBrKioskBuy', 'objectiveBrMissionPickupTablet',
            'objectiveLastStandKill', 'objectiveReviver', 'objectiveTeamWiped', 'objectiveLastStandKill',
            'objectiveBrDownEnemyCircle1', 'objectiveBrDownEnemyCircle2', 'objectiveBrDownEnemyCircle3',
            'objectiveBrDownEnemyCircle4', 'objectiveBrDownEnemyCircle5', 'objectiveBrDownEnemyCircle6']
+"""A list of columns to compute the sum for"""
 
 max_lst = ['headshots', 'kills', 'deaths', 'distanceTraveled', 'damageDone', 'damageTaken', 'missionsComplete',
            'timePlayed', 'objectiveBrCacheOpen', 'objectiveBrKioskBuy', 'objectiveBrMissionPickupTablet',
@@ -22,11 +25,14 @@ max_lst = ['headshots', 'kills', 'deaths', 'distanceTraveled', 'damageDone', 'da
            'objectiveBrDownEnemyCircle1', 'objectiveBrDownEnemyCircle2', 'objectiveBrDownEnemyCircle3',
            'objectiveBrDownEnemyCircle4', 'objectiveBrDownEnemyCircle5', 'objectiveBrDownEnemyCircle6', 'kdRatio',
            'headshotRatio']
+"""A list of columns to compute the max for"""
 
 lst_dic = {'mu': mu_lst, 'sum': sum_lst, 'max': max_lst}
 
 
 def _get_stats(doc_filter: DocumentFilter) -> Dict[str, float]:
+    """Calculates the stats for a given DocumentFilter"""
+
     df = doc_filter.df.fillna(0)
     stats_dic = {'game_count': len(df), 'win_count': len(df[df['teamPlacement'] == 1]), 'win_percent': 0.0}
     if stats_dic['win_count'] != 0:
@@ -60,7 +66,9 @@ def _get_stats(doc_filter: DocumentFilter) -> Dict[str, float]:
     return {str(i): float(stats_dic[i]) for i in stats_dic.keys()}
 
 
+@dataclass
 class Performance:
+    """The Performance class is used to evaluate a players performance on a given map and mode"""
 
     original_df: pd.DataFrame
     map_choice: str
@@ -80,18 +88,23 @@ class Performance:
 
     @property
     def map(self) -> str:
+        """Returns the map selected"""
         return self._map
 
     @property
     def mode(self) -> str:
+        """Returns the mode selected"""
         return self._mode
 
     @property
     def stats(self) -> dict:
+        """Returns a dict of stats"""
         return self._stats
 
 
 def _get_stats_per_map(map_choice: str, original_df: pd.DataFrame, uno: str) -> Dict[str, Performance]:
+    """Calculates the stats for all modes on a given map"""
+
     mode_lst = ['solo', 'duo', 'trio', 'quad']
     return {_mode: Performance(original_df=original_df,
                                map_choice=map_choice,
@@ -99,7 +112,9 @@ def _get_stats_per_map(map_choice: str, original_df: pd.DataFrame, uno: str) -> 
                                uno=uno) for _mode in mode_lst}
 
 
+@dataclass
 class Person:
+    """The Person class is used to gather all map/mode stats for a given player"""
 
     original_df: pd.DataFrame
     uno: str
@@ -115,24 +130,51 @@ class Person:
         return self.gamertag
 
     @property
-    def gamertag(self):
+    def gamertag(self) -> str:
+        """Returns player gamertag"""
         return self._gamertag
 
     @property
-    def uno(self):
+    def uno(self) -> str:
+        """Returns player uno"""
         return self._uno
 
     @property
-    def rebirth(self):
+    def rebirth(self) -> dict:
+        """Returns a dict of all mode stats for Rebirth"""
         return self._rebirth_stats
 
     @property
     def verdansk(self):
+        """Returns a dict of all mode stats for Verdansk"""
         return self._verdansk_stats
 
 
+@dataclass
 class Squad:
+    """
+    Calculate stats for all maps/modes for each squad memeber.
 
+    Parameters
+    ----------
+    squad_lst : List[str]
+        List of gamertags. Include your gamertag in the list.
+    original_df : pd.DataFrame
+        Orginal DataFrame for stats to be calculated from.
+    uno_name_dic : dict
+        A dict of all gamertags and respective unos.
+
+    Examples
+    --------
+
+    >>> from credentials import user_inputs
+    >>> from Classes.user import User
+    >>> from Classes.squad import Squad
+    >>> _User = User(info=user_inputs)
+    >>> _Squad = Squad(squad_lst=_User.squad, original_df=cod.our_df, uno_name_dic=cod.name_uno_dict)
+
+    This will calculate and return the stats for all squad memebers.
+    """
     squad_lst: List[str]
     original_df: pd.DataFrame
     uno_name_dic: Dict[str, str]
@@ -159,8 +201,10 @@ class Squad:
 
     @property
     def squad_dic(self) -> Dict[str, Person]:
+        """Returns the dict of results"""
         return self._squad_stats
 
     @property
     def squad_df(self) -> pd.DataFrame:
+        """Returns the dict of results in DataFrame format"""
         return self._squad_df

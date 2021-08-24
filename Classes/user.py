@@ -5,18 +5,50 @@ from credentials import user_inputs
 
 @dataclass
 class User:
+    """
+    Organizes the Users input data.
+
+    Parameters
+    ----------
+    info : dict
+        User input dict.
+
+    Examples
+    --------
+
+    >>> from Classes.user import User
+    >>> from credentials import user_inputs
+    >>> user = User(info=user_input)
+
+    """
 
     _file_name: str
+    """File name of users data"""
+
     _repo: str
+    """Directory location of data"""
+
     _gamertag: str
+    """Users gamertag"""
+
     _squad: List[str]
+    """List of gamertags"""
 
     # Need for Scraping
     headers: Optional[dict]
+    """Headers from local machine"""
+
     CodTrackerID: Optional[str]
+    """Cod Tracker ID for the user"""
+
     USERNAME: Optional[str]
+    """Username for login to Cod Tracker"""
+
     PASSWORD: Optional[str]
+    """Password for login to Cod Tracker"""
+
     DRIVER_PATH: Optional[str]
+    """Driver path used for Selenium scraping"""
 
     def __init__(self, info: dict = None):
 
@@ -74,16 +106,20 @@ class User:
 
     @property
     def file_name(self) -> str:
+        """Returns the file name of the users data"""
         return self._file_name
 
     @property
     def repo(self) -> str:
+        """Returns the directory location of the users data"""
         return self._repo
 
     @property
     def gamertag(self) -> str:
+        """Returns the users gamertag"""
         return self._gamertag
 
     @property
     def squad(self) -> List[str]:
+        """Returns the users squad gamertags as a list"""
         return self._squad
