@@ -6,44 +6,54 @@ import datetime
 
 def evaluate_df(file_name: str, repo: str) -> pd.DataFrame:
     df = pd.read_csv(repo + file_name, index_col='Unnamed: 0').drop_duplicates(keep='first')
+
+    # Create startDateTime
     start_time_utc_lst = list(df['utcStartSeconds'])
-    df['startDateTime'] = [datetime.datetime.utcfromtimestamp(i) for i in start_time_utc_lst]
+    df['startDateTime'] = [datetime.datetime.fromtimestamp(i) for i in start_time_utc_lst]
+
+    # Create endDateTime
     end_time_utc_lst = list(df['utcEndSeconds'])
-    df['endDateTime'] = [datetime.datetime.utcfromtimestamp(i) for i in end_time_utc_lst]
+    df['endDateTime'] = [datetime.datetime.fromtimestamp(i) for i in end_time_utc_lst]
+
+    # Create weekday column
     day_dic = {0: 'Monday', 1: 'Tuesday', 2: 'Wednesday', 3: 'Thursday', 4: 'Friday', 5: 'Saturday', 6: 'Sunday'}
     start_time_timestamp_lst = list(df['startDateTime'])
     df['weekDay'] = [day_dic[i.weekday()] for i in start_time_timestamp_lst]
-    star_date_time_lst = list(df['startDateTime'])
-    df['startDate'] = [datetime.datetime.strftime(i, '%Y-%m-%d') for i in star_date_time_lst]
-    df['startTime'] = [datetime.datetime.strftime(i, '%H:%M:%S') for i in star_date_time_lst]
+
+    # Create startDate and startTime columns
+    df['startDate'] = [datetime.datetime.strftime(i, '%Y-%m-%d') for i in start_time_timestamp_lst]
+    df['startTime'] = [datetime.datetime.strftime(i, '%H:%M:%S') for i in start_time_timestamp_lst]
+
+    # Create placementPercent column
     df['placementPercent'] = (1 - df['teamPlacement'] / df['teamCount']).round(2)
 
+    # Calculate headshot ratio
     headshot_lst = list(df['headshots'])
     kill_lst = list(df['kills'])
     ran = range(len(df))
-    headshot_ratio_lst = []
-    for ind in ran:
-        if headshot_lst[ind] == 0 or kill_lst[ind] == 0:
-            headshot_ratio_lst.append(0.0)
-        else:
-            headshot_ratio_lst.append(headshot_lst[ind] / kill_lst[ind])
-    df['headshotRatio'] = headshot_ratio_lst
+    hs_r = [0.0 if headshot_lst[ind] == 0 or kill_lst[ind] == 0 else headshot_lst[ind] / kill_lst[ind] for ind in ran]
+    df['headshotRatio'] = hs_r
 
+    # Update map column for Verdansk and Rebirth (mp_d or mp_e)
     map_lst = list(df['map'])
     df['map'] = ['mp_e' if 'mp_e' in i else 'mp_d' for i in map_lst]
+
     # Fix Blown out Damage Taken
     large_damage_taken = list(df[df['damageTaken'] > 100000].index)
     for i in large_damage_taken:
         df.loc[i, 'damageTaken'] = df.loc[i, 'damageDone']
-    # Convert to Strings, not sure if necessary
+
+    # Convert columns to str
     weapon_col_lst = [i for i in df.columns if ('primaryWeapon_' in i) | ('secondaryWeapon_' in i)]
     cols_lst = ['map', 'mode', 'team', 'username', 'uno', 'matchID'] + weapon_col_lst
     for col in cols_lst:
         temp_col_lst = list(df[col])
         df[col] = [str(i) for i in temp_col_lst]
 
+    # Update mode column
+    mode_lst = list(df['mode'])
     temp_lst = []
-    for val in df['mode']:
+    for val in mode_lst:
         if 'quad' in val:
             temp_lst.append('quad')
         elif 'trio' in val:
@@ -64,14 +74,8 @@ def get_match_id_set(data: pd.DataFrame) -> dict:
     return {i.split('-splitpoint-')[1]: i.split('-splitpoint-')[0] for i in comb_set}
 
 
-def get_our_and_other_df(data: pd.DataFrame, _my_uno: str, name_uno_dict: dict, squad_name_lst: List[str]):
-    base_lst = data['matchID'] + '-splitpoint-' + data['team']
-    base_our_lst = data[data['uno'] == _my_uno]['matchID'] + '-splitpoint-' + data[data['uno'] == _my_uno]['team']
-    our_lst = {i: True for i in base_our_lst}
-    comb_dic = {i: True for i, j in enumerate(base_lst) if j in our_lst}
-    other = [i for i in data.index if i not in comb_dic]
-    our_df, other_df = data.iloc[list(comb_dic.keys())].copy(), data.iloc[other].copy()
-
+def _get_hacker_probability(our_df: pd.DataFrame, other_df: pd.DataFrame, name_uno_dict: dict,
+                            squad_name_lst: List[str]) -> list:
     col_lst = ['headshots', 'kills', 'deaths', 'kdRatio', 'scorePerMinute', 'distanceTraveled',
                'objectiveBrKioskBuy', 'percentTimeMoving', 'longestStreak', 'damageDone', 'damageTaken',
                'missionsComplete', 'objectiveLastStandKill', 'objectiveBrDownEnemyCircle1',
@@ -122,8 +126,18 @@ def get_our_and_other_df(data: pd.DataFrame, _my_uno: str, name_uno_dict: dict, 
                         dic[key].append(1)
                     else:
                         dic[key].append(0)
+    dic_values_lst = list(dic.values())
+    return [np.mean(np.nan_to_num(i)) for i in dic_values_lst]
 
+
+def get_our_and_other_df(data: pd.DataFrame, _my_uno: str, name_uno_dict: dict, squad_name_lst: List[str]):
+    base_lst = data['matchID'] + '-splitpoint-' + data['team']
+    base_our_lst = data[data['uno'] == _my_uno]['matchID'] + '-splitpoint-' + data[data['uno'] == _my_uno]['team']
+    our_lst = {i: True for i in base_our_lst}
+    comb_dic = {i: True for i, j in enumerate(base_lst) if j in our_lst}
+    other = [i for i in data.index if i not in comb_dic]
+    our_df, other_df = data.iloc[list(comb_dic.keys())].copy(), data.iloc[other].copy()
     our_df['hackerProb'] = 0.0
-    other_df['hackerProb'] = [np.mean(np.nan_to_num(i)) for i in dic.values()]
-
+    other_df['hackerProb'] = _get_hacker_probability(our_df=our_df, other_df=other_df, name_uno_dict=name_uno_dict,
+                                                     squad_name_lst=squad_name_lst)
     return our_df, other_df
