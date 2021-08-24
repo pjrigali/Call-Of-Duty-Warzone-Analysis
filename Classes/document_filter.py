@@ -79,6 +79,9 @@ class DocumentFilter:
         self._uno = uno
         self._username_lst = username_lst
 
+    def __repr__(self):
+        return 'DocumentFilter'
+
     @property
     def df(self) -> pd.DataFrame:
         """Returns the filtered DataFrame"""
