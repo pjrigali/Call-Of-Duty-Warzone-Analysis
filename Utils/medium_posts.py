@@ -1,25 +1,21 @@
+from typing import List
 import pandas as pd
 import numpy as np
 import datetime
-import time
-from typing import List
 import matplotlib.pyplot as plt
-
+from Classes.document_filter import DocumentFilter
 from Utils.base import running_mean, cumulative_mean, normalize
 
 
-def find_hackers_from_hacker_df(data: pd.DataFrame,
-                                our_data: pd.DataFrame,
-                                username_dic: dict,
-                                squad_lst: List[str]) -> pd.DataFrame:
-
+def find_hackers_from_hacker_df(hacker_doc_filter: DocumentFilter, our_doc_filter: DocumentFilter) -> pd.DataFrame:
+    our_data = our_doc_filter.df
+    data = hacker_doc_filter.df
     col_lst = ['headshots', 'kills', 'deaths', 'kdRatio', 'scorePerMinute', 'distanceTraveled',
                'objectiveBrKioskBuy', 'percentTimeMoving', 'longestStreak', 'damageDone', 'damageTaken',
                'missionsComplete', 'objectiveLastStandKill', 'objectiveBrDownEnemyCircle1',
                'objectiveBrDownEnemyCircle2', 'objectiveBrDownEnemyCircle3', 'objectiveBrDownEnemyCircle4',
                'objectiveBrDownEnemyCircle5', 'objectiveBrDownEnemyCircle6', 'objectiveTeamWiped', 'objectiveReviver',
                'objectiveMunitionsBoxTeammateUsed', 'objectiveBrCacheOpen', 'objectiveMedalScoreKillSsRadarDrone']
-
     whole_df = pd.DataFrame()
     hacker_data_dic = {}
     our_data_dic = {}
@@ -53,7 +49,7 @@ def find_hackers_from_hacker_df(data: pd.DataFrame,
         temp_df['headshotRatio'] = temp_df['headshots'] / temp_df['kills']
         hacker_data_dic[_map] = temp_df
 
-        our_name_uno_dic = {_name: username_dic[_name] for _name in squad_lst}
+        our_name_uno_dic = {_name: our_doc_filter.username_dic[_name] for _name in our_doc_filter.username_lst}
         dic = {}
         for _name in our_name_uno_dic.keys():
             temp = our_data_n[our_data_n['uno'] == our_name_uno_dic[_name]].fillna(0.0)
@@ -118,18 +114,13 @@ def find_hackers_from_hacker_df(data: pd.DataFrame,
     return whole_df
 
 
-def deaths_per_circle(data: pd.DataFrame,
-                      _map: str,
-                      _mode: str) -> pd.DataFrame:
-
-    data_n = data[data['map'] == _map].reset_index(drop=True)
-    data_n = data_n.iloc[[i for i, j in enumerate(list(data_n['mode'])) if _mode in str(j)]]
-    match_id_set = set(data_n['matchID'])
+def deaths_per_circle(doc_filter: DocumentFilter) -> pd.DataFrame:
+    data = doc_filter.df
     circle_lst = ['objectiveBrDownEnemyCircle1', 'objectiveBrDownEnemyCircle2', 'objectiveBrDownEnemyCircle3',
                   'objectiveBrDownEnemyCircle4', 'objectiveBrDownEnemyCircle5', 'objectiveBrDownEnemyCircle6']
     lst = []
-    for id in match_id_set:
-        temp_df = data_n[data_n['matchID'] == id].fillna(0.0)
+    for _id in doc_filter.unique_ids:
+        temp_df = data[data['matchID'] == _id].fillna(0.0)
         # temp_dic = {circle: temp_df[circle].sum() for circle in circle_lst}
         temp_dic = {'kills': temp_df['kills'].sum(),
                     'deaths': temp_df['deaths'].sum(),
@@ -140,7 +131,7 @@ def deaths_per_circle(data: pd.DataFrame,
             temp_dic[circle] = val
             down_count.append(val)
 
-        if _map == 'mp_d':
+        if doc_filter.map_choice == 'mp_d':
             if sum(down_count) < 100:
                 continue
             else:
@@ -153,7 +144,6 @@ def deaths_per_circle(data: pd.DataFrame,
     t = pd.DataFrame(lst, columns=['kills', 'deaths', 'playerCount'] + circle_lst)
 
     mu_playercount = round(t['playerCount'].mean(), 0)
-
     down_total_lst = []
     percent_revive_lst = []
     for row in range(len(t)):
@@ -162,7 +152,7 @@ def deaths_per_circle(data: pd.DataFrame,
         for circle in circle_lst:
             down_total.append(temp[circle])
         down_total_lst.append(np.sum(down_total))
-        if _map == 'mp_d':
+        if doc_filter.map_choice == 'mp_d':
             percent_revive_lst.append(np.sum(down_total) / temp['deaths'])
         else:
             percent_revive_lst.append(temp['deaths'] / np.sum(down_total))
@@ -171,14 +161,14 @@ def deaths_per_circle(data: pd.DataFrame,
     mu_downs = np.mean(down_total_lst)
     mu_not_percent_revived = np.mean(percent_revive_lst)
 
-    if _map == 'mp_d':
+    if doc_filter.map_choice == 'mp_d':
         for circle in circle_lst:
             t[circle + '_percent'] = t[circle] / t['deaths']
     else:
         for circle in circle_lst:
             t[circle+'_percent'] = (t[circle] * t['percent_down_die']) / t['deaths']
 
-    if _map == 'mp_d':
+    if doc_filter.map_choice == 'mp_d':
         final_dic = {'mu_playerCount': mu_playercount,
                      'mu_deaths_per_match': mu_downs}
         for circle in circle_lst:
@@ -192,7 +182,6 @@ def deaths_per_circle(data: pd.DataFrame,
                 final_dic[circle + '_kill_std'] = t[circle + '_percent'].std(ddof=1) * mu_playercount
             else:
                 final_dic[circle + '_kill_std'] = t[circle + '_percent'].std(ddof=1) * mu_playercount
-
     else:
         final_dic = {'mu_playerCount': mu_playercount,
                      'mu_downs_per_match': mu_downs,
@@ -202,12 +191,11 @@ def deaths_per_circle(data: pd.DataFrame,
 
         for circle in circle_lst:
             final_dic[circle + '_kill_std'] = t[circle + '_percent'].std(ddof=1) * mu_playercount
-
     return pd.DataFrame.from_dict(final_dic, orient='index', columns=['Deaths Per Circle']).round(1)
 
 
-def engagement_mm(data: pd.DataFrame) -> pd.DataFrame:
-
+def engagement_mm(doc_filter: DocumentFilter) -> pd.DataFrame:
+    data = doc_filter.df
     start_lst = list(data['startDateTime'])
     end_lst = list(data['endDateTime'])
     time_lst = list(data['timePlayed'])
@@ -288,12 +276,13 @@ def engagement_mm(data: pd.DataFrame) -> pd.DataFrame:
     return final_df
 
 
-def hackers_overtime(data: pd.DataFrame):
-    lst = [np.mean(data[data['matchID'] == i]['hackerProb']) for i in data['matchID'].unique()]
-    lst_ind = [list(data[data['matchID'] == i]['startDateTime'])[0] for i in data['matchID'].unique()]
-
+def hackers_overtime(doc_filter: DocumentFilter):
+    data = doc_filter.df
+    unique_match_ids = doc_filter.unique_ids
+    lst = [np.mean(data[data['matchID'] == i]['hackerProb']) for i in unique_match_ids]
+    lst_ind = [list(data[data['matchID'] == i]['startDateTime'])[0] for i in unique_match_ids]
     arr = np.array(lst)
-    cm = cum_mean(arr)
+    cm = cumulative_mean(arr)
     rn = running_mean(arr, 50)
 
     if data.iloc[0]['map'] == 'mp_d':
@@ -324,8 +313,8 @@ def hackers_overtime(data: pd.DataFrame):
     return
 
 
-def squad_effect(data: pd.DataFrame, username: str, username_dic: dict):
-
+def squad_effect(doc_filter: DocumentFilter, username: str, username_dic: dict):
+    data = doc_filter.df
     col_lst = ['headshots', 'kills', 'deaths', 'kdRatio', 'scorePerMinute', 'distanceTraveled',
                'objectiveBrKioskBuy', 'percentTimeMoving', 'longestStreak', 'damageDone', 'damageTaken',
                'missionsComplete', 'objectiveLastStandKill', 'objectiveBrDownEnemyCircle1',
@@ -333,7 +322,6 @@ def squad_effect(data: pd.DataFrame, username: str, username_dic: dict):
                'objectiveBrDownEnemyCircle5', 'objectiveBrDownEnemyCircle6', 'objectiveTeamWiped', 'objectiveReviver',
                'objectiveMunitionsBoxTeammateUsed', 'objectiveBrCacheOpen', 'objectiveMedalScoreKillSsRadarDrone',
                'placementPercent']
-
     squad_uno_lst = list(data['uno'].unique())
     user_uno = username_dic[username]
     name_dic = {}
