@@ -101,6 +101,9 @@ class User:
         else:
             self.DRIVER_PATH = info['driverpath']
 
+        if self._gamertag not in self._squad:
+            self._squad = [self._gamertag] + self._squad
+
     def __repr__(self):
         return self.gamertag
 
