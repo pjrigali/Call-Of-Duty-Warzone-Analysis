@@ -245,9 +245,6 @@ def engagement_mm(doc_filter: DocumentFilter) -> pd.DataFrame:
     final_df['x_normalized'] = normalize(np.array(final_df['playtime_sum']))
     # x = normalize(np.array(final_df['playtime_sum']))
 
-    import statsmodels.api as sm
-    import matplotlib.pyplot as plt
-
     from statsmodels.graphics.gofplots import qqplot
     qqplot(final_df['x_normalized'], line='s')
     plt.show()
@@ -256,6 +253,7 @@ def engagement_mm(doc_filter: DocumentFilter) -> pd.DataFrame:
     stat, p = shapiro(final_df['x_normalized'])
     print('Statistics=%.3f, p=%.3f' % (stat, p))
 
+    import statsmodels.api as sm
     X = sm.add_constant(final_df['x_normalized'])
     y = final_df['final_placement']
     model = sm.OLS(y, X)
@@ -272,7 +270,6 @@ def engagement_mm(doc_filter: DocumentFilter) -> pd.DataFrame:
     plt.plot(x, m * x + b, color='tab:orange')
     plt.grid(linewidth=1, linestyle=(0, (5, 5)), alpha=.75)
     plt.show()
-
     return final_df
 
 
@@ -353,6 +350,4 @@ def squad_effect(doc_filter: DocumentFilter, username: str, username_dic: dict):
     plt.axhline(user_placment - user_placment_std, c='red', linestyle=(0, (4, 4)), alpha=0.25)
     ax.grid(linewidth=1, linestyle=(0, (5, 5)), alpha=0.75)
     plt.show()
-
     return
-
