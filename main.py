@@ -24,7 +24,7 @@ pd.set_option('display.max_columns', None)
 
 if __name__ == '__main__':
     start_timen = time.time()
-    cod = CallofDuty(hacker_data=False, squad_data=True)
+    cod = CallofDuty(hacker_data=False, squad_data=True, streamer_mode=True)
     print(''), print('Cod Built'), print("--- %s seconds ---" % round((time.time() - start_timen), 2))
 
     doc = DocumentFilter(original_df=cod.our_df, map_choice='mp_e', mode_choice='quad')

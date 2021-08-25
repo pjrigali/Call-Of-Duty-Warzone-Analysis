@@ -2,6 +2,41 @@ from typing import List
 import pandas as pd
 import numpy as np
 import datetime
+from Classes.user import User
+from Classes.squad import Squad
+
+
+def _sm_whole(_user_class: User, data: pd.DataFrame) -> None:
+    count = 1
+    length = (20 - len(str(len(_user_class.squad))))
+    temp_username_lst, temp_uno_lst = list(data['username']), list(data['uno'])
+    for i in _user_class.squad:
+        # Correct Gamertag
+        gamertag_val = 'friend_gamertag_' + str(count)
+        temp_username_lst = [gamertag_val if i == j else j for j in temp_username_lst]
+        # Correct Uno
+        target_uno = list(data[data['username'] == i]['uno'])[0]
+        uno_val = '0' * length + str(count)
+        temp_uno_lst = [uno_val if target_uno == j else j for j in temp_uno_lst]
+        count += 1
+    data['username'] = temp_username_lst
+    data['uno'] = temp_uno_lst
+
+
+def _sm_gamertags(_user: User) -> None:
+    """Hides gamertags"""
+    temp_lst = ['friend_gamertag_' + str(i + 1) for i, j in enumerate(_user.squad)]
+    _user.set_squad(temp_lst)
+    _user.set_gamertag(val=temp_lst[0])
+
+
+def _sm_unos(_user: User, _squad: Squad) -> None:
+    """Hides unos"""
+    length, count = (20 - len(str(len(_user.squad)))), 1
+    for i in _user.squad:
+        val = '0' * length + str(count)
+        _squad.squad_dic[i].set_uno(val=val)
+        count += 1
 
 
 def _evaluate_df(file_name: str, repo: str) -> pd.DataFrame:
