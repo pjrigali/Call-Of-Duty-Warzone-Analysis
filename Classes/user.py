@@ -104,6 +104,12 @@ class User:
         if self._gamertag not in self._squad:
             self._squad = [self._gamertag] + self._squad
 
+    def set_squad(self, lst: List[str]):
+        self._squad = lst
+
+    def set_gamertag(self, val: str):
+        self._gamertag = val
+
     def __repr__(self):
         return self.gamertag
 
