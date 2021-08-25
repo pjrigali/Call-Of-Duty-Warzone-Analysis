@@ -2,7 +2,7 @@ from typing import Union, List
 import numpy as np
 from statsmodels import regression
 from statsmodels.tools import add_constant
-from Classes.documnent_filter import DocumentFilter
+from Classes.document_filter import DocumentFilter
 from dataclasses import dataclass
 
 

@@ -1,34 +1,41 @@
 import pandas as pd
 import numpy as np
 from scipy import stats
-from typing import List, Optional
+from typing import List, Optional, Union
 from Utils.gun_dictionary import gun_dict
 from Utils.outlier import _stack, outlier_hist, outlier_std, outlier_var, outlier_distance, outlier_knn
 from Utils.outlier import outlier_cooks_distance, outlier_regression
 from Classes.document_filter import DocumentFilter
 
 
-def placement_descriptive_stats(our_doc_filter: DocumentFilter, other_doc_filter: DocumentFilter,
-                                col: str) -> pd.DataFrame:
-    _our_data = our_doc_filter.df
-    _other_data = other_doc_filter.df
-    place_dic = {}
-    for i in _our_data['teamPlacement'].unique():
-        place_id_set = set(_our_data[_our_data['teamPlacement'] == i]['matchID'])
-        _mean, _std, _var, _max, _min = [], [], [], [], []
-        for s in place_id_set:
-            d = _other_data[_other_data['matchID'] == s][col].fillna(0)
-            _mean.append(np.mean(d)), _std.append(np.std(d)), _var.append(np.var(d)), _max.append(np.max(d)), _min.append(np.min(d))
-        place_dic[i] = [np.mean(_mean), np.mean(_std), np.mean(_var), np.mean(_max), np.mean(_min), len(place_id_set)]
-    col_lst = ['mean', 'std', 'var', 'max', 'min', 'count']
-    return pd.DataFrame.from_dict(place_dic, orient='index', columns=col_lst).sort_index()
+def first_top5_bottom_stats(doc_filter: DocumentFilter, col_lst: Union[List[str], str]) -> pd.DataFrame:
+    """
+    Calculate mu, std, var, max, min, skew, kurt for all matches depending on teamPlacement.
 
+    The intent is for a map_choice and mode_choice to be fed into the DocumentFilter.
+    Does calculations for all matches, regardless of matchID.
 
-def first_top5_bottom_stats(doc_filter: DocumentFilter, col: str) -> pd.DataFrame:
+    Parameters
+    ----------
+    doc_filter : DocumentFilter
+        A DocumentFilter.
+    col_lst: List[str] or str
+        Column or columns to get stats for.
+
+    Returns
+    ----------
+    pd.DataFrame
+
+    """
+
     data = doc_filter.df
 
-    if col not in data.columns:
-        raise AttributeError('Column given is not in data cols')
+    if type(col_lst) == str:
+        col_lst = [col_lst]
+
+    for col in col_lst:
+        if col not in data.columns:
+            raise AttributeError(col + ' is not in data columns')
 
     if doc_filter.map_choice == 'mp_d':
         num = 10
@@ -37,26 +44,52 @@ def first_top5_bottom_stats(doc_filter: DocumentFilter, col: str) -> pd.DataFram
         num = 5
         cut_off = 'top_5'
 
-    bottom = data[data['teamPlacement'] > num][col]
-    top_five = data[(data['teamPlacement'] <= num) & (data['teamPlacement'] > 1)][col]
-    top_one = data[data['teamPlacement'] == 1][col]
-
-    base_dic = {'mu': [np.mean(top_one), np.mean(top_five), np.mean(bottom)],
-                'std': [np.std(top_one), np.std(top_five), np.std(bottom)],
-                'var': [np.var(top_one), np.var(top_five), np.var(bottom)],
-                'max': [np.max(top_one), np.max(top_five), np.max(bottom)],
-                'min': [np.min(top_one), np.min(top_five), np.min(bottom)]}
-    
-    base_df = pd.DataFrame.from_dict(base_dic, orient='columns')
+    base_df = pd.DataFrame()
+    for col in col_lst:
+        bottom = data[data['teamPlacement'] > num][col]
+        top_five = data[(data['teamPlacement'] <= num) & (data['teamPlacement'] > 1)][col]
+        top_one = data[data['teamPlacement'] == 1][col]
+        base_df[col + '_mu'] = [np.mean(top_one), np.mean(top_five), np.mean(bottom)]
+        base_df[col + '_std'] = [np.std(top_one), np.std(top_five), np.std(bottom)]
+        base_df[col + '_var'] = [np.var(top_one), np.var(top_five), np.var(bottom)]
+        base_df[col + '_max'] = [np.max(top_one), np.max(top_five), np.max(bottom)]
+        base_df[col + '_min'] = [np.min(top_one), np.min(top_five), np.min(bottom)]
+        base_df[col + '_skew'] = [stats.skew(top_one), stats.skew(top_five), stats.skew(bottom)]
+        base_df[col + '_kurt'] = [stats.kurtosis(top_one), stats.kurtosis(top_five), stats.kurtosis(bottom)]
     base_df.index = ['first', cut_off, 'bottom']
     return base_df
 
 
-def bucket(doc_filter: DocumentFilter, placement: List[int], col_lst: List[str]) -> pd.DataFrame:
+def bucket_stats(doc_filter: DocumentFilter, placement: Union[List[int], int],
+                 col_lst: Union[List[str], str]) -> pd.DataFrame:
+    """
+    Calculate mu, std, var, max, min, skew, kurt for all matches depending on teamPlacement.
+
+    The intent is for a map_choice and mode_choice to be fed into the DocumentFilter.
+    Does calculations for all matches, considering of matchID.
+
+    Parameters
+    ----------
+    doc_filter : DocumentFilter
+        A DocumentFilter.
+    placement: List[int] or int
+        teamPlacement value used to filter data. If two int's are provided, will filter within that range.
+        First value should be the lower value. Example [0,6] will return top 5 placements.
+    col_lst: List[str] or str
+        Column or columns to get stats for.
+
+    Returns
+    ----------
+    pd.DataFrame
+
+    """
     data = doc_filter.df
 
-    if placement[0] == placement[1]:
-        data = data[data['teamPlacement'] == placement[0]]
+    if type(col_lst) == str:
+        col_lst = [col_lst]
+
+    if type(placement) == int:
+        data = data[data['teamPlacement'] == placement]
     else:
         data = data[(data['teamPlacement'] < placement[1]) & (data['teamPlacement'] > placement[0])]
 
@@ -78,12 +111,28 @@ def bucket(doc_filter: DocumentFilter, placement: List[int], col_lst: List[str])
             base_dic[col + '_skew'].append(stats.skew(tempn))
             base_dic[col + '_kurt'].append(stats.kurtosis(tempn))
 
-    base_df = pd.DataFrame.from_dict(base_dic, orient='columns')
+    base_df = pd.DataFrame.from_dict(base_dic, orient='columns').fillna(0.0)
     base_df.index = id_lst
     return base_df
 
 
 def previous_next_placement(doc_filter: DocumentFilter) -> pd.DataFrame:
+    """
+    Calculate mu teamPlacement before and after a teamPlacement.
+
+    The intent is for a map_choice and mode_choice to be fed into the DocumentFilter.
+
+    Parameters
+    ----------
+    doc_filter : DocumentFilter
+        A DocumentFilter.
+
+    Returns
+    ----------
+    pd.DataFrame
+
+    """
+
     data = doc_filter.df
     placement_lst = data['teamPlacement'].unique()
     placement_dic = {}
@@ -100,83 +149,32 @@ def previous_next_placement(doc_filter: DocumentFilter) -> pd.DataFrame:
     return pd.DataFrame.from_dict(placement_dic, orient='index', columns=col_lst).sort_index()
 
 
-def weekly_stats(doc_filter: DocumentFilter) -> pd.DataFrame:
-    data = doc_filter.df
-    kills_lst, deaths_lst, top_five_lst, wins_lst, games_lst = [], [], [], [], []
-    kills, deaths, top_fives, wins, games = 0, 0, 0, 0, 0
-    for i, j in enumerate(data['weekDay']):
-        if str(j) == 'Monday':
-            if str(data['weekDay'].iloc[i - 1]) == 'Sunday':
-                kills_lst.append(kills)
-                deaths_lst.append(deaths)
-                top_five_lst.append(top_fives)
-                wins_lst.append(wins)
-                games_lst.append(games)
-                kills, deaths, top_fives, wins, games = 0, 0, 0, 0, 0
-                
-        kills += int(data['kills'].iloc[i])
-        deaths += int(data['deaths'].iloc[i])
-        games += 1
-    
-        placement = data['teamPlacement'].iloc[i]
-        if (placement < 6) & (placement > 1):
-            top_fives += 1
-        if placement == 1:
-            wins += 1
-
-    base_df = pd.DataFrame()
-    base_df['kills'] = kills_lst
-    base_df['deaths'] = deaths_lst
-    base_df['kd'] = base_df['kills'] / base_df['deaths']
-    base_df['games'] = games_lst
-    base_df['top 5s'] = top_five_lst
-    base_df['wins'] = wins_lst
-    base_df['win ratio'] = base_df['wins'] / base_df['games']
-    base_df['kill ratio'] = base_df['kills'] / base_df['games']
-    base_df['death ratio'] = base_df['deaths'] / base_df['games']
-    return base_df
-
-
-def daily_stats(doc_filter: DocumentFilter) -> pd.DataFrame:
-    data = doc_filter.df
-    kills_lst, deaths_lst, top_five_lst, wins_lst, games_lst = [], [], [], [], []
-    kills, deaths, top_fives, wins, games = 0, 0, 0, 0, 0
-    for i, j in enumerate(data['weekDay']):
-        if str(data['weekDay'].iloc[i - 1]) != j:
-            kills_lst.append(kills)
-            deaths_lst.append(deaths)
-            top_five_lst.append(top_fives)
-            wins_lst.append(wins)
-            games_lst.append(games)
-            kills, deaths, top_fives, wins, games = 0, 0, 0, 0, 0
-            
-        kills += int(data['kills'].iloc[i])
-        deaths += int(data['deaths'].iloc[i])
-        games += 1
-        
-        placement = data['teamPlacement'].iloc[i]
-        if (placement < 6) & (placement > 1):
-            top_fives += 1
-        if placement == 1:
-            wins += 1
-    
-    base_df = pd.DataFrame()
-    base_df['kills'] = kills_lst
-    base_df['deaths'] = deaths_lst
-    base_df['kd'] = base_df['kills'] / base_df['deaths']
-    base_df['games'] = games_lst
-    base_df['top 5s'] = top_five_lst
-    base_df['wins'] = wins_lst
-    base_df['win ratio'] = base_df['wins'] / base_df['games']
-    base_df['kill ratio'] = base_df['kills'] / base_df['games']
-    base_df['death ratio'] = base_df['deaths'] / base_df['games']
-    base_df.index = data['startDate'].sort_values().unique()[1:]
-    return base_df.fillna(0.0)
-
-
 def match_difficulty(our_doc_filter: DocumentFilter, other_doc_filter: DocumentFilter,
                      mu_lst: Optional[List[str]] = None, sum_lst: Optional[List[str]] = None,
-                     test: Optional[bool] = None) -> pd.DataFrame:
+                     test: Optional[bool] = False) -> pd.DataFrame:
+    """
+    Calculate the relative match difficulty based on player and player squad stats.
+
+    The intent is for a map_choice and mode_choice to be fed into both DocumentFilter's.
+
+    Parameters
+    ----------
+    our_doc_filter : DocumentFilter
+        A DocumentFilter with squad and player data only.
+    other_doc_filter : DocumentFilter
+        A DocumentFilter with all other players data.
+    mu_lst : List[str]
+        A list of columns to consider the mu.
+    sum_lst : List[str]
+        A list of columns to consider the sum.
+    test : bool
+        If True, will use all columns for the analysis.
+
+    Returns
+    ----------
+    pd.DataFrame
+
+    """
     our_df = our_doc_filter.df
     other_df = other_doc_filter.df
     if test:
@@ -259,7 +257,22 @@ def match_difficulty(our_doc_filter: DocumentFilter, other_doc_filter: DocumentF
         return diff
 
 
-def get_daily_hourly_weekday_stats(doc_filter: DocumentFilter):
+def get_daily_hourly_weekday_stats(doc_filter: DocumentFilter) -> list:
+    """
+    Calculate kills, deaths, wins, top 5s or 10s, match count, and averagePlacement for every day, week, hour.
+
+    The intent is for a map_choice and mode_choice to be fed into the DocumentFilter.
+
+    Parameters
+    ----------
+    doc_filter : DocumentFilter
+        A DocumentFilter.
+
+    Returns
+    ----------
+    pd.DataFrame, pd.DataFrame, pd.DataFrame, dict
+
+    """
     data = doc_filter.df
     hour_index_lst = ['00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00', '08:00', '09:00',
                       '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00',
@@ -290,26 +303,43 @@ def get_daily_hourly_weekday_stats(doc_filter: DocumentFilter):
         else:
             return [0, 0, 0, 0, 0, 0]
 
+    # Daily
     days_lst = data['startDate'].unique()
-    col_lst = ['dailyKills', 'dailyDeaths', 'dailyWins', 'dailyTopFives', 'dailyMatchCount', 'dailyAverageTeamPlacement']
+    if doc_filter.map_choice == 'mp_d':
+        col_lst = ['dailyKills', 'dailyDeaths', 'dailyWins', 'dailyTop10s', 'dailyMatchCount',
+                   'dailyAverageTeamPlacement']
+    else:
+        col_lst = ['dailyKills', 'dailyDeaths', 'dailyWins', 'dailyTop5s', 'dailyMatchCount',
+                   'dailyAverageTeamPlacement']
     days_dic = {day: _stat_calc(df=data[data['startDate'] == day]) for day in days_lst}
     daily_info = pd.DataFrame.from_dict(days_dic, orient='index', columns=col_lst)
     daily_info = daily_info[daily_info['dailyMatchCount'] > 0]
     daily_info['dailyKD'] = (daily_info['dailyKills'] / daily_info['dailyDeaths']).round(2)
     daily_info = daily_info.sort_index()
 
+    # Hourly
     hours = range(24)
     hours_lst = data['startDateTime']
-    col_lst = ['hourlyKills', 'hourlyDeaths', 'hourlyWins', 'hourlyTopFives', 'hourlyMatchCount',
-               'hourlyAverageTeamPlacement']
+    if doc_filter.map_choice == 'mp_d':
+        col_lst = ['hourlyKills', 'hourlyDeaths', 'hourlyWins', 'hourlyTop10s', 'hourlyMatchCount',
+                   'hourlyAverageTeamPlacement']
+    else:
+        col_lst = ['hourlyKills', 'hourlyDeaths', 'hourlyWins', 'hourlyTop5s', 'hourlyMatchCount',
+                   'hourlyAverageTeamPlacement']
+
     hourly_dic = {h: _stat_calc(df=data.iloc[[i for i, j in enumerate(hours_lst) if h == j.hour]]) for h in hours}
     hourly_info = pd.DataFrame.from_dict(hourly_dic, orient='index', columns=col_lst)
     hourly_info['hourlyKD'] = (hourly_info['hourlyKills'] / hourly_info['hourlyDeaths']).fillna(0).round(2)
     hourly_info.index = hour_index_lst
 
+    # Weekly
     weekdays_lst = data['weekDay'].unique()
-    col_lst = ['weekDayKills', 'weekDayDeaths', 'weekDayWins', 'weekDayTopFives', 'weekDayMatchCount',
-               'weekDayAverageTeamPlacement']
+    if doc_filter.map_choice == 'mp_d':
+        col_lst = ['weekDayKills', 'weekDayDeaths', 'weekDayWins', 'weekDayTop10s', 'weekDayMatchCount',
+                   'weekDayAverageTeamPlacement']
+    else:
+        col_lst = ['weekDayKills', 'weekDayDeaths', 'weekDayWins', 'weekDayTop5s', 'weekDayMatchCount',
+                   'weekDayAverageTeamPlacement']
     week_dic = {weekday: _stat_calc(df=data[data['weekDay'] == weekday]) for weekday in weekdays_lst}
     weekday_info = pd.DataFrame.from_dict(week_dic, orient='index', columns=col_lst)
     weekday_info = weekday_info[weekday_info['weekDayMatchCount'] > 0]
@@ -355,6 +385,22 @@ def get_daily_hourly_weekday_stats(doc_filter: DocumentFilter):
 
 
 def get_weapons(doc_filter: DocumentFilter) -> pd.DataFrame:
+    """
+    Calculate the Kills. deaths, assists, headshots, averagePlacement and count for each weapon.
+
+    The intent is for a username to be fed into the DocumentFilter and this will return the information for
+    that specific player.
+
+    Parameters
+    ----------
+    doc_filter : DocumentFilter
+        A DocumentFilter.
+
+    Returns
+    ----------
+    pd.DataFrame
+
+    """
     data = doc_filter.df.fillna(0.0)
     val = sum([1 if 'primaryWeaponAttachement' in col else 0 for col in data.columns])
     col_names = []
@@ -394,17 +440,41 @@ def get_weapons(doc_filter: DocumentFilter) -> pd.DataFrame:
     return base_df
 
 
-def find_hackers(doc_filter: DocumentFilter, y_column: str, col_lst: List[str], std: int = 3) -> np.ndarray:
+def find_hackers(doc_filter: DocumentFilter, y_column: str, col_lst: List[str], std: int = 3) -> List[int]:
+    """
+    Calculate hackers based on various Outlier detection methods.
+
+    The intent is for a map_choice and mode_choice to be fed into the DocumentFilter.
+
+    Parameters
+    ----------
+    doc_filter : DocumentFilter
+        A DocumentFilter.
+    y_column : str
+        A column to consider for Outlier analysis.
+    col_lst : List[str]
+        A list of columns used for Outlier analysis
+    std : int, default is 3.
+        The sta to be considered for as a threshold.
+
+    Returns
+    ----------
+    List[int]
+
+    Returns an index of suspected hackers.
+
+    """
+
     data = doc_filter.df
     y_n = np.array(data[y_column])
     ind = []
     for col in col_lst:
         x_n = np.array(data[col])
         x_y = _stack(x_n, y_n, False)
-        analysis = [list(outlier_var(arr=x_n, _per=0.95, plus=True)),
+        analysis = [list(outlier_var(arr=x_n, per=0.95, plus=True)),
                     list(outlier_std(arr=x_n, _std=std, plus=True)),
                     list(outlier_distance(arr=x_y, _std=std, plus=True)),
-            #         list(outlier_hist(arr=x_n, _per=0.75)),
+            #         list(outlier_hist(arr=x_n, per=0.75)),
             #         list(outlier_knn(arr=x_y, plus=True)),
             #         list(outlier_cooks_distance(arr=x_y, return_df=False)),
             #         list(outlier_regression(arr=x_y, _std=std))
@@ -414,16 +484,42 @@ def find_hackers(doc_filter: DocumentFilter, y_column: str, col_lst: List[str], 
     temp_dict = {i: 0 for i in set(sum(ind, []))}
     for i in sum(ind, []):
         temp_dict[i] += 1
-    ind = np.array([i for i in temp_dict.keys() if temp_dict[i] >= 3 * len(col_lst)])
-    return ind
+    return [i for i in temp_dict.keys() if temp_dict[i] >= 3 * len(col_lst)]
 
 
-def meta_weapons(doc_filter: DocumentFilter, top_5_or_10: bool = False, top_1: bool = False) -> List[pd.DataFrame]:
+def meta_weapons(doc_filter: DocumentFilter, top_5_or_10: Optional[bool] = False, top_1: Optional[bool] = False) -> List[pd.DataFrame]:
+    """
+    Calculate the most popular weapons. Map_choice is required in DocumentFilter if top_5_or_10 or top_1 is True.
+    If Neither top_5_or_10 or top_1 are True, it will calculate based on all team placements.
+
+    This will only include loadouts where all attachment slots are filled. This calculates based on a daily interval.
+
+    Parameters
+    ----------
+    doc_filter : DocumentFilter
+        A DocumentFilter.
+    top_5_or_10 : bool, default is False.
+        If True, will calculate using only the top 5 or 10 place teams.
+    top_1: bool, default is False.
+        If True, will calculate using only the 1st place or winning team.
+
+    Returns
+    ----------
+    List[pd.DataFrame]
+
+    The First DataFrame is filled with dict's {kills: 0, deaths: 0, count: 0}.
+    The Second is the percent of the lobby using.
+    """
+
+    if top_5_or_10 is True or top_1 is True:
+        if doc_filter.map_choice is None:
+            raise AttributeError('Include a map_choice in the DocumentFilter')
+
     data = doc_filter.df
 
     if doc_filter.map_choice == 'mp_d':
         num = 10
-    else:
+    elif doc_filter.map_choice == 'mp_e':
         num = 5
 
     if top_5_or_10:

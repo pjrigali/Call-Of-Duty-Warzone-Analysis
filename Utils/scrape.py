@@ -4,6 +4,22 @@ import pandas as pd
 
 
 def connect_to_api(_id: str):
+    """
+    Connect to Cod API to receive lobby information.
+
+    Parameters
+    ----------
+    _id : str
+        A matchID str.
+
+    Returns
+    ----------
+    Json
+
+    Returns a Json of lobby data related to specified matchID.
+
+    """
+
     url = "https://www.callofduty.com/api/papi-client/crm/cod/v2/title/mw/platform/battle/fullMatch/wz/{}/it".format(
         _id)
     response = requests.request("GET", url, headers={})
@@ -11,6 +27,23 @@ def connect_to_api(_id: str):
 
 
 def clean_api_data(json_object) -> pd.DataFrame:
+    """
+    Takes a Json object related to a matchID and constructs a pd.DataFrame with all relevant information.
+
+    This will need to be saved(or concatenated to an existing csv) and
+    loaded through the _evaulate_df() to work properly in this model.
+
+    Parameters
+    ----------
+    json_object : Json
+        A lobby json.
+
+    Returns
+    ----------
+    pd.DataFrame.
+
+    """
+
     base = []
     for team in json_object:
         player_data = {key: team[key] for key in team.keys() if key not in ['playerStats', 'player']}

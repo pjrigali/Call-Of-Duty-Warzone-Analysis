@@ -7,10 +7,11 @@ from Classes.document_filter import DocumentFilter
 from typing import List, Union, Optional
 from scipy import stats
 from dataclasses import dataclass
+import six
 
 
 def insert_every(L, char, every):
-    '''generates items composed of L-items interweaved with char every-so-many items'''
+    """generates items composed of L-items interweaved with char every-so-many items"""
     for i in range(len(L)):
         yield L[i]
         if (i + 1) % every == 0:
@@ -23,6 +24,7 @@ location = ['best', 'upper right', 'upper left', 'lower left', 'lower right', 'r
 
 @dataclass
 class Line:
+    """Creates a Line Plot"""
 
     def __init__(self,
                  data: pd.DataFrame,
@@ -44,7 +46,7 @@ class Line:
                  title_size: Optional[str] = 'xx-large',
                  grid: Optional[bool] = True,
                  grid_alpha: Optional[float] = 0.75,
-                 grid_dash_sequence: Optional[tuple] = (1, 3),
+                 grid_dash_sequence: Optional[tuple] = (3, 3),
                  grid_lineweight: Optional[float] = 0.5,
                  legend_fontsize: Optional[str] = 'medium',
                  legend_transparency: Optional[float] = 0.75,
@@ -110,6 +112,7 @@ class Line:
 
 @dataclass
 class Scatter:
+    """Creates a Scatter Plot"""
 
     def __init__(self,
                  data: pd.DataFrame,
@@ -134,7 +137,7 @@ class Scatter:
                  title_size: Optional[str] = 'xx-large',
                  grid: Optional[bool] = True,
                  grid_alpha: Optional[float] = 0.75,
-                 grid_dash_sequence: Optional[tuple] = (1, 3),
+                 grid_dash_sequence: Optional[tuple] = (3, 3),
                  grid_lineweight: Optional[float] = 0.5,
                  legend_fontsize: Optional[str] = 'medium',
                  legend_transparency: Optional[float] = 0.75,
@@ -216,6 +219,7 @@ class Scatter:
 
 @dataclass
 class Histogram:
+    """Creates a Histogram Plot"""
 
     def __init__(self,
                  data: pd.DataFrame,
@@ -243,7 +247,7 @@ class Histogram:
                  title_size: Optional[str] = 'xx-large',
                  grid: Optional[bool] = True,
                  grid_alpha: Optional[float] = 0.75,
-                 grid_dash_sequence: Optional[tuple] = (1, 3),
+                 grid_dash_sequence: Optional[tuple] = (3, 3),
                  grid_lineweight: Optional[float] = 0.5,
                  legend_fontsize: Optional[str] = 'medium',
                  legend_transparency: Optional[float] = 0.75,
@@ -304,6 +308,88 @@ class Histogram:
     @property
     def ax(self):
         return self._ax, self._ax1
+
+
+@dataclass
+class Table:
+    """Creates a Table Plot"""
+
+    # import matplotlib
+    # matplotlib.colors.to_rgba(c, alpha=None)
+
+    def __init__(self,
+                 data: pd.DataFrame,
+                 label_lst: Optional[List[str]] = None,
+                 fig_size: Optional[tuple] = (10, 10),
+                 font_size: Optional[str] = 'medium',
+                 col_widths: Optional[float] = 0.30,
+                 row_colors: Optional[str] = None,
+                 header_colors: Optional[str] = None,
+                 edge_color: Optional[str] = 'w',
+                 sequential_cells: Optional[bool] = None,
+                 color_map: Optional[str] = 'Greens',
+                 ):
+        data['index'] = list(data.index)
+
+        if row_colors is None:
+            row_colors = ['#f1f1f2', 'w']
+        if type(row_colors) is str:
+            row_colors = [row_colors, 'w']
+        if header_colors is None:
+            header_colors = ['tab:blue', 'w']
+        if type(header_colors) is str:
+            header_colors = [header_colors, 'w']
+
+        if label_lst is None:
+            lst = list(data.columns)
+            lst.remove('index')
+            label_lst = ['index'] + lst
+        data = data[label_lst]
+        col_widths = [col_widths] * len(label_lst)
+        colours = None
+        if sequential_cells is not None:
+            color_lst = []
+            for col in label_lst:
+                if type(data[col].iloc[0]) != str and col != 'index':
+                    _norm = plt.Normalize(np.min(data[col]) - 1, np.max(data[col]) + 1)
+                    temp = plt.get_cmap(color_map)(_norm(data[col]))
+                elif type(data[col].iloc[0]) == str and col != 'index':
+                    temp = [(1.0, 1.0, 1.0, 1.0), (0.945, 0.945, 0.949, 1.0)] * len(data)
+                else:
+                    temp = [(0.121, 0.466, 0.705, 0.15), (0.121, 0.466, 0.705, 0.30)] * len(data)
+                temp_lst = []
+                for i in range(len(data)):
+                    temp_lst.append(tuple(temp[i]))
+                color_lst.append(temp_lst)
+            colours = np.array(pd.DataFrame(color_lst).T)
+
+        fig, ax = plt.subplots(figsize=fig_size)
+        table = ax.table(cellText=data.values, colLabels=label_lst, colWidths=col_widths, loc='center',
+                         cellLoc='center', cellColours=colours)
+        table.set_fontsize(font_size)
+
+        for k, cell in six.iteritems(table._cells):
+            r, c = k
+            cell.set_edgecolor(edge_color)
+            if r == 0:
+                cell.set_text_props(weight='bold', color=header_colors[1])
+                cell.set_facecolor(header_colors[0])
+            else:
+                if sequential_cells is None:
+                    cell.set_facecolor(row_colors[r % len(row_colors)])
+
+        ax.axis('tight')
+        ax.axis('off')
+        fig.tight_layout()
+
+        self._ax = ax
+
+    def __repr__(self):
+        return 'Table Plot'
+
+    @property
+    def ax(self):
+        return self._ax
 
 
 # @dataclass
@@ -376,35 +462,3 @@ class Histogram:
 #
 #     def __repr__(self):
 #         return 'Bar Chart Plot'
-
-
-# @dataclass
-# class Plot:
-#
-#     def __init__(self,
-#                  doc_filter: DocumentFilter,
-#                  col_lst: Union[str, List[str]],
-#                  line: Optional[bool] = False,
-#                  scat: Optional[bool] = False,
-#                  histo: Optional[bool] = False,
-#                  bar: Optional[bool] = False,
-#                  ):
-#
-#         self._data = doc_filter.df[col_lst]
-#         self._col_lst = col_lst
-#         self._line = line
-#         self._scat = scat
-#         self._histo = histo
-#         self._bar = bar
-#
-#         if self._line:
-#             Line(data=self._data, label_lst=self._col_lst)
-#         if self._scat:
-#             Scatter(data=self._data, label_lst=self._col_lst)
-#         if self._histo:
-#             Histogram(data=self._data)
-#         if self._bar:
-#             BarChart(data=self._data)
-#
-#     def __repr__(self):
-#         return 'Plot'

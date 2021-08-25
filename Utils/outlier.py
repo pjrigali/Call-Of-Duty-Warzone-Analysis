@@ -1,39 +1,108 @@
-from typing import List
+from typing import List, Optional, Union
 import pandas as pd
 import numpy as np
 from yellowbrick.regressor import CooksDistance
 from statsmodels.tools import add_constant
 
 
-def _stack(x: np.array, y: np.array, multi: bool = False) -> np.ndarray:
+def _stack(x_arr: np.ndarray, y_arr: np.ndarray, multi: Optional[bool] = False) -> np.ndarray:
+    """
+    Calculate Centroid from x and y value(s).
+
+    Parameters
+    ----------
+    x_arr : np.ndarray
+        An array to stack.
+    y_arr : np.ndarray
+        An array to stack.
+    multi: bool, default is False.
+        If True, will stack based on multiple x_arr columns.
+
+    Returns
+    ----------
+    np.ndarray
+
+    """
+
     lst = []
     if multi:
-        for i in range((x.shape[1])):
-            lst.append(np.vstack([x[:, i].ravel(), y[:, i].ravel()]).T)
+        for i in range((x_arr.shape[1])):
+            lst.append(np.vstack([x_arr[:, i].ravel(), y_arr[:, i].ravel()]).T)
         return np.array(lst)
     else:
-        lst = np.vstack([x.ravel(), y.ravel()]).T
+        lst = np.vstack([x_arr.ravel(), y_arr.ravel()]).T
     return np.where(np.isnan(lst), 0, lst)
 
 
-def _cent(x: list, y: list) -> List[float]:
-    return [np.sum(x) / len(x), np.sum(y) / len(y)]
+def _cent(x_lst: List[float], y_lst: List[float]) -> List[float]:
+    """
+    Calculate Centroid from x and y value(s).
+
+    Parameters
+    ----------
+    x_lst : List[float]
+        A centroid.
+    y_lst : List[float]
+        A centroid.
+
+    Returns
+    ----------
+    float
+
+    """
+
+    return [np.sum(x_lst) / len(x_lst), np.sum(y_lst) / len(y_lst)]
 
 
-def _dis(cent1: list, cent2: list) -> float:
+def _dis(cent1: List[float], cent2: List[float]) -> float:
+    """
+    Calculate Distance between two centroids.
+
+    Parameters
+    ----------
+    cent1 : List[float]
+        A centroid.
+    cent2 : List[float]
+        A centroid.
+
+    Returns
+    ----------
+    float
+
+    """
+
     return round(np.sqrt((cent1[0] - cent2[0]) ** 2 + (cent1[1] - cent2[1]) ** 2), 4)
 
 
-def outlier_std(arr: np.array = None,
-                data: pd.DataFrame = None,
-                y_column: str = None,
-                _std: int = 3,
-                plus: bool = True) -> np.ndarray:
+def outlier_std(arr: Optional[np.ndarray] = None, data: Optional[pd.DataFrame] = None, y_column: Optional[str] = None,
+                _std: Optional[int] = 3, plus: Optional[bool] = True) -> np.ndarray:
+    """
+    Calculate Outliers using a simple std value.
 
-    if arr is None:
-        arr = np.array(data[y_column].fillna(0).astype(float))
+    Parameters
+    ----------
+    arr : np.ndarray
+        An Array to get data from.
+    data : pd.DataFrame
+        A DataFrame to get data from.
+    y_column : str
+        A target column.
+    _std : int, default is 3.
+        A std threshold.
+    plus : bool, default is True
+        If True, will grab all values above the threshold.
 
-    arr = np.nan_to_num(arr)
+    Returns
+    ----------
+    np.ndarray
+
+    """
+
+    if arr is not None:
+        arr = np.nan_to_num(arr)
+    else:
+        arr = np.nan_to_num(np.array(data[y_column].fillna(0).astype(float)))
+
     if plus:
         arrn = np.mean(arr, axis=0) + np.std(arr, ddof=1) * _std
     else:
@@ -42,18 +111,38 @@ def outlier_std(arr: np.array = None,
     return np.where(arr <= arrn)[0]
 
 
-def outlier_var(arr: np.ndarray = None,
-                data: pd.DataFrame = None,
-                y_column: str = None,
-                _per: float = 0.95,
-                plus: bool = True) -> np.ndarray:
-    if arr is None:
-        arr = np.array(data[y_column].fillna(0).astype(float))
+def outlier_var(arr: Optional[np.ndarray] = None, data: Optional[pd.DataFrame] = None, y_column: Optional[str] = None,
+                per: Optional[float] = 0.95, plus: Optional[bool] = True) -> np.ndarray:
+    """
+    Calculate Outliers using a simple var value.
 
-    arr = np.nan_to_num(arr)
+    Parameters
+    ----------
+    arr : np.ndarray
+        An Array to get data from.
+    data : pd.DataFrame
+        A DataFrame to get data from.
+    y_column : str
+        A target column.
+    per : float, default is 0.95.
+        A percent threshold.
+    plus : bool, default is True
+        If True, will grab all values above the threshold.
+
+    Returns
+    ----------
+    np.ndarray
+
+    """
+
+    if arr is not None:
+        arr = np.nan_to_num(arr)
+    else:
+        arr = np.nan_to_num(np.array(data[y_column].fillna(0).astype(float)))
+
     temp_var = np.var(arr, ddof=1)
     dev_based = [temp_var - np.var(np.delete(arr, i), ddof=1) for i, j in enumerate(arr)]
-    q = np.quantile(dev_based, _per)
+    q = np.quantile(dev_based, per)
 
     if plus:
         ind = np.where(dev_based >= q)[0]
@@ -139,19 +228,40 @@ def outlier_var(arr: np.ndarray = None,
 #
 #     return (x1, x2)
 
-def outlier_regression(arr: np.ndarray = None,
-                       data: pd.DataFrame = None,
-                       x_column: str = None,
-                       y_column: str = None,
-                       _std: int = 3,
-                       plus: bool = True) -> np.ndarray:
+def outlier_regression(arr: Optional[np.ndarray] = None, data: Optional[pd.DataFrame] = None,
+                       x_column: Optional[str] = None, y_column: Optional[str] = None, _std: Optional[int] = 3,
+                       plus: Optional[bool] = True) -> np.ndarray:
+    """
+    Calculate Outliers using regression.
 
-    if arr is None:
+    Parameters
+    ----------
+    arr : np.ndarray
+        An Array to get data from.
+    data : pd.DataFrame
+        A DataFrame to get data from.
+    x_column: str
+        A column for x variables.
+    y_column : str
+        A column for y variables.
+    _std : int, default is 3.
+        A std threshold.
+    plus : bool, default is True
+        If True, will grab all values above the threshold.
+
+    Returns
+    ----------
+    np.ndarray
+
+    """
+
+    if arr is not None:
+        arr = np.nan_to_num(arr)
+    else:
         x_other = np.array(data[x_column].fillna(0).astype(float))
         y_other = np.array(data[y_column].fillna(0).astype(float))
-        arr = _stack(x_other, y_other, False)
+        arr = np.nan_to_num(_stack(x_other, y_other, False))
 
-    arr = np.nan_to_num(arr)
     ran = np.array(range(len(arr)))
     mu_y = np.zeros(len(arr) - 1)
     line_ys = []
@@ -169,7 +279,6 @@ def outlier_regression(arr: np.ndarray = None,
         ind = np.where(reg_based >= threshold)[0]
     else:
         ind = np.where(reg_based >= threshold)[0]
-
     return ind
 
 
@@ -239,29 +348,50 @@ def outlier_regression(arr: np.ndarray = None,
 #
 #     return np.concatenate((n1[0], n2[0]), axis=0)
 
-def outlier_distance(arr: np.ndarray = None,
-                     data: pd.DataFrame = None,
-                     x_column: str = None,
-                     y_column: str = None,
-                     _std: int = 3,
-                     plus: bool = True) -> np.ndarray:
-    if arr is None:
+def outlier_distance(arr: Optional[np.ndarray] = None, data: Optional[pd.DataFrame] = None,
+                     x_column: Optional[str] = None, y_column: Optional[str] = None, _std: Optional[int] = 3,
+                     plus: Optional[bool] = True) -> np.ndarray:
+    """
+    Calculate Outliers using distance measurements.
+
+    Parameters
+    ----------
+    arr : np.ndarray
+        An Array to get data from.
+    data : pd.DataFrame
+        A DataFrame to get data from.
+    x_column: str
+        A column for x variables.
+    y_column : str
+        A column for y variables.
+    _std : int, default is 3.
+        A std threshold.
+    plus : bool, default is True
+        If True, will grab all values above the threshold.
+
+    Returns
+    ----------
+    np.ndarray
+
+    """
+
+    if arr is not None:
+        arr = np.nan_to_num(arr)
+    else:
         x_other = np.array(data[x_column].fillna(0).astype(float))
         y_other = np.array(data[y_column].fillna(0).astype(float))
-        arr = _stack(x_other, y_other, False)
+        arr = np.nan_to_num(_stack(x_other, y_other, False))
 
-    arr = np.nan_to_num(arr)
     length = len(arr)
     cent_other = _cent(arr[:, 0], arr[:, 1])
     ran = range(0, length)
-    x_y_other_centers = [_dis(_cent([arr[i][0]], [arr[i][1]]), cent_other) for i in ran]
+    x_y_other_centers = [_dis(_cent(x_lst=[arr[i][0]], y_lst=[arr[i][1]]), cent_other) for i in ran]
     x_y_other_centers_std = np.std(x_y_other_centers, ddof=1) * _std
 
     if plus:
         ind = np.where(x_y_other_centers >= x_y_other_centers_std)[0]
     else:
         ind = np.where(x_y_other_centers <= x_y_other_centers_std)[0]
-
     return ind
 
 
@@ -307,18 +437,37 @@ def outlier_distance(arr: np.ndarray = None,
 #     return [np.where(data == i)[0][0] for i in data[np.in1d(data, data[~select])]]
 
 
-def outlier_hist(arr: np.ndarray = None,
-                 data: pd.DataFrame = None,
-                 y_column: str = None,
-                 _per: float = 0.75,
-                 plus: bool = True) -> np.ndarray:
+def outlier_hist(arr: Optional[np.ndarray] = None, data: Optional[pd.DataFrame] = None, x_column: Optional[str] = None,
+                 per: Optional[float] = 0.75, plus: Optional[bool] = True) -> np.ndarray:
+    """
+    Calculate Outliers using Histogram.
 
-    if arr is None:
-        arr = np.array(data[y_column].fillna(0).astype(float))
+    Parameters
+    ----------
+    arr : np.ndarray
+        An Array to get data from.
+    data : pd.DataFrame
+        A DataFrame to get data from.
+    x_column : str
+        A target column.
+    per : float, default is 0.75.
+        A percent threshold.
+    plus : bool, default is True
+        If True, will grab all values above the threshold.
 
-    arr = np.nan_to_num(arr)
+    Returns
+    ----------
+    np.ndarray
+
+    """
+
+    if arr is not None:
+        arr = np.nan_to_num(arr)
+    else:
+        arr = np.nan_to_num(np.array(data[x_column].fillna(0).astype(float)))
+
     n, b = np.histogram(arr, bins='sturges')
-    qn = np.quantile(n, _per)
+    qn = np.quantile(n, per)
 
     if plus:
         ind = np.where(n >= qn)[0]
@@ -387,54 +536,93 @@ def outlier_hist(arr: np.ndarray = None,
 #
 #     return getKNN(blank, s, data, out=False)
 
-def outlier_knn(arr: np.ndarray = None,
-                data: pd.DataFrame = None,
-                x_column: str = None,
-                y_column: str = None,
-                _std: int = 3,
-                plus: bool = True) -> np.ndarray:
+def outlier_knn(arr: Optional[np.ndarray] = None, data: Optional[pd.DataFrame] = None, x_column: Optional[str] = None,
+                y_column: Optional[str] = None, _std: Optional[int] = 3, plus: Optional[bool] = True) -> np.ndarray:
+    """
+    Calculate Outliers using KNN.
 
-    if arr is None:
+    Parameters
+    ----------
+    arr : np.ndarray
+        An array to get data from.
+    data : pd.DataFrame
+        A DataFrame to get data from.
+    x_column: str
+        A column for x variables.
+    y_column : str
+        A column for y variables.
+    _std : int, default is 3.
+        A std threshold.
+    plus : bool, default is True
+        If True, will grab all values above the threshold.
+
+    Returns
+    ----------
+    np.ndarray
+
+    """
+
+    if arr is not None:
+        arr = np.nan_to_num(arr)
+    else:
         x_other = np.array(data[x_column].fillna(0).astype(float))
         y_other = np.array(data[y_column].fillna(0).astype(float))
-        arr = _stack(x_other, y_other, False)
+        arr = np.nan_to_num(_stack(x_other, y_other, False))
 
-    arr = np.nan_to_num(arr)
-    threshold = np.mean(arr) + np.std(arr, ddof=1) * _std
-
+    # threshold = np.mean(arr) + np.std(arr, ddof=1) * _std
     length = len(arr)
     ran = range(0, length)
     test_centers = [_cent([arr[ind, 0]], [arr[ind, 1]]) for ind in ran]
-    distances = [_dis(i, j) for i in test_centers for j in test_centers]
-    threshold = np.mean(distances) + np.std(distances, ddof=1) * _std
+    distances = [_dis(cent1=i, cent2=j) for i in test_centers for j in test_centers]
 
+    threshold = np.mean(distances) + np.std(distances, ddof=1) * _std
     if plus:
         count_dic = {i: np.sum(arr[:, i] >= threshold) for i, j in enumerate(arr)}
     else:
         count_dic = {i: np.sum(arr[:, i] <= threshold) for i, j in enumerate(arr)}
 
     threshold = np.floor(np.mean(list(count_dic.values())) - np.std(list(count_dic.values()), ddof=1) * _std)
-
     if plus:
         ind = np.where(np.array(count_dic.keys()) >= threshold)[0]
     else:
         ind = np.where(np.array(count_dic.keys()) <= threshold)[0]
-
     return ind
 
 
-def outlier_cooks_distance(arr: np.ndarray = None,
-                           data: pd.DataFrame = None,
-                           x_column: str = None,
-                           y_column: str = None,
-                           plus: bool = True,
-                           return_df: bool = False) -> pd.DataFrame:
-    if arr is None:
+def outlier_cooks_distance(arr: Optional[np.ndarray] = None, data: Optional[pd.DataFrame] = None,
+                           x_column: Optional[str] = None, y_column: Optional[str] = None, plus: Optional[bool] = True,
+                           return_df: Optional[bool] = False) -> Union[np.ndarray, pd.DataFrame]:
+    """
+    Calculate Outliers using Cooks Distance.
+
+    Parameters
+    ----------
+    arr : np.ndarray
+        A DataFrame to get data from.
+    data : pd.DataFrame
+        A DataFrame to get data from.
+    x_column: str
+        A column for x variables.
+    y_column : str
+        A column for y variables.
+    plus : bool, default is True
+        If True, will grab all values above the threshold.
+    return_df : bool, default is False.
+        If True, will return a DataFrame.
+
+    Returns
+    ----------
+    np.ndarray or pd.DataFrame
+
+    """
+
+    if arr is not None:
+        arr = np.nan_to_num(arr)
+    else:
         x_other = np.array(data[x_column].fillna(0).astype(float))
         y_other = np.array(data[y_column].fillna(0).astype(float))
-        arr = _stack(x_other, y_other, False)
+        arr = np.nan_to_num(_stack(x_other, y_other, False))
 
-    arr = np.nan_to_num(arr)
     result = CooksDistance().fit(add_constant(arr[:, 0]), arr[:, 1])
     distance = result.distance_
 
