@@ -2,10 +2,10 @@ import pandas as pd
 import numpy as np
 from scipy import stats
 from typing import List, Optional, Union
-from Utils.gun_dictionary import gun_dict
-from Utils.outlier import _stack, outlier_hist, outlier_std, outlier_var, outlier_distance, outlier_knn
-from Utils.outlier import outlier_cooks_distance, outlier_regression
-from Classes.document_filter import DocumentFilter
+from gun_dictionary import gun_dict
+from outlier import _stack, outlier_hist, outlier_std, outlier_var, outlier_distance, outlier_knn
+from outlier import outlier_cooks_distance, outlier_regression
+from document_filter import DocumentFilter
 
 
 def first_top5_bottom_stats(doc_filter: DocumentFilter, col_lst: Union[List[str], str]) -> pd.DataFrame:

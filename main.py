@@ -10,15 +10,15 @@ import datetime
 import time
 import matplotlib.pyplot as plt
 
-from Classes.document_filter import DocumentFilter
-from Classes.call_of_duty import CallofDuty
-from Classes.regression import regression
-from Classes.plot import Line, Scatter, Histogram, Table
+from document_filter import DocumentFilter
+from call_of_duty import CallofDuty
+from regression import regression
+from plot import Line, Scatter, Histogram, Table
 
-from Utils.scrape import connect_to_api, clean_api_data
-from Utils.analysis import get_daily_hourly_weekday_stats, first_top5_bottom_stats, bucket_stats
-from Utils.analysis import match_difficulty, get_weapons, find_hackers, meta_weapons, previous_next_placement
-from Utils.plots import personal_plot, lobby_plot, squad_plot
+from scrape import connect_to_api, clean_api_data
+from analysis import get_daily_hourly_weekday_stats, first_top5_bottom_stats, bucket_stats
+from analysis import match_difficulty, get_weapons, find_hackers, meta_weapons, previous_next_placement
+from plots import personal_plot, lobby_plot, squad_plot
 pd.set_option('display.max_columns', None)
 
 

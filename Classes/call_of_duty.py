@@ -1,9 +1,9 @@
 import pandas as pd
 from credentials import user_inputs
-from Classes.user import User
-from Classes.squad import Squad
-from Utils.build import _sm_whole, _sm_gamertags, _evaluate_df, _get_our_and_other_df, _get_match_id_set
-from Utils.gun_dictionary import gun_dict
+from user import User
+from squad import Squad
+from build import _sm_whole, _sm_gamertags, _evaluate_df, _get_our_and_other_df, _get_match_id_set
+from gun_dictionary import gun_dict
 
 
 class CallofDuty:

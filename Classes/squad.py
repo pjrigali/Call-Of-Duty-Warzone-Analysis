@@ -2,7 +2,7 @@ from typing import List, Dict
 import pandas as pd
 import numpy as np
 from dataclasses import dataclass
-from Classes.document_filter import DocumentFilter
+from document_filter import DocumentFilter
 
 mu_lst = ['headshots', 'kills', 'deaths', 'kdRatio', 'longestStreak', 'scorePerMinute', 'distanceTraveled',
           'percentTimeMoving', 'damageDone', 'damageTaken', 'missionsComplete', 'timePlayed', 'objectiveBrCacheOpen',

@@ -3,8 +3,8 @@ import pandas as pd
 import numpy as np
 import datetime
 import matplotlib.pyplot as plt
-from Classes.document_filter import DocumentFilter
-from Utils.base import running_mean, cumulative_mean, normalize
+from document_filter import DocumentFilter
+from base import running_mean, cumulative_mean, normalize
 
 
 def find_hackers_from_hacker_df(hacker_doc_filter: DocumentFilter, our_doc_filter: DocumentFilter) -> pd.DataFrame:

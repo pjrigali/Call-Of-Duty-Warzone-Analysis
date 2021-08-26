@@ -2,8 +2,8 @@ from typing import List
 import pandas as pd
 import numpy as np
 import datetime
-from Classes.user import User
-from Classes.squad import Squad
+from user import User
+from squad import Squad
 
 
 def _sm_whole(_user_class: User, data: pd.DataFrame) -> None:

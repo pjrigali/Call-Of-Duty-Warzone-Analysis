@@ -2,8 +2,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 from scipy.stats import norm
-from Utils.base import normalize, running_mean, cumulative_mean
-from Classes.document_filter import DocumentFilter
+from base import normalize, running_mean, cumulative_mean
+from document_filter import DocumentFilter
 from typing import List, Union, Optional
 from scipy import stats
 from dataclasses import dataclass
