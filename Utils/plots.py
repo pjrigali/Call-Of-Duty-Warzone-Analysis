@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-from typing import List
+from typing import List, Optional
 from scipy.stats import norm
 from Utils.base import normalize, running_mean, cumulative_mean
 from Classes.document_filter import DocumentFilter
@@ -272,8 +272,13 @@ def lobby_plot(doc_filter: DocumentFilter) -> None:
     plt.show()
 
 
-def squad_plot(doc_filter: DocumentFilter, col_lst: List[str]) -> None:
+def squad_plot(doc_filter: DocumentFilter, col_lst: Optional[List[str]] = None) -> None:
     data = doc_filter.df
+
+    if col_lst is None:
+        col_lst = ['kdRatio', 'kills', 'deaths', 'damageDone', 'damageTaken', 'objectiveTeamWiped', 'objectiveReviver',
+                   'missionsComplete']
+
     people_dic = {}
     for i in doc_filter.username_lst:
         temp_df = data[data['uno'] == doc_filter.username_dic[i]]
