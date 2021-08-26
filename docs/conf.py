@@ -24,7 +24,7 @@ copyright = '2021, Peter Rigali'
 author = 'Peter Rigali'
 
 # The full version, including alpha/beta/rc tags
-release = 'v2.1.0'
+release = 'v2.2.0'
 
 
 # -- General configuration ---------------------------------------------------
