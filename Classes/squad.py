@@ -126,6 +126,9 @@ class Person:
         self._rebirth_stats = _get_stats_per_map(map_choice='mp_e', original_df=original_df, uno=uno)
         self._verdansk_stats = _get_stats_per_map(map_choice='mp_d', original_df=original_df, uno=uno)
 
+    def set_uno(self, val: str):
+        self._uno = val
+
     def __repr__(self):
         return self.gamertag
 
