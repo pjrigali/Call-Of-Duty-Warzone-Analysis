@@ -6,6 +6,6 @@ To build, need a credentials.py inside the _Call-Of-Duty-Warzone-Analysis_ direc
 user_inputs = {'repo': 'local data directory',
                'gamertag': 'your gamertag',
                'squad': ['friend gamertag1', 'friend gamertag2', '... etc'],
-               'file_name': 'Personal_Match_Data_v4.csv'}
+               'file_name': 'Personal_Match_Data.csv'}
 ```
 
