@@ -202,7 +202,7 @@ class Squad:
     :param uno_name_dic: A dict of all gamertags and respective unos.
     :type uno_name_dic: dict
     :example:
-        >>> from credentials import user_inputs
+        >>> from warzone.credentials import user_inputs
         >>> from user import User
         >>> from squad import Squad
         >>> _User = User(info=user_inputs)

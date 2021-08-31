@@ -5,20 +5,13 @@ Created on Sat May 15 23:18:06 2021
 @author: Peter
 """
 import pandas as pd
-import numpy as np
-import datetime
 import time
-import matplotlib.pyplot as plt
 
 from document_filter import DocumentFilter
 from call_of_duty import CallofDuty
-from regression import Regression
-from plot import Line, Scatter, Histogram, Table
 
-from scrape import connect_to_api, clean_api_data
-from analysis import get_daily_hourly_weekday_stats, first_top5_bottom_stats, bucket_stats
-from analysis import match_difficulty, get_weapons, find_hackers, meta_weapons, previous_next_placement
-from plots import personal_plot, lobby_plot, squad_plot
+from analysis import get_weapons, meta_weapons
+
 pd.set_option('display.max_columns', None)
 
 

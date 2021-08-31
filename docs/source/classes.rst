@@ -425,7 +425,12 @@ Squad class objects.
     :param uno_name_dic: A dict of all gamertags and respective unos.
     :type uno_name_dic: dict
     :example:
-        >>> from credentials import user_inputs
+        >>> from warzone.credentials import user_inputs
+            >>> from user import User
+            >>> from squad import Squad
+            >>> _User = User(info=user_inputs)
+            >>> _Squad = Squad(squad_lst=_User.squad_lst, original_df=cod.our_df, uno_name_dic=cod.name_uno_dict)
+                >>> from credentials import user_inputs
         >>> from user import User
         >>> from squad import Squad
         >>> _User = User(info=user_inputs)
@@ -452,6 +457,9 @@ User class objects.
     :type info: dict
     :example:
         >>> from user import User
+            >>> from warzone.credentials import user_inputs
+            >>> user = User(info=user_input)
+                >>> from user import User
         >>> from credentials import user_inputs
         >>> user = User(info=user_input)
     :note: *None*

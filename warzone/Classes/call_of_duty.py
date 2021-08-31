@@ -7,7 +7,7 @@ Author:
  Peter Rigali - 2021-08-30
 """
 import pandas as pd
-from credentials import user_inputs
+from warzone.credentials import user_inputs
 from user import User
 from squad import Squad
 from build import sm_whole, sm_gamertags, evaluate_df, get_our_and_other_df, get_match_id_set
@@ -28,7 +28,7 @@ class CallofDuty:
     :param streamer_mode: If True, will hide User inputted Gamertag's and Uno's. default is False. *Optional*
     :type streamer_mode: bool
     :example:
-        >>> from Classes.call_of_duty import CallofDuty
+        >>> from warzone.Classes import CallofDuty
         >>> cod = CallofDuty(hacker_data=False, squad_data=True, streamer_mode=False)
     :note: This will calculate and build the CallofDuty class.
 

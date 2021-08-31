@@ -6,9 +6,9 @@ Usage:
 Author:
  Peter Rigali - 2021-08-30
 """
-from typing import Optional, List
+from typing import List
 from dataclasses import dataclass
-from credentials import user_inputs
+from warzone.credentials import user_inputs
 
 
 @dataclass
@@ -21,7 +21,7 @@ class User:
     :type info: dict
     :example:
         >>> from user import User
-        >>> from credentials import user_inputs
+        >>> from warzone.credentials import user_inputs
         >>> user = User(info=user_input)
     :note: *None*
 
