@@ -18,17 +18,23 @@ CallofDuty
 
     Calculate stats for all maps/modes for each squad member.
 
+    :param user_input_dict: A dict of user inputs.
+    :type user_input_dict: dict
+    :param squad_data: If True, will build the Squad class. default is True. *Optional*
+    :type squad_data: bool
     :param hacker_data: This Requires a seperate csv with hacker data saved. This data can be collected by
         finding hackers after the fact and scraping there data from CodTracker, this can then be used to find
         hackers in other games. Default is False. *Optional*
     :type hacker_data: bool
-    :param squad_data: If True, will build the Squad class. default is True. *Optional*
-    :type squad_data: bool
     :param streamer_mode: If True, will hide User inputted Gamertag's and Uno's. default is False. *Optional*
     :type streamer_mode: bool
     :example:
         >>> from call_of_duty import CallofDuty
-        >>> cod = CallofDuty(hacker_data=False, squad_data=True, streamer_mode=False)
+        >>> inputs = {'repo': 'local data directory',
+        >>>        'gamertag': 'your gamertag',
+        >>>        'squad': ['friend gamertag1', 'friend gamertag2', '... etc'],
+        >>>        'file_name': 'match_data.csv'}
+        >>> cod = CallofDuty(user_input_dict=inputs, squad_data=True, hacker_data=False, streamer_mode=False)
     :note: This will calculate and build the CallofDuty class.
 
 .. autosummary::
@@ -457,12 +463,13 @@ User class objects.
     :type info: dict
     :example:
         >>> from user import User
-            >>> from warzone.credentials import user_inputs
-            >>> user = User(info=user_input)
-                >>> from user import User
-        >>> from credentials import user_inputs
-        >>> user = User(info=user_input)
+        >>> inputs = {'repo': 'local data directory',
+        >>>        'gamertag': 'your gamertag',
+        >>>        'squad': ['friend gamertag1', 'friend gamertag2', '... etc'],
+        >>>        'file_name': 'match_data.csv'}
+        >>> user = User(info=inputs)
     :note: *None*
+
 
 .. autosummary::
     user.User.file_name
