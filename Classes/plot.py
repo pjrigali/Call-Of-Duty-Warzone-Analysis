@@ -233,6 +233,10 @@ class Scatter:
     :type legend_transparency: float
     :param legend_location: legend location, default = 'lower right'. *Optional*
     :type legend_location: str
+    :param compare_two: If given will return a scatter comparing two variables,default is None. *Optional*
+    :type compare_two: List[str]
+    :param y_limit: If given will limit the y axis.
+    :type y_limit: List[float]
     :example: *None*
     :note: *None*
 
@@ -265,6 +269,8 @@ class Scatter:
                  legend_fontsize: Optional[str] = 'medium',
                  legend_transparency: Optional[float] = 0.75,
                  legend_location: Optional[str] = 'lower right',
+                 compare_two: Optional[List[str]] = None,
+                 y_limit: Optional[List[float]] = None
                  ):
 
         if label_lst is None:
@@ -296,6 +302,17 @@ class Scatter:
             data = data[:limit]
 
         x_axis = range(len(data))
+
+        if compare_two:
+            label_lst = [compare_two[1]]
+            x_axis = data[compare_two[0]]
+            if compare_two[0] in normalize_x:
+                x_axis = normalize(x_axis)
+            elif compare_two[0] in running_mean_x:
+                x_axis = running_mean(x_axis, running_mean_value)
+            elif compare_two[0] in cumulative_mean_x:
+                x_axis = cumulative_mean(x_axis)
+
         count = 0
         for ind in label_lst:
 
@@ -317,7 +334,7 @@ class Scatter:
                 else:
                     c = color_lst[count]
 
-                ax.plot(x_axis, slope * x_axis + intercept, color=c, label=ind+'_ols_'+str(round(slope, 2)),
+                ax.plot(x_axis, intercept + slope * x_axis, color=c, label=ind+'_ols_'+str(round(slope, 2)),
                         linestyle='--', linewidth=regression_line_lineweight)
             count += 1
 
@@ -330,6 +347,10 @@ class Scatter:
 
         ax.set_xlabel(xlabel, color=xlabel_color, fontsize=xlabel_size)
         ax.legend(fontsize=legend_fontsize, framealpha=legend_transparency, loc=legend_location, frameon=True)
+
+        if y_limit:
+            ax.set_ylim(bottom=y_limit[0], top=y_limit[1])
+
         self._ax = ax
 
     def __repr__(self):

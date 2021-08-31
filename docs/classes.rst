@@ -27,7 +27,7 @@ CallofDuty
     :param streamer_mode: If True, will hide User inputted Gamertag's and Uno's. default is False. *Optional*
     :type streamer_mode: bool
     :example:
-        >>> from Classes.call_of_duty import CallofDuty
+        >>> from call_of_duty import CallofDuty
         >>> cod = CallofDuty(hacker_data=False, squad_data=True, streamer_mode=False)
     :note: This will calculate and build the CallofDuty class.
 
@@ -217,6 +217,10 @@ Legend location = ['best', 'upper right', 'upper left', 'lower left', 'lower rig
     :type legend_transparency: float
     :param legend_location: legend location, default = 'lower right'. *Optional*
     :type legend_location: str
+    :param compare_two: If given will return a scatter comparing two variables,default is None. *Optional*
+    :type compare_two: List[str]
+    :param y_limit: If given will limit the y axis.
+    :type y_limit: float
     :example: *None*
     :note: *None*
 
