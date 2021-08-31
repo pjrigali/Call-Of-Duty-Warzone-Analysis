@@ -122,7 +122,7 @@ One off functions for various analysis.
     :example: *None*
     :note: The intent is for a map_choice and mode_choice to be fed into the DocumentFilter.
 
-.. function:: meta_weapons(doc_filter, top_5_or_10, top_1):
+.. function:: meta_weapons(doc_filter, top_5_or_10, top_1, col, mu):
 
     Calculate the most popular weapons. Map_choice is required in DocumentFilter if top_5_or_10 or top_1 is True.
     If Neither top_5_or_10 or top_1 are True, it will calculate based on all team placements.
@@ -134,6 +134,10 @@ One off functions for various analysis.
     :type top_5_or_10: bool
     :param top_1: If True, will calculate using only the 1st place or winning team, default is False. *Optional*
     :type top_1: bool
+    :param col: If given will use a column as reference, default is None. None will count gun users per day. *Optional*
+    :type col: str
+    :param mu: If True, will calculate using mean, default is sum. *Optional*
+    :type mu: bool
     :return: The First DataFrame is filled with dict's {kills: 0, deaths: 0, count: 0}.
         The Second is the percent of the lobby using.
     :rtype: List[pd.DataFrame]

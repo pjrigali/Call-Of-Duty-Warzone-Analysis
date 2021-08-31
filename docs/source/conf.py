@@ -12,10 +12,8 @@
 #
 import os
 import sys
-# sys.path.insert(0, os.path.abspath('..\..'))
-sys.path.insert(0, os.path.abspath('C:\\Users\\Peter\\Desktop\\Personal\\11_Repository\\Call of Duty Related\\Call-Of-Duty-Warzone-Analysis\\'))
-sys.path.append('C:\\Users\\Peter\\Desktop\\Personal\\11_Repository\\Call of Duty Related\\Call-Of-Duty-Warzone-Analysis\\Classes\\')
-sys.path.append('C:\\Users\\Peter\\Desktop\\Personal\\11_Repository\\Call of Duty Related\\Call-Of-Duty-Warzone-Analysis\\Utils\\')
+sys.path.insert(0, os.path.abspath('..\..'))
+
 
 # -- Project information -----------------------------------------------------
 
@@ -24,8 +22,8 @@ copyright = '2021, Peter Rigali'
 author = 'Peter Rigali'
 
 # The full version, including alpha/beta/rc tags
-release = 'v2.2.0'
-
+release = 'v2.2.1'
+version = 'v2.2.1'
 
 # -- General configuration ---------------------------------------------------
 
