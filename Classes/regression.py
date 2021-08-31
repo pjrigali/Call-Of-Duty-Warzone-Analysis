@@ -27,8 +27,8 @@ class Regression:
     :param y_column: Name of column to be used as y variable in regression.
     :type y_column: str
     :example:
-        >>> from Classes.document_filter import DocumentFilter
-        >>> from Classes.regression import Regression
+        >>> from document_filter import DocumentFilter
+        >>> from regression import Regression
         >>> doc = DocumentFilter(original_df=cod.our_df, map_choice='mp_e', mode_choice='quad')
         >>> model = Regression(doc_filter=doc, x_column='kills', y_column='placementPercent')
     :note: This will return a Regression object with regression result information.
@@ -52,6 +52,7 @@ class Regression:
             self._constant_coef = model.params[0]
             self._item_coef = model.params[1]
             self._coefficients = None
+            self._confidence_bounds = None
             self._lower_conf = model.conf_int()[1, :2][0]
             self._upper_conf = model.conf_int()[1, :2][1]
             self._pvalue = model.pvalues[1]
@@ -72,7 +73,7 @@ class Regression:
         self._ess = model.ess
 
     def __repr__(self):
-        return self._r2
+        return str(self._r2)
 
     @property
     def r2(self):
