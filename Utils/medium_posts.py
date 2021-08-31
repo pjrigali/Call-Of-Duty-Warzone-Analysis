@@ -359,3 +359,66 @@ def squad_effect(doc_filter: DocumentFilter, username: str, username_dic: dict):
     ax.grid(linewidth=1, linestyle=(0, (5, 5)), alpha=0.75)
     plt.show()
     return
+
+# Relationships
+
+# data = DocumentFilter(original_df=cod.whole, map_choice='mp_e', mode_choice='quad')
+# t = pd.DataFrame(data.df.corr()['placementPercent'].dropna().sort_values(0, ascending=False).round(3))
+# t.columns = ['corr']
+# Table(data=t, fig_size=(10, 15))
+# plt.show()
+# Scatter(data=data.df,
+#         compare_two=['kills', 'placementPercent'],
+#         normalize_x=['kills'],
+#         color_lst=['tab:orange'],
+#         regression_line=['placementPercent'],
+#         regression_line_color='tab:blue',
+#         title='kills vs Placement Percent',
+#         ylabel='Placement Percent',
+#         xlabel='kills',
+#         y_limit=[0.0, 1.0])
+# plt.show()
+# reg = Regression(doc_filter=data, x_column='kills', y_column='placementPercent')
+# resid_plot = pd.DataFrame()
+# resid_plot['placementPercent'] = data.df['placementPercent']
+# resid_plot['residuals'] = reg.residuals
+# Scatter(data=resid_plot,
+#         compare_two=['placementPercent', 'residuals'],
+#         color_lst=['tab:orange'],
+#         title='Residual Plot',
+#         ylabel='residuals',
+#         xlabel='placementPercent')
+# plt.show()
+
+# Histogram(data=data.df,
+#           label_lst=['kills'],
+#           include_norm='kills',
+#           title='Kills Histogram')
+# plt.show()
+from scipy import stats
+import statsmodels.api as sm
+
+# kill_df = pd.DataFrame()
+# kill_df['kills'] = data.df['kills']
+# kill_df['placement'] = data.df['placementPercent']
+# kill_df['kills_log'] = np.log(kill_df['kills'])
+
+# kill_df['kills_log'] = np.log(kill_df['kills'])
+# kill_df.replace([np.inf, -np.inf], np.nan, inplace=True)
+# kill_df = kill_df.dropna(subset=['kills_log'], how='all')
+
+# sm.qqplot(kill_df['kills_log'], line='45')
+# plt.show()
+
+# Histogram(data=kill_df,
+#           label_lst=['kills_log'],
+#           include_norm='kills_log',
+#           title='Kills Histogram')
+# plt.show()
+#
+#
+# data.df['kills_log'] = np.log(data.df['kills'])
+# data.df.replace([np.inf, -np.inf], np.nan, inplace=True)
+# data.df = data.df.dropna(subset=['kills_log'], how='all')
+#
+# reg2 = Regression(doc_filter=data, x_column='kills_log', y_column='placementPercent')
