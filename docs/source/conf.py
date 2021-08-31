@@ -6,8 +6,8 @@ sys.path.insert(0, os.path.abspath('..\..'))
 project = 'temp'
 copyright = '2021, Peter Rigali'
 author = 'Peter Rigali'
-release = '2.2.1'
-version = '2.2.1'
+release = '2.3.0'
+version = '2.3.0'
 
 source_suffix = {
     '.rst': 'restructuredtext',
