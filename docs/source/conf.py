@@ -3,7 +3,7 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('..\..'))
 
-project = 'warzone'
+project = 'temp'
 copyright = '2021, Peter Rigali'
 author = 'Peter Rigali'
 release = '2.2.1'
