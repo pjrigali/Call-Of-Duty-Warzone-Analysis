@@ -92,6 +92,11 @@ class DocumentFilter:
         """Returns the filtered DataFrame"""
         return self._df
 
+    @df.setter
+    def df(self, val: pd.DataFrame):
+        """Set df value"""
+        self._df = val
+
     @property
     def map_choice(self) -> Optional[str]:
         """Returns the map used to filter"""
