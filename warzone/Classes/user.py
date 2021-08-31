@@ -21,8 +21,11 @@ class User:
     :type info: dict
     :example:
         >>> from user import User
-        >>> from warzone.credentials import user_inputs
-        >>> user = User(info=user_input)
+        >>> inputs = {'repo': 'local data directory',
+        >>>        'gamertag': 'your gamertag',
+        >>>        'squad': ['friend gamertag1', 'friend gamertag2', '... etc'],
+        >>>        'file_name': 'match_data.csv'}
+        >>> user = User(info=inputs)
     :note: *None*
 
     """
@@ -81,27 +84,27 @@ class User:
             self._squad: List[str] = info['squad']
 
         # Need for Scraping
-        if info['headers'] is None:
+        if 'headers' not in info.keys():
             self.headers = {'Needed for scraping': 'Needed for scraping'}
         else:
             self.headers = info['headers']
 
-        if info['codtrackerid'] is None:
+        if 'codtrackerid' not in info.keys():
             self.CodTrackerID = 'Needed for scraping'
         else:
             self.CodTrackerID = info['codtrackerid']
 
-        if info['username'] is None:
+        if 'username' not in info.keys():
             self.USERNAME = 'Needed for scraping'
         else:
             self.USERNAME = info['username']
 
-        if info['password'] is None:
+        if 'password' not in info.keys():
             self.PASSWORD = 'Needed for scraping'
         else:
             self.PASSWORD = info['password']
 
-        if info['driverpath'] is None:
+        if 'driverpath' not in info.keys():
             self.DRIVER_PATH = 'Needed for scraping'
         else:
             self.DRIVER_PATH = info['driverpath']

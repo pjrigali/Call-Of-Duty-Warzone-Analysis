@@ -4,15 +4,26 @@
 A module for analysis of _Call of Duty Warzone_ matches.
 
 # Installation
+    pip install warzone-analysis==2.2.1
+
+
+To build, need the following dictionary to input into CallofDuty:
 ```python
-pip install warzone-analysis==2.2.1
+    user_inputs = {'repo': 'local data directory',
+                   'gamertag': 'your gamertag',
+                   'squad': ['friend gamertag1', 'friend gamertag2', '... etc'],
+                   'file_name': 'Match_Data.csv'}
 ```
 
-To build, need a credentials.py inside the _Call-Of-Duty-Warzone-Analysis_ directory, with:
-```python
-user_inputs = {'repo': 'local data directory',
-               'gamertag': 'your gamertag',
-               'squad': ['friend gamertag1', 'friend gamertag2', '... etc'],
-               'file_name': 'Personal_Match_Data.csv'}
-```
+# Usage
 
+```python
+from call_of_duty import CallofDuty
+
+user_input_dict = {'repo': 'location of saved data',
+                   'gamertag': 'your Ganertag',
+                   'squad': ['squadmate1', 'squadmate2', 'etc'],
+                   'file_name': 'Match_Data.csv'}
+
+cod = CallofDuty(user_input_dict=user_input_dict, squad_data=True, hacker_data=False, streamer_mode=False)
+```
