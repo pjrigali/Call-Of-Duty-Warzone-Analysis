@@ -8,13 +8,13 @@ import pandas as pd
 import time
 import matplotlib.pyplot as plt
 import numpy as np
-from document_filter import DocumentFilter
-from call_of_duty import CallofDuty
-from analysis import get_weapons, meta_weapons, first_top5_bottom_stats, bucket_stats, previous_next_placement
-from analysis import match_difficulty, get_daily_hourly_weekday_stats, find_hackers
-from plots import personal_plot, squad_plot, lobby_plot
-from regression import Regression
-from plot import Line, Scatter, Histogram, Table
+from warzone.document_filter import DocumentFilter
+from warzone.call_of_duty import CallofDuty
+from warzone.analysis import get_weapons, meta_weapons, first_top5_bottom_stats, bucket_stats, previous_next_placement
+from warzone.analysis import match_difficulty, get_daily_hourly_weekday_stats, find_hackers
+from warzone.plots import personal_plot, squad_plot, lobby_plot
+from warzone.regression import Regression
+from warzone.plot import Line, Scatter, Histogram, Table
 pd.set_option('display.max_columns', None)
 
 

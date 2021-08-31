@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 from scipy.stats import norm
-from base import normalize, running_mean, cumulative_mean
+from warzone.base import normalize, running_mean, cumulative_mean
 from typing import List, Optional
 from scipy import stats
 from dataclasses import dataclass

@@ -33,7 +33,7 @@ class DocumentFilter:
     :param username_lst: Filter using a list of usernames. *Optional*
     :type username_lst: List[str]
     :example:
-        >>> from document_filter import DocumentFilter
+        >>> from warzone.document_filter import DocumentFilter
         >>> doc = DocumentFilter(original_df=cod.our_df, map_choice='mp_e', mode_choice='quad')
     :note: All inputs, except original_df,  are *Optional* amd defaults are set to None.
         This will return any data with map = rebirth and mode = Quads.

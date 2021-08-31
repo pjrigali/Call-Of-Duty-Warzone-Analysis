@@ -20,7 +20,7 @@ class User:
     :param info: User input dict.
     :type info: dict
     :example:
-        >>> from user import User
+        >>> from warzone.user import User
         >>> inputs = {'repo': 'local data directory',
         >>>        'gamertag': 'your gamertag',
         >>>        'squad': ['friend gamertag1', 'friend gamertag2', '... etc'],

@@ -10,8 +10,8 @@ from typing import Optional
 import pandas as pd
 from user import User
 from squad import Squad
-from build import sm_whole, sm_gamertags, evaluate_df, get_our_and_other_df, get_match_id_set
-from gun_dictionary import gun_dict
+from warzone.build import sm_whole, sm_gamertags, evaluate_df, get_our_and_other_df, get_match_id_set
+from warzone.gun_dictionary import gun_dict
 
 
 class CallofDuty:
@@ -30,7 +30,7 @@ class CallofDuty:
     :param streamer_mode: If True, will hide User inputted Gamertag's and Uno's. default is False. *Optional*
     :type streamer_mode: bool
     :example:
-        >>> from call_of_duty import CallofDuty
+        >>> from warzone.call_of_duty import CallofDuty
         >>> inputs = {'repo': 'local data directory',
         >>>        'gamertag': 'your gamertag',
         >>>        'squad': ['friend gamertag1', 'friend gamertag2', '... etc'],

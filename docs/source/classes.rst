@@ -29,7 +29,13 @@ CallofDuty
     :param streamer_mode: If True, will hide User inputted Gamertag's and Uno's. default is False. *Optional*
     :type streamer_mode: bool
     :example:
-        >>> from call_of_duty import CallofDuty
+        >>> from warzone.call_of_duty import CallofDuty
+            >>> inputs = {'repo': 'local data directory',
+            >>>        'gamertag': 'your gamertag',
+            >>>        'squad': ['friend gamertag1', 'friend gamertag2', '... etc'],
+            >>>        'file_name': 'match_data.csv'}
+            >>> cod = CallofDuty(user_input_dict=inputs, squad_data=True, hacker_data=False, streamer_mode=False)
+                >>> from call_of_duty import CallofDuty
         >>> inputs = {'repo': 'local data directory',
         >>>        'gamertag': 'your gamertag',
         >>>        'squad': ['friend gamertag1', 'friend gamertag2', '... etc'],
@@ -78,7 +84,9 @@ DocumentFilter class objects.
     :param username_lst: Filter using a list of usernames. *Optional*
     :type username_lst: List[str]
     :example:
-        >>> from document_filter import DocumentFilter
+        >>> from warzone.document_filter import DocumentFilter
+            >>> doc = DocumentFilter(original_df=cod.our_df, map_choice='mp_e', mode_choice='quad')
+                >>> from document_filter import DocumentFilter
         >>> doc = DocumentFilter(original_df=cod.our_df, map_choice='mp_e', mode_choice='quad')
     :note: All inputs, except original_df,  are *Optional* amd defaults are set to None.
         This will return any data with map = rebirth and mode = Quads.
@@ -352,7 +360,11 @@ Regression class object.
     :param y_column: Name of column to be used as y variable in regression.
     :type y_column: str
     :example:
-        >>> from document_filter import DocumentFilter
+        >>> from warzone.document_filter import DocumentFilter
+            >>> from warzone.regression import Regression
+            >>> doc = DocumentFilter(original_df=cod.our_df, map_choice='mp_e', mode_choice='quad')
+            >>> model = Regression(doc_filter=doc, x_column='kills', y_column='placementPercent')
+                >>> from document_filter import DocumentFilter
         >>> from regression import Regression
         >>> doc = DocumentFilter(original_df=cod.our_df, map_choice='mp_e', mode_choice='quad')
         >>> model = Regression(doc_filter=doc, x_column='kills', y_column='placementPercent')
@@ -432,6 +444,16 @@ Squad class objects.
     :type uno_name_dic: dict
     :example:
         >>> from warzone.credentials import user_inputs
+                >>> from warzone.user import User
+                >>> from warzone.squad import Squad
+                >>> _User = User(info=user_inputs)
+                >>> _Squad = Squad(squad_lst=_User.squad_lst, original_df=cod.our_df, uno_name_dic=cod.name_uno_dict)
+                    >>> from credentials import user_inputs
+            >>> from warzone.user import User
+            >>> from warzone.squad import Squad
+            >>> _User = User(info=user_inputs)
+            >>> _Squad = Squad(squad_lst=_User.squad_lst, original_df=cod.our_df, uno_name_dic=cod.name_uno_dict)
+                >>> from warzone.credentials import user_inputs
             >>> from user import User
             >>> from squad import Squad
             >>> _User = User(info=user_inputs)
@@ -462,7 +484,13 @@ User class objects.
     :param info: User input dict.
     :type info: dict
     :example:
-        >>> from user import User
+        >>> from warzone.user import User
+            >>> inputs = {'repo': 'local data directory',
+            >>>        'gamertag': 'your gamertag',
+            >>>        'squad': ['friend gamertag1', 'friend gamertag2', '... etc'],
+            >>>        'file_name': 'match_data.csv'}
+            >>> user = User(info=inputs)
+                >>> from user import User
         >>> inputs = {'repo': 'local data directory',
         >>>        'gamertag': 'your gamertag',
         >>>        'squad': ['friend gamertag1', 'friend gamertag2', '... etc'],

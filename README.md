@@ -9,7 +9,8 @@ A package for analysis of _Call of Duty Warzone_ matches.
 # Usage
 
 ```python
-from call_of_duty import CallofDuty
+import warzone
+from warzone.call_of_duty import CallofDuty
 
 user_input_dict = {'repo': 'location of saved data',
                    'gamertag': 'your Ganertag',

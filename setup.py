@@ -12,7 +12,7 @@ setup(
     name='warzone analysis',
     version='2.4.0',
     # packages=['Classes', 'Utils',],
-    packages=['warzone',],
+    packages=['warzone', ],
     author='Peter Rigali',
     author_email='peterjrigali@gmail.com',
     license='MIT',

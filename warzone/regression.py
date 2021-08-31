@@ -27,8 +27,8 @@ class Regression:
     :param y_column: Name of column to be used as y variable in regression.
     :type y_column: str
     :example:
-        >>> from document_filter import DocumentFilter
-        >>> from regression import Regression
+        >>> from warzone.document_filter import DocumentFilter
+        >>> from warzone.regression import Regression
         >>> doc = DocumentFilter(original_df=cod.our_df, map_choice='mp_e', mode_choice='quad')
         >>> model = Regression(doc_filter=doc, x_column='kills', y_column='placementPercent')
     :note: This will return a Regression object with regression result information.
