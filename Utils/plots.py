@@ -1,3 +1,11 @@
+"""Various one off plots.
+
+Usage:
+ ./plots.py
+
+Author:
+ Peter Rigali - 2021-08-30
+"""
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -8,6 +16,17 @@ from document_filter import DocumentFilter
 
 
 def personal_plot(doc_filter: DocumentFilter) -> None:
+    """
+
+    Returns a series of plots.
+
+    :param doc_filter: A DocumentFilter.
+    :type doc_filter: DocumentFilter
+    :return: *None*
+    :example: *None*
+    :note: This is intended to be used with map_choice, mode_choice and a Gamertag inputted into the DocumentFilter.
+
+    """
     data = doc_filter.df
     dates = list(data['startDate'].unique())
     fig, ax = plt.subplots(nrows=3, ncols=2, figsize=(30, 30))
@@ -94,6 +113,17 @@ def personal_plot(doc_filter: DocumentFilter) -> None:
 
 
 def lobby_plot(doc_filter: DocumentFilter) -> None:
+    """
+
+    Returns a series of plots.
+
+    :param doc_filter: A DocumentFilter.
+    :type doc_filter: DocumentFilter
+    :return: *None*
+    :example: *None*
+    :note: This is intended to be used with map_choice and mode_choice inputted into the DocumentFilter.
+
+    """
     data = doc_filter.df
     games = doc_filter.unique_ids
     dates = list(data['startDate'].unique())
@@ -273,8 +303,20 @@ def lobby_plot(doc_filter: DocumentFilter) -> None:
 
 
 def squad_plot(doc_filter: DocumentFilter, col_lst: Optional[List[str]] = None) -> None:
-    data = doc_filter.df
+    """
 
+    Build a Polar plot for visualizing squad stats.
+
+    :param doc_filter: A DocumentFilter.
+    :type doc_filter: DocumentFilter
+    :param col_lst: Input List of Columns to analyze.
+    :type col_lst: List[str] or str
+    :return: *None*
+    :example: *None*
+    :note: This is intended to be used with map_choice and mode_choice inputted into the DocumentFilter.
+
+    """
+    data = doc_filter.df
     if col_lst is None:
         col_lst = ['kdRatio', 'kills', 'deaths', 'damageDone', 'damageTaken', 'objectiveTeamWiped', 'objectiveReviver',
                    'missionsComplete']

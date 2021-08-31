@@ -55,4 +55,5 @@ if __name__ == '__main__':
     # ]
     # t = Table(data=pd.DataFrame(table_data), header_colors='tab:blue', sequential_cells=True)
     # plt.show()
-    cod
+    # cod
+

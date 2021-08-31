@@ -1,3 +1,11 @@
+"""Various internal functions used when building CallofDuty class objects.
+
+Usage:
+ ./build.py
+
+Author:
+ Peter Rigali - 2021-08-30
+"""
 from typing import List
 import pandas as pd
 import numpy as np
@@ -6,11 +14,12 @@ from user import User
 from squad import Squad
 
 
-def _sm_whole(_user_class: User, data: pd.DataFrame) -> None:
+def sm_whole(_user_class: User, data: pd.DataFrame) -> None:
+    """Hides gamertags and unos in whole dataset"""
     count = 1
-    length = (20 - len(str(len(_user_class.squad))))
+    length = (20 - len(str(len(_user_class.squad_lst))))
     temp_username_lst, temp_uno_lst = list(data['username']), list(data['uno'])
-    for i in _user_class.squad:
+    for i in _user_class.squad_lst:
         # Correct Gamertag
         gamertag_val = 'friend_gamertag_' + str(count)
         temp_username_lst = [gamertag_val if i == j else j for j in temp_username_lst]
@@ -23,23 +32,23 @@ def _sm_whole(_user_class: User, data: pd.DataFrame) -> None:
     data['uno'] = temp_uno_lst
 
 
-def _sm_gamertags(_user: User) -> None:
+def sm_gamertags(_user: User) -> None:
     """Hides gamertags"""
-    temp_lst = ['friend_gamertag_' + str(i + 1) for i, j in enumerate(_user.squad)]
-    _user.set_squad(temp_lst)
-    _user.set_gamertag(val=temp_lst[0])
+    temp_lst = ['friend_gamertag_' + str(i + 1) for i, j in enumerate(_user.squad_lst)]
+    _user.squad_lst = temp_lst
+    _user.gamertag = temp_lst[0]
 
 
-def _sm_unos(_user: User, _squad: Squad) -> None:
+def sm_unos(_user: User, _squad: Squad) -> None:
     """Hides unos"""
-    length, count = (20 - len(str(len(_user.squad)))), 1
-    for i in _user.squad:
+    length, count = (20 - len(str(len(_user.squad_lst)))), 1
+    for i in _user.squad_lst:
         val = '0' * length + str(count)
-        _squad.squad_dic[i].set_uno(val=val)
+        _squad.squad_dic[i].uno = val
         count += 1
 
 
-def _evaluate_df(file_name: str, repo: str) -> pd.DataFrame:
+def evaluate_df(file_name: str, repo: str) -> pd.DataFrame:
     """Loads, Cleans, and Builds a DataFrame"""
 
     df = pd.read_csv(repo + file_name, index_col='Unnamed: 0').drop_duplicates(keep='first')
@@ -106,15 +115,15 @@ def _evaluate_df(file_name: str, repo: str) -> pd.DataFrame:
     return df.sort_values('startDateTime', ascending=True).reset_index(drop=True)
 
 
-def _get_match_id_set(data: pd.DataFrame) -> dict:
+def get_match_id_set(data: pd.DataFrame) -> dict:
     """Return a dict {gamertag: uno, gamertag1: uno1, etc}"""
 
     comb_set = set(data['uno'] + '-splitpoint-' + data['username'])
     return {i.split('-splitpoint-')[1]: i.split('-splitpoint-')[0] for i in comb_set}
 
 
-def _get_hacker_probability(our_df: pd.DataFrame, other_df: pd.DataFrame, name_uno_dict: dict,
-                            squad_name_lst: List[str]) -> list:
+def get_hacker_probability(our_df: pd.DataFrame, other_df: pd.DataFrame, name_uno_dict: dict,
+                           squad_name_lst: List[str]) -> list:
     """Calculates a Hacker Probability based on how stats relate to player and their squad makes"""
 
     col_lst = ['headshots', 'kills', 'deaths', 'kdRatio', 'scorePerMinute', 'distanceTraveled',
@@ -171,7 +180,7 @@ def _get_hacker_probability(our_df: pd.DataFrame, other_df: pd.DataFrame, name_u
     return [np.mean(np.nan_to_num(i)) for i in dic_values_lst]
 
 
-def _get_our_and_other_df(data: pd.DataFrame, _my_uno: str, name_uno_dict: dict, squad_name_lst: List[str]):
+def get_our_and_other_df(data: pd.DataFrame, _my_uno: str, name_uno_dict: dict, squad_name_lst: List[str]):
     """Returns two DataFrames. First is all data related to the player and their teammates,
        Second is everyone who is not a teammate"""
 
@@ -182,6 +191,6 @@ def _get_our_and_other_df(data: pd.DataFrame, _my_uno: str, name_uno_dict: dict,
     other = [i for i in data.index if i not in comb_dic]
     our_df, other_df = data.iloc[list(comb_dic.keys())].copy(), data.iloc[other].copy()
     our_df['hackerProb'] = 0.0
-    other_df['hackerProb'] = _get_hacker_probability(our_df=our_df, other_df=other_df, name_uno_dict=name_uno_dict,
-                                                     squad_name_lst=squad_name_lst)
+    other_df['hackerProb'] = get_hacker_probability(our_df=our_df, other_df=other_df, name_uno_dict=name_uno_dict,
+                                                    squad_name_lst=squad_name_lst)
     return our_df, other_df

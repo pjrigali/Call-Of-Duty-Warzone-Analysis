@@ -1,3 +1,11 @@
+"""Various outlier detection functions.
+
+Usage:
+ ./outlier.py
+
+Author:
+ Peter Rigali - 2021-08-30
+"""
 from typing import List, Optional, Union
 import pandas as pd
 import numpy as np
@@ -5,25 +13,23 @@ from yellowbrick.regressor import CooksDistance
 from statsmodels.tools import add_constant
 
 
-def _stack(x_arr: np.ndarray, y_arr: np.ndarray, multi: Optional[bool] = False) -> np.ndarray:
-    """
-    Calculate Centroid from x and y value(s).
-
-    Parameters
-    ----------
-    x_arr : np.ndarray
-        An array to stack.
-    y_arr : np.ndarray
-        An array to stack.
-    multi: bool, default is False.
-        If True, will stack based on multiple x_arr columns.
-
-    Returns
-    ----------
-    np.ndarray
-
+def stack(x_arr: np.ndarray, y_arr: np.ndarray, multi: Optional[bool] = False) -> np.ndarray:
     """
 
+    Stacks x_arr and y_arr.
+
+    :param x_arr: An array to stack.
+    :type x_arr: np.ndarray
+    :param y_arr: An array to stack.
+    :type y_arr: np.ndarray
+    :param mutli: If True, will stack based on multiple x_arr columns, default is False. *Optional*
+    :type multi: bool
+    :return: Array with a x column and a y column
+    :rtype: np.ndarray
+    :example: *None*
+    :note: *None*
+
+    """
     lst = []
     if multi:
         for i in range((x_arr.shape[1])):
@@ -36,68 +42,62 @@ def _stack(x_arr: np.ndarray, y_arr: np.ndarray, multi: Optional[bool] = False) 
 
 def _cent(x_lst: List[float], y_lst: List[float]) -> List[float]:
     """
+
     Calculate Centroid from x and y value(s).
 
-    Parameters
-    ----------
-    x_lst : List[float]
-        A centroid.
-    y_lst : List[float]
-        A centroid.
-
-    Returns
-    ----------
-    float
+    :param x_lst: A list of values.
+    :type x_lst: List[float]
+    :param y_lst: A list of values.
+    :type y_lst: List[float]
+    :returns: A list of x and y values representing the centriod of two lists.
+    :rtype: List[float]
+    :example: *None*
+    :note: *None*
 
     """
-
     return [np.sum(x_lst) / len(x_lst), np.sum(y_lst) / len(y_lst)]
 
 
 def _dis(cent1: List[float], cent2: List[float]) -> float:
     """
+
     Calculate Distance between two centroids.
 
-    Parameters
-    ----------
-    cent1 : List[float]
-        A centroid.
-    cent2 : List[float]
-        A centroid.
-
-    Returns
-    ----------
-    float
+    :param cent1: An x, y coordinate representing a centroid.
+    :type cent1: List[float]
+    :param cent2: An x, y coordinate representing a centroid.
+    :type y_lst: List[float]
+    :returns: A distance measurement.
+    :rtype: float
+    :example: *None*
+    :note: *None*
 
     """
-
     return round(np.sqrt((cent1[0] - cent2[0]) ** 2 + (cent1[1] - cent2[1]) ** 2), 4)
 
 
 def outlier_std(arr: Optional[np.ndarray] = None, data: Optional[pd.DataFrame] = None, y_column: Optional[str] = None,
                 _std: Optional[int] = 3, plus: Optional[bool] = True) -> np.ndarray:
     """
+
     Calculate Outliers using a simple std value.
 
-    Parameters
-    ----------
-    arr : np.ndarray
-        An Array to get data from.
-    data : pd.DataFrame
-        A DataFrame to get data from.
-    y_column : str
-        A target column.
-    _std : int, default is 3.
-        A std threshold.
-    plus : bool, default is True
-        If True, will grab all values above the threshold.
-
-    Returns
-    ----------
-    np.ndarray
+    :param arr: An Array to get data from. *Optional*
+    :type arr: np.ndarray
+    :param data: A DataFrame to get data from. *Optional*
+    :type data: pd.DataFrame
+    :param y_column: A target column. *Optional*
+    :type y_column: str
+    :param _std: A std threshold, default is 3. *Optional*
+    :type _std: int
+    :param plus: If True, will grab all values above the threshold, default is True. *Optional*
+    :type plus: bool
+    :return: An array of indexes.
+    :rtype: np.ndarray
+    :example: *None*
+    :note: If **arr** not passed, data and respective column names are required.
 
     """
-
     if arr is not None:
         arr = np.nan_to_num(arr)
     else:
@@ -114,27 +114,25 @@ def outlier_std(arr: Optional[np.ndarray] = None, data: Optional[pd.DataFrame] =
 def outlier_var(arr: Optional[np.ndarray] = None, data: Optional[pd.DataFrame] = None, y_column: Optional[str] = None,
                 per: Optional[float] = 0.95, plus: Optional[bool] = True) -> np.ndarray:
     """
+
     Calculate Outliers using a simple var value.
 
-    Parameters
-    ----------
-    arr : np.ndarray
-        An Array to get data from.
-    data : pd.DataFrame
-        A DataFrame to get data from.
-    y_column : str
-        A target column.
-    per : float, default is 0.95.
-        A percent threshold.
-    plus : bool, default is True
-        If True, will grab all values above the threshold.
-
-    Returns
-    ----------
-    np.ndarray
+    :param arr: An Array to get data from. *Optional*
+    :type arr: np.ndarray
+    :param data: A DataFrame to get data from. *Optional*
+    :type data: pd.DataFrame
+    :param y_column: A target column. *Optional*
+    :type y_column: str
+    :param per: A percent threshold, default is 0.95. *Optional*
+    :type per: float
+    :param plus: If True, will grab all values above the threshold. *Optional*
+    :type plus: bool, default is True
+    :return: An array of indexes.
+    :rtype: np.ndarray
+    :example: *None*
+    :note: If **arr** not passed, data and respective column names are required.
 
     """
-
     if arr is not None:
         arr = np.nan_to_num(arr)
     else:
@@ -232,35 +230,33 @@ def outlier_regression(arr: Optional[np.ndarray] = None, data: Optional[pd.DataF
                        x_column: Optional[str] = None, y_column: Optional[str] = None, _std: Optional[int] = 3,
                        plus: Optional[bool] = True) -> np.ndarray:
     """
+
     Calculate Outliers using regression.
 
-    Parameters
-    ----------
-    arr : np.ndarray
-        An Array to get data from.
-    data : pd.DataFrame
-        A DataFrame to get data from.
-    x_column: str
-        A column for x variables.
-    y_column : str
-        A column for y variables.
-    _std : int, default is 3.
-        A std threshold.
-    plus : bool, default is True
-        If True, will grab all values above the threshold.
-
-    Returns
-    ----------
-    np.ndarray
+    :param arr: An Array to get data from. *Optional*
+    :type arr: np.ndarray
+    :param data: A DataFrame to get data from. *Optional*
+    :type data: pd.DataFrame
+    :param x_column: A column for x variables. *Optional*
+    :type x_column: str
+    :param y_column: A column for y variables. *Optional*
+    :type y_column: str
+    :param _std: A std threshold, default is 3. *Optional*
+    :type _std: int
+    :param plus: If True, will grab all values above the threshold, default is True. *Optional*
+    :type plus: bool
+    :return: An array of indexes.
+    :rtype: np.ndarray
+    :example: *None*
+    :note: If **arr** not passed, data and respective column names are required.
 
     """
-
     if arr is not None:
         arr = np.nan_to_num(arr)
     else:
         x_other = np.array(data[x_column].fillna(0).astype(float))
         y_other = np.array(data[y_column].fillna(0).astype(float))
-        arr = np.nan_to_num(_stack(x_other, y_other, False))
+        arr = np.nan_to_num(stack(x_other, y_other, False))
 
     ran = np.array(range(len(arr)))
     mu_y = np.zeros(len(arr) - 1)
@@ -352,35 +348,33 @@ def outlier_distance(arr: Optional[np.ndarray] = None, data: Optional[pd.DataFra
                      x_column: Optional[str] = None, y_column: Optional[str] = None, _std: Optional[int] = 3,
                      plus: Optional[bool] = True) -> np.ndarray:
     """
+
     Calculate Outliers using distance measurements.
 
-    Parameters
-    ----------
-    arr : np.ndarray
-        An Array to get data from.
-    data : pd.DataFrame
-        A DataFrame to get data from.
-    x_column: str
-        A column for x variables.
-    y_column : str
-        A column for y variables.
-    _std : int, default is 3.
-        A std threshold.
-    plus : bool, default is True
-        If True, will grab all values above the threshold.
-
-    Returns
-    ----------
-    np.ndarray
+    :param arr: An Array to get data from. *Optional*
+    :type arr: np.ndarray
+    :param: data: A DataFrame to get data from. *Optional*
+    :type data: pd.DataFrame
+    :param x_column: A column for x variables. *Optional*
+    :type x_column: str
+    :param y_column: A column for y variables. *Optional*
+    :type y_column: str
+    :param _std: A std threshold, default is 3. *Optional*
+    :type _std: int
+    :param plus: If True, will grab all values above the threshold, default is True. *Optional*
+    :type plus: bool
+    :return: An array of indexes.
+    :rtype: np.ndarray
+    :example: *None*
+    :note: If **arr** not passed, data and respective column names are required.
 
     """
-
     if arr is not None:
         arr = np.nan_to_num(arr)
     else:
         x_other = np.array(data[x_column].fillna(0).astype(float))
         y_other = np.array(data[y_column].fillna(0).astype(float))
-        arr = np.nan_to_num(_stack(x_other, y_other, False))
+        arr = np.nan_to_num(stack(x_other, y_other, False))
 
     length = len(arr)
     cent_other = _cent(arr[:, 0], arr[:, 1])
@@ -440,27 +434,25 @@ def outlier_distance(arr: Optional[np.ndarray] = None, data: Optional[pd.DataFra
 def outlier_hist(arr: Optional[np.ndarray] = None, data: Optional[pd.DataFrame] = None, x_column: Optional[str] = None,
                  per: Optional[float] = 0.75, plus: Optional[bool] = True) -> np.ndarray:
     """
+
     Calculate Outliers using Histogram.
 
-    Parameters
-    ----------
-    arr : np.ndarray
-        An Array to get data from.
-    data : pd.DataFrame
-        A DataFrame to get data from.
-    x_column : str
-        A target column.
-    per : float, default is 0.75.
-        A percent threshold.
-    plus : bool, default is True
-        If True, will grab all values above the threshold.
-
-    Returns
-    ----------
-    np.ndarray
+    :param arr: An Array to get data from. *Optional*
+    :type arr: np.ndarray
+    :param: data: A DataFrame to get data from. *Optional*
+    :type data: pd.DataFrame
+    :param x_column: A column for x variables. *Optional*
+    :type x_column: str
+    :param per: A std threshold, default is 3. *Optional*
+    :type per: float
+    :param plus: If True, will grab all values above the threshold, default is 0.75. *Optional*
+    :type plus: bool
+    :return: An array of indexes.
+    :rtype: np.ndarray
+    :example: *None*
+    :note: If **arr** not passed, data and respective column names are required.
 
     """
-
     if arr is not None:
         arr = np.nan_to_num(arr)
     else:
@@ -539,35 +531,33 @@ def outlier_hist(arr: Optional[np.ndarray] = None, data: Optional[pd.DataFrame] 
 def outlier_knn(arr: Optional[np.ndarray] = None, data: Optional[pd.DataFrame] = None, x_column: Optional[str] = None,
                 y_column: Optional[str] = None, _std: Optional[int] = 3, plus: Optional[bool] = True) -> np.ndarray:
     """
+
     Calculate Outliers using KNN.
 
-    Parameters
-    ----------
-    arr : np.ndarray
-        An array to get data from.
-    data : pd.DataFrame
-        A DataFrame to get data from.
-    x_column: str
-        A column for x variables.
-    y_column : str
-        A column for y variables.
-    _std : int, default is 3.
-        A std threshold.
-    plus : bool, default is True
-        If True, will grab all values above the threshold.
-
-    Returns
-    ----------
-    np.ndarray
+    :param arr: An Array to get data from. *Optional*
+    :type arr: np.ndarray
+    :param: data: A DataFrame to get data from. *Optional*
+    :type data: pd.DataFrame
+    :param x_column: A column for x variables. *Optional*
+    :type x_column: str
+    :param y_column: A column for y variables. *Optional*
+    :type y_column: str
+    :param _std: A std threshold, default is 3. *Optional*
+    :type _std: int
+    :param plus: If True, will grab all values above the threshold, default is True. *Optional*
+    :type plus: bool
+    :return: An array of indexes.
+    :rtype: np.ndarray
+    :example: *None*
+    :note: If **arr** not passed, data and respective column names are required.
 
     """
-
     if arr is not None:
         arr = np.nan_to_num(arr)
     else:
         x_other = np.array(data[x_column].fillna(0).astype(float))
         y_other = np.array(data[y_column].fillna(0).astype(float))
-        arr = np.nan_to_num(_stack(x_other, y_other, False))
+        arr = np.nan_to_num(stack(x_other, y_other, False))
 
     # threshold = np.mean(arr) + np.std(arr, ddof=1) * _std
     length = len(arr)
@@ -593,35 +583,35 @@ def outlier_cooks_distance(arr: Optional[np.ndarray] = None, data: Optional[pd.D
                            x_column: Optional[str] = None, y_column: Optional[str] = None, plus: Optional[bool] = True,
                            return_df: Optional[bool] = False) -> Union[np.ndarray, pd.DataFrame]:
     """
+
     Calculate Outliers using Cooks Distance.
 
-    Parameters
-    ----------
-    arr : np.ndarray
-        A DataFrame to get data from.
-    data : pd.DataFrame
-        A DataFrame to get data from.
-    x_column: str
-        A column for x variables.
-    y_column : str
-        A column for y variables.
-    plus : bool, default is True
-        If True, will grab all values above the threshold.
-    return_df : bool, default is False.
-        If True, will return a DataFrame.
-
-    Returns
-    ----------
-    np.ndarray or pd.DataFrame
+    :param arr: An Array to get data from. *Optional*
+    :type arr: np.ndarray
+    :param data: A DataFrame to get data from. *Optional*
+    :type data: pd.DataFrame
+    :param x_column: A column for x variables. *Optional*
+    :type x_column: str
+    :param y_column: A column for y variables. *Optional*
+    :type y_column: str
+    :param _std: A std threshold, default is 3. *Optional*
+    :type _std: int
+    :param plus: If True, will grab all values above the threshold, default is True. *Optional*
+    :type plus: bool
+    :param return_df: If True, will return a DataFrame, default is False. *Optional*
+    :type return_df: bool
+    :return: An array of indexes.
+    :rtype: np.ndarray or pd.DataFrame
+    :example: *None*
+    :note: If **arr** not passed, data and respective column names are required.
 
     """
-
     if arr is not None:
         arr = np.nan_to_num(arr)
     else:
         x_other = np.array(data[x_column].fillna(0).astype(float))
         y_other = np.array(data[y_column].fillna(0).astype(float))
-        arr = np.nan_to_num(_stack(x_other, y_other, False))
+        arr = np.nan_to_num(stack(x_other, y_other, False))
 
     result = CooksDistance().fit(add_constant(arr[:, 0]), arr[:, 1])
     distance = result.distance_

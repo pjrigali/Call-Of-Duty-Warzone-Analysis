@@ -1,3 +1,11 @@
+"""DocumentFilter class object.
+
+Usage:
+ ./document_filter.py
+
+Author:
+ Peter Rigali - 2021-08-30
+"""
 from typing import Optional, List
 from dataclasses import dataclass
 import pandas as pd
@@ -6,35 +14,31 @@ import pandas as pd
 @dataclass
 class DocumentFilter:
     """
-    Get a selection from a DataFrame.
 
+    Get a selection from a DataFrame.
     Uses a set of filters to return a desired set of data to be used in later analysis.
 
-    Parameters
-    ----------
-    original_df : pd.DataFrame
-        Input DataFrame to be filtered.
-    map_choice : str, default is None
-        Map filter. Either 'mp_e' for Rebirth and 'mp_d' for Verdansk.
-    mode_choice : str, default is None
-        Mode filter. Either 'solo', 'duo', 'trio', or 'quad'.
-    username : str, default is None
-        Filter by a players username. Can cause errors if same username as another player.
-    uno : str, default is None
-        Filter by a players uno.
-    username_dic : dict, default is None
-        Required if 'username' or 'username_lst' is used. {username1: uno1, username2: uno2, etc}.
-    username_lst : List[str], default is None
-        Filter using a list of usernames.
+    :param original_df: Input DataFrame to be filtered.
+    :type original_df: pd.DataFrame
+    :param map_choice: Map filter. Either 'mp_e' for Rebirth and 'mp_d' for Verdansk. *Optional*
+    :type map_choice: str
+    :param mode_choice: Mode filter. Either 'solo', 'duo', 'trio', or 'quad'. *Optional*
+    :type mode_choice: str
+    :param username: Filter by a players username. Can cause errors if same username as another player. *Optional*
+    :type username: str
+    :param uno: Filter by a players uno. *Optional*
+    :type uno: str
+    :param username_dic: Required if 'username' or 'username_lst' is used. {username1: uno1, username2: uno2, etc}. *Optional*
+    :type username_dic: dict
+    :param username_lst: Filter using a list of usernames. *Optional*
+    :type username_lst: List[str]
+    :example:
+        >>> from document_filter import DocumentFilter
+        >>> doc = DocumentFilter(original_df=cod.our_df, map_choice='mp_e', mode_choice='quad')
+    :note: All inputs, except original_df,  are *Optional* amd defaults are set to None.
+        This will return any data with map = rebirth and mode = Quads.
+        By specifiying 'cod.our_df', this will only return data related to the user.
 
-    Examples
-    --------
-
-    >>> from Classes.document_filter import DocumentFilter
-    >>> doc = DocumentFilter(original_df=cod.our_df, map_choice='mp_e', mode_choice='quad')
-
-    This will return any data with map = rebirth and mode = Quads.
-    By specifiying 'cod.our_df', this will only return data related to the user.
     """
     def __init__(self,
                  original_df: pd.DataFrame,

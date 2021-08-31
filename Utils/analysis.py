@@ -1,33 +1,38 @@
+"""One off functions for various analysis.
+
+Usage:
+ ./analysis.py
+
+Author:
+ Peter Rigali - 2021-08-30
+"""
 import pandas as pd
 import numpy as np
 from scipy import stats
 from typing import List, Optional, Union
 from gun_dictionary import gun_dict
-from outlier import _stack, outlier_hist, outlier_std, outlier_var, outlier_distance, outlier_knn
+from outlier import stack, outlier_hist, outlier_std, outlier_var, outlier_distance, outlier_knn
 from outlier import outlier_cooks_distance, outlier_regression
 from document_filter import DocumentFilter
 
 
 def first_top5_bottom_stats(doc_filter: DocumentFilter, col_lst: Union[List[str], str]) -> pd.DataFrame:
     """
-    Calculate mu, std, var, max, min, skew, kurt for all matches depending on teamPlacement.
 
-    The intent is for a map_choice and mode_choice to be fed into the DocumentFilter.
+    Calculate mu, std, var, max, min, skew, kurt for all matches depending on teamPlacement.
     Does calculations for all matches, regardless of matchID.
 
-    Parameters
-    ----------
-    doc_filter : DocumentFilter
-        A DocumentFilter.
-    col_lst: List[str] or str
-        Column or columns to get stats for.
-
-    Returns
-    ----------
-    pd.DataFrame
+    :param doc_filter: Input DocumentFilter
+    :type doc_filter: DocumentFilter
+    :param col_lst: Input List of Columns to analyze.
+    :type col_lst: List[str] or str
+    :return: Stats, related to the items in col_lst, for winners, top 5 or 10, and bottom.
+    :rtype: pd.DataFrame
+    :example: *None*
+    :note: If Rebirth is selected in the DocumentFilter, will return top 5. If Verdansk, top 10 is returned.
+        The intent is for a map_choice and mode_choice to be fed into the DocumentFilter.
 
     """
-
     data = doc_filter.df
 
     if type(col_lst) == str:
@@ -64,24 +69,20 @@ def bucket_stats(doc_filter: DocumentFilter, placement: Union[List[int], int],
                  col_lst: Union[List[str], str]) -> pd.DataFrame:
     """
     Calculate mu, std, var, max, min, skew, kurt for all matches depending on teamPlacement.
-
-    The intent is for a map_choice and mode_choice to be fed into the DocumentFilter.
     Does calculations for all matches, considering of matchID.
 
-    Parameters
-    ----------
-    doc_filter : DocumentFilter
-        A DocumentFilter.
-    placement: List[int] or int
-        teamPlacement value used to filter data. If two int's are provided, will filter within that range.
+    :param doc_filter: Input DocumentFilter.
+    :type doc_filter: DocumentFilter
+    :param placement: Target placement.
+    :type placement: List[int] or int
+    :param col_lst: Input List of Columns to analyze.
+    :type col_lst: List[str] or str
+    :return: Stats, related to the items in col_lst, for placement value.
+    :rtype: pd.DataFrame
+    :example: *None*
+    :note: teamPlacement value used to filter data. If two int's are provided, will filter within that range.
         First value should be the lower value. Example [0,6] will return top 5 placements.
-    col_lst: List[str] or str
-        Column or columns to get stats for.
-
-    Returns
-    ----------
-    pd.DataFrame
-
+        The intent is for a map_choice and mode_choice to be fed into the DocumentFilter.
     """
     data = doc_filter.df
 
@@ -120,19 +121,13 @@ def previous_next_placement(doc_filter: DocumentFilter) -> pd.DataFrame:
     """
     Calculate mu teamPlacement before and after a teamPlacement.
 
-    The intent is for a map_choice and mode_choice to be fed into the DocumentFilter.
-
-    Parameters
-    ----------
-    doc_filter : DocumentFilter
-        A DocumentFilter.
-
-    Returns
-    ----------
-    pd.DataFrame
-
+    :param doc_filter: Input DocumentFilter.
+    :type doc_filter: DocumentFilter
+    :return: Previous and next expected placement based on current placement.
+    :rtype: pd.DataFrame
+    :example: *None*
+    :note: The intent is for a map_choice and mode_choice to be fed into the DocumentFilter.
     """
-
     data = doc_filter.df
     placement_lst = data['teamPlacement'].unique()
     placement_dic = {}
@@ -153,26 +148,23 @@ def match_difficulty(our_doc_filter: DocumentFilter, other_doc_filter: DocumentF
                      mu_lst: Optional[List[str]] = None, sum_lst: Optional[List[str]] = None,
                      test: Optional[bool] = False) -> pd.DataFrame:
     """
+
     Calculate the relative match difficulty based on player and player squad stats.
 
-    The intent is for a map_choice and mode_choice to be fed into both DocumentFilter's.
-
-    Parameters
-    ----------
-    our_doc_filter : DocumentFilter
-        A DocumentFilter with squad and player data only.
-    other_doc_filter : DocumentFilter
-        A DocumentFilter with all other players data.
-    mu_lst : List[str]
-        A list of columns to consider the mu.
-    sum_lst : List[str]
-        A list of columns to consider the sum.
-    test : bool
-        If True, will use all columns for the analysis.
-
-    Returns
-    ----------
-    pd.DataFrame
+    :param our_doc_filter: A DocumentFilter with squad and player data only.
+    :type our_doc_filter: DocumentFilter
+    :param other_doc_filter: A DocumentFilter with all other players data.
+    :type other_doc_filter: DocumentFilter
+    :param mu_lst: A list of columns to consider the mu.
+    :type mu_lst: List[str]
+    :param sum_lst: A list of columns to consider the sum.
+    :type sum_lst: List[str]
+    :param test: If True, will use all columns for the analysis.
+    :type test: bool
+    :return: Match difficulty.
+    :rtype: pd.DataFrame
+    :example: *None*
+    :note: The intent is for a map_choice and mode_choice to be fed into both DocumentFilter's.
 
     """
     our_df = our_doc_filter.df
@@ -259,18 +251,15 @@ def match_difficulty(our_doc_filter: DocumentFilter, other_doc_filter: DocumentF
 
 def get_daily_hourly_weekday_stats(doc_filter: DocumentFilter) -> list:
     """
+
     Calculate kills, deaths, wins, top 5s or 10s, match count, and averagePlacement for every day, week, hour.
 
-    The intent is for a map_choice and mode_choice to be fed into the DocumentFilter.
-
-    Parameters
-    ----------
-    doc_filter : DocumentFilter
-        A DocumentFilter.
-
-    Returns
-    ----------
-    pd.DataFrame, pd.DataFrame, pd.DataFrame, dict
+    :param doc_filter: Input DocumentFilter.
+    :type doc_filter: DocumentFilter
+    :return: 3 pd.DataFrames and a dict
+    :rtype:  *None*
+    :example: *None*
+    :note: The intent is for a map_choice and mode_choice to be fed into the DocumentFilter.
 
     """
     data = doc_filter.df
@@ -386,19 +375,15 @@ def get_daily_hourly_weekday_stats(doc_filter: DocumentFilter) -> list:
 
 def get_weapons(doc_filter: DocumentFilter) -> pd.DataFrame:
     """
-    Calculate the Kills. deaths, assists, headshots, averagePlacement and count for each weapon.
+    Calculate the Kills, deaths, assists, headshots, averagePlacement and count for each weapon.
 
-    The intent is for a username to be fed into the DocumentFilter and this will return the information for
-    that specific player.
-
-    Parameters
-    ----------
-    doc_filter : DocumentFilter
-        A DocumentFilter.
-
-    Returns
-    ----------
-    pd.DataFrame
+    :param doc_filter: Input DocumentFilter.
+    :type doc_filter: DocumentFilter
+    :return: A DataFrame with a players gun stats.
+    :rtype: pd.DataFrame
+    :example: *None*
+    :note: The intent is for a username to be fed into the DocumentFilter and this will return the information for
+        that specific player.
 
     """
     data = doc_filter.df.fillna(0.0)
@@ -442,35 +427,29 @@ def get_weapons(doc_filter: DocumentFilter) -> pd.DataFrame:
 
 def find_hackers(doc_filter: DocumentFilter, y_column: str, col_lst: List[str], std: int = 3) -> List[int]:
     """
+
     Calculate hackers based on various Outlier detection methods.
 
-    The intent is for a map_choice and mode_choice to be fed into the DocumentFilter.
-
-    Parameters
-    ----------
-    doc_filter : DocumentFilter
-        A DocumentFilter.
-    y_column : str
-        A column to consider for Outlier analysis.
-    col_lst : List[str]
-        A list of columns used for Outlier analysis
-    std : int, default is 3.
-        The sta to be considered for as a threshold.
-
-    Returns
-    ----------
-    List[int]
-
-    Returns an index of suspected hackers.
+    :param doc_filter: Input DocumentFilter.
+    :type doc_filter: DocumentFilter
+    :param y_column: A column to consider for Outlier analysis.
+    :type y_column: str
+    :param col_lst: A list of columns used for Outlier analysis.
+    :type col_lst: List[str]
+    :param std: The std to be considered for as a threshold, default is 3.
+    :type std: int
+    :return: Returns an index of suspected hackers.
+    :rtype: List[int]
+    :example: *None*
+    :note: The intent is for a map_choice and mode_choice to be fed into the DocumentFilter.
 
     """
-
     data = doc_filter.df
     y_n = np.array(data[y_column])
     ind = []
     for col in col_lst:
         x_n = np.array(data[col])
-        x_y = _stack(x_n, y_n, False)
+        x_y = stack(x_n, y_n, False)
         analysis = [list(outlier_var(arr=x_n, per=0.95, plus=True)),
                     list(outlier_std(arr=x_n, _std=std, plus=True)),
                     list(outlier_distance(arr=x_y, _std=std, plus=True)),
@@ -489,28 +468,24 @@ def find_hackers(doc_filter: DocumentFilter, y_column: str, col_lst: List[str], 
 
 def meta_weapons(doc_filter: DocumentFilter, top_5_or_10: Optional[bool] = False, top_1: Optional[bool] = False) -> List[pd.DataFrame]:
     """
+
     Calculate the most popular weapons. Map_choice is required in DocumentFilter if top_5_or_10 or top_1 is True.
     If Neither top_5_or_10 or top_1 are True, it will calculate based on all team placements.
-
     This will only include loadouts where all attachment slots are filled. This calculates based on a daily interval.
 
-    Parameters
-    ----------
-    doc_filter : DocumentFilter
-        A DocumentFilter.
-    top_5_or_10 : bool, default is False.
-        If True, will calculate using only the top 5 or 10 place teams.
-    top_1: bool, default is False.
-        If True, will calculate using only the 1st place or winning team.
+    :param doc_filter: Input DocumentFilter.
+    :type doc_filter: DocumentFilter
+    :param top_5_or_10: If True, will calculate using only the top 5 or 10 place teams, default is False.
+    :type top_5_or_10: bool
+    :param top_1: If True, will calculate using only the 1st place or winning team.
+    :type top_1: bool, default is False.
+    :return: The First DataFrame is filled with dict's {kills: 0, deaths: 0, count: 0}.
+        The Second is the percent of the lobby using.
+    :rtype: List[pd.DataFrame]
+    :example: *None*
+    :note: *None*
 
-    Returns
-    ----------
-    List[pd.DataFrame]
-
-    The First DataFrame is filled with dict's {kills: 0, deaths: 0, count: 0}.
-    The Second is the percent of the lobby using.
     """
-
     if top_5_or_10 is True or top_1 is True:
         if doc_filter.map_choice is None:
             raise AttributeError('Include a map_choice in the DocumentFilter')

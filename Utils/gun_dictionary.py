@@ -1,3 +1,11 @@
+"""Activision Ids and Gun Name dictionary.
+
+Usage:
+ ./gun_dictionary.py
+
+Author:
+ Peter Rigali - 2021-08-30
+"""
 gun_dict = {
     # Modern Warfare
     "iw8_ar_tango21": 'RAM-7',

@@ -1,3 +1,11 @@
+"""Regression class object.
+
+Usage:
+ ./regression.py
+
+Author:
+ Peter Rigali - 2021-08-30
+"""
 from typing import Union, List
 import numpy as np
 from statsmodels import regression
@@ -9,28 +17,23 @@ from dataclasses import dataclass
 @dataclass
 class Regression:
     """
+
     Calculate a linear regression.
 
-    Parameters
-    ----------
-    doc_filter : DocumentFilter
-        Input DocumentFilter.
-    x_column : str, or List[str]
-        Name of column or columns to be used in regression analysis
-    y_column : str
-        Name of column to be used as y variable in regression.
+    :param doc_filter: Input DocumentFilter.
+    :type doc_filter: DocumentFilter
+    :param x_column: Name of column or columns to be used in regression analysis.
+    :type x_column: str, or List[str]
+    :param y_column: Name of column to be used as y variable in regression.
+    :type y_column: str
+    :example:
+        >>> from Classes.document_filter import DocumentFilter
+        >>> from Classes.regression import Regression
+        >>> doc = DocumentFilter(original_df=cod.our_df, map_choice='mp_e', mode_choice='quad')
+        >>> model = Regression(doc_filter=doc, x_column='kills', y_column='placementPercent')
+    :note: This will return a Regression object with regression result information.
 
-    Examples
-    --------
-
-    >>> from Classes.document_filter import DocumentFilter
-    >>> from Classes.regression import Regression
-    >>> doc = DocumentFilter(original_df=cod.our_df, map_choice='mp_e', mode_choice='quad')
-    >>> model = Regression(doc_filter=doc, x_column='kills', y_column='placementPercent')
-
-    This will return a Regression object with regression resault information.
     """
-
     doc_filter: DocumentFilter
     x_column: Union[str, List[str]]
     y_column: str

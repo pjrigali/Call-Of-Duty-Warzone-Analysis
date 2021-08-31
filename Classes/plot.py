@@ -1,3 +1,11 @@
+"""Plot class objects.
+
+Usage:
+ ./plot.py
+
+Author:
+ Peter Rigali - 2021-08-30
+"""
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -24,8 +32,62 @@ location = ['best', 'upper right', 'upper left', 'lower left', 'lower right', 'r
 
 @dataclass
 class Line:
-    """Creates a Line Plot"""
+    """
 
+    Class for plotting line plots.
+
+    :param data: Input data.
+    :type data: pd.DataFrame,
+    :param limit: Limit the length of data. *Optional*
+    :type limit: int
+    :param label_lst: List of labels to include, if None will include all columns. *Optional*
+    :type label_lst: List[str]
+    :param color_lst: List of colors to graph. *Optional*
+    :type color_lst: List[str]
+    :param normalize_x: List of columns to normalize. *Optional*
+    :type normalize_x: List[str]
+    :param running_mean_x: List of columns to calculate running mean. *Optional*
+    :type running_mean_x: List[str]
+    :param running_mean_value: Value used when calculating running mean, default = 50. *Optional*
+    :type running_mean_value: int
+    :param cumulative_mean_x: List of columns to calculate cumulative mean. *Optional*
+    :type cumulative_mean_x: List[str]
+    :param fig_size: Figure size, default = (10, 7). *Optional*
+    :type fig_size: tuple
+    :param ylabel: Y axis label. *Optional*
+    :type ylabel: str
+    :param ylabel_color: Y axis label color, default = 'black'. *Optional*
+    :type ylabel_color: str
+    :param ylabel_size: Y label size, default = 'medium'. *Optional*
+    :type ylabel_size: str
+    :param xlabel: X axis label. *Optional*
+    :type xlabel: str
+    :param xlabel_color: X axis label color, default = 'black'. *Optional*
+    :type xlabel_color: str
+    :param xlabel_size: X label size, default = 'medium'. *Optional*
+    :type xlabel_size: str
+    :param title: Graph title, default = 'Line Plot'. *Optional*
+    :type title: str
+    :param title_size: Title size, default = 'xx-large'. *Optional*
+    :type title_size: str
+    :param grid: If True will show grid, default = true. *Optional*
+    :type grid: bool
+    :param grid_alpha: Grid alpha, default = 0.75. *Optional*
+    :type grid_alpha: float
+    :param grid_dash_sequence: Grid dash sequence, default = (3, 3). *Optional*
+    :type grid_dash_sequence: tuple
+    :param grid_lineweight: Grid lineweight, default = 0.5. *Optional*
+    :type grid_lineweight: float
+    :param legend_fontsize: Legend fontsize, default = 'medium'. *Optional*
+    :type legend_fontsize: str
+    :param legend_transparency: Legend transparency, default = 0.75. *Optional*
+    :type legend_transparency: float
+    :param legend_location: legend location, default = 'lower right'. *Optional*
+    :type legend_location: str
+    :example: *None*
+    :note: *None*
+
+    """
     def __init__(self,
                  data: pd.DataFrame,
                  limit: Optional[int] = None,
@@ -107,13 +169,74 @@ class Line:
 
     @property
     def ax(self):
+        """Returns a plot"""
         return self._ax
 
 
 @dataclass
 class Scatter:
-    """Creates a Scatter Plot"""
+    """
 
+    Class for plotting scatter plots.
+
+    :param data: Input data.
+    :type data: pd.DataFrame,
+    :param limit: Limit the length of data. *Optional*
+    :type limit: int
+    :param label_lst: List of labels to include, if None will include all columns. *Optional*
+    :type label_lst: List[str]
+    :param color_lst: List of colors to graph. *Optional*
+    :type color_lst: List[str]
+    :param normalize_x: List of columns to normalize. *Optional*
+    :type normalize_x: List[str]
+    :param regression_line:  If included, requires a column str or List[str], default = None. *Optional*
+    :type regression_line: List[str]
+    :param regression_line_color: Color of regression line, default = 'red'. *Optional*
+    :type regression_line_color: str
+    :param regression_line_lineweight: Regression lineweight, default = 2.0. *Optional*
+    :type regression_line_lineweight: float
+    :param running_mean_x: List of columns to calculate running mean. *Optional*
+    :type running_mean_x: List[str]
+    :param running_mean_value: List of columns to calculate running mean. *Optional*
+    :type running_mean_value: Optional[int] = 50,
+    :param cumulative_mean_x: List of columns to calculate cumulative mean. *Optional*
+    :type cumulative_mean_x: List[str]
+    :param fig_size: default = (10, 7), *Optional*
+    :type fig_size: tuple
+    :param ylabel: Y axis label. *Optional*
+    :type ylabel: str
+    :param ylabel_color: Y axis label color, default = 'black'. *Optional*
+    :type ylabel_color: str
+    :param ylabel_size: Y label size, default = 'medium'. *Optional*
+    :type ylabel_size: str
+    :param xlabel: X axis label. *Optional*
+    :type xlabel: str
+    :param xlabel_color: X axis label color, default = 'black'. *Optional*
+    :type xlabel_color: str
+    :param xlabel_size: X label size, default = 'medium'. *Optional*
+    :type xlabel_size: str
+    :param title: Graph title, default = 'Scatter Plot'. *Optional*
+    :type title: str
+    :param title_size: Title size, default = 'xx-large'. *Optional*
+    :type title_size: str
+    :param grid: If True will show grid, default = true. *Optional*
+    :type grid: bool
+    :param grid_alpha: Grid alpha, default = 0.75. *Optional*
+    :type grid_alpha: float
+    :param grid_dash_sequence: Grid dash sequence, default = (3, 3). *Optional*
+    :type grid_dash_sequence: tuple
+    :param grid_lineweight: Grid lineweight, default = 0.5. *Optional*
+    :type grid_lineweight: float
+    :param legend_fontsize: Legend fontsize, default = 'medium'. *Optional*
+    :type legend_fontsize: str
+    :param legend_transparency: Legend transparency, default = 0.75. *Optional*
+    :type legend_transparency: float
+    :param legend_location: legend location, default = 'lower right'. *Optional*
+    :type legend_location: str
+    :example: *None*
+    :note: *None*
+
+    """
     def __init__(self,
                  data: pd.DataFrame,
                  limit: Optional[int] = None,
@@ -214,13 +337,80 @@ class Scatter:
 
     @property
     def ax(self):
+        """Returns a plot"""
         return self._ax
 
 
 @dataclass
 class Histogram:
-    """Creates a Histogram Plot"""
+    """
 
+    Class for plotting histograms.
+
+    :param data: Input data.
+    :type data: pd.DataFrame,
+    :param limit: Limit the length of data. *Optional*
+    :type limit: int
+    :param label_lst: List of labels to include, if None will include all columns. *Optional*
+    :type label_lst: List[str]
+    :param color_lst: List of colors to graph. *Optional*
+    :type color_lst: List[str]
+    :param include_norm: Include norm. If included, requires a column str, default = None. *Optional*
+    :type include_norm: str
+    :param norm_color: Norm color, default = 'red'. *Optional*
+    :type norm_color: str
+    :param norm_lineweight: Norm lineweight, default = 1.0. *Optional*
+    :type norm_lineweight: float
+    :param norm_ylabel: Norm Y axis label. *Optional*
+    :type norm_ylabel: str
+    :param norm_legend_location: Location of norm legend, default = 'upper right'. *Optional*
+    :type norm_legend_location: str
+    :param fig_size: default = (10, 7), *Optional*
+    :type fig_size: tuple
+    :param bins: Way of calculating bins, default = 'sturges'. *Optional*
+    :type bins: str
+    :param hist_type: Type of histogram, default = 'bar'. *Optional*
+    :type hist_type: str
+    :param stacked: If True, will stack histograms, default = False. *Optional*
+    :type stacked: bool
+    :param ylabel: Y axis label. *Optional*
+    :type ylabel: str
+    :param ylabel_color: Y axis label color, default = 'black'. *Optional*
+    :type ylabel_color: str
+    :param ylabel_size: Y label size, default = 'medium'. *Optional*
+    :type ylabel_size: str
+    :param ytick_rotation:
+    :type ytick_rotation: Optional[int] = 0,
+    :param xlabel: X axis label. *Optional*
+    :type xlabel: str
+    :param xlabel_color: X axis label color, default = 'black'. *Optional*
+    :type xlabel_color: str
+    :param xlabel_size: X label size, default = 'medium'. *Optional*
+    :type xlabel_size: str
+    :param xtick_rotation:
+    :type xtick_rotation: Optional[int] = 0,
+    :param title: Graph title, default = 'Histogram'. *Optional*
+    :type title: str
+    :param title_size: Title size, default = 'xx-large'. *Optional*
+    :type title_size: str
+    :param grid: If True will show grid, default = true. *Optional*
+    :type grid: bool
+    :param grid_alpha: Grid alpha, default = 0.75. *Optional*
+    :type grid_alpha: float
+    :param grid_dash_sequence: Grid dash sequence, default = (3, 3). *Optional*
+    :type grid_dash_sequence: tuple
+    :param grid_lineweight: Grid lineweight, default = 0.5. *Optional*
+    :type grid_lineweight: float
+    :param legend_fontsize: Legend fontsize, default = 'medium'. *Optional*
+    :type legend_fontsize: str
+    :param legend_transparency: Legend transparency, default = 0.75. *Optional*
+    :type legend_transparency: float
+    :param legend_location: legend location, default = 'lower right'. *Optional*
+    :type legend_location: str
+    :example: *None*
+    :note: *None*
+
+    """
     def __init__(self,
                  data: pd.DataFrame,
                  color_lst: Optional[List[str]] = None,
@@ -307,16 +497,42 @@ class Histogram:
 
     @property
     def ax(self):
+        """Returns a plot"""
         return self._ax, self._ax1
 
 
 @dataclass
 class Table:
-    """Creates a Table Plot"""
+    """
 
+    Class for plotting tables.
+
+    :param data: Input data.
+    :type data: pd.DataFrame
+    :param label_lst: List of labels to include, if None will include all columns. *Optional*
+    :type label_lst: List[str]
+    :param fig_size: default = (10, 10), *Optional*
+    :type fig_size: tuple
+    :param font_size: Font size inside cells, default = 'medium'. *Optional*
+    :type font_size: str
+    :param col_widths: Width of columns, default = 0.30. *Optional*
+    :type col_widths: float
+    :param row_colors: Color of rows. *Optional*
+    :type row_colors: str
+    :param header_colors: Header of table color. *Optional*
+    :type header_colors: str
+    :param edge_color: Color of cell edges, default = 'w'. *Optional*
+    :type edge_color: str
+    :param sequential_cells: If True will color ever other row. *Optional*
+    :type sequential_cells: bool
+    :param color_map: Color map used in cells, default = 'Greens'. *Optional*
+    :type color_map: str
+    :example: *None*
+    :note: *None*
+
+    """
     # import matplotlib
     # matplotlib.colors.to_rgba(c, alpha=None)
-
     def __init__(self,
                  data: pd.DataFrame,
                  label_lst: Optional[List[str]] = None,
@@ -389,6 +605,7 @@ class Table:
 
     @property
     def ax(self):
+        """Returns a plot"""
         return self._ax
 
 

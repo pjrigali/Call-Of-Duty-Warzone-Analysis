@@ -1,3 +1,11 @@
+"""User class object.
+
+Usage:
+ ./user.py
+
+Author:
+ Peter Rigali - 2021-08-30
+"""
 from typing import Optional, List
 from dataclasses import dataclass
 from credentials import user_inputs
@@ -6,19 +14,16 @@ from credentials import user_inputs
 @dataclass
 class User:
     """
+
     Organizes the Users input data.
 
-    Parameters
-    ----------
-    info : dict
-        User input dict.
-
-    Examples
-    --------
-
-    >>> from Classes.user import User
-    >>> from credentials import user_inputs
-    >>> user = User(info=user_input)
+    :param info: User input dict.
+    :type info: dict
+    :example:
+        >>> from user import User
+        >>> from credentials import user_inputs
+        >>> user = User(info=user_input)
+    :note: *None*
 
     """
 
@@ -35,20 +40,20 @@ class User:
     """List of gamertags"""
 
     # Need for Scraping
-    headers: Optional[dict]
-    """Headers from local machine"""
-
-    CodTrackerID: Optional[str]
-    """Cod Tracker ID for the user"""
-
-    USERNAME: Optional[str]
-    """Username for login to Cod Tracker"""
-
-    PASSWORD: Optional[str]
-    """Password for login to Cod Tracker"""
-
-    DRIVER_PATH: Optional[str]
-    """Driver path used for Selenium scraping"""
+    # headers: Optional[dict]
+    # """Headers from local machine"""
+    #
+    # CodTrackerID: Optional[str]
+    # """Cod Tracker ID for the user"""
+    #
+    # USERNAME: Optional[str]
+    # """Username for login to Cod Tracker"""
+    #
+    # PASSWORD: Optional[str]
+    # """Password for login to Cod Tracker"""
+    #
+    # DRIVER_PATH: Optional[str]
+    # """Driver path used for Selenium scraping"""
 
     def __init__(self, info: dict = None):
 
@@ -104,12 +109,6 @@ class User:
         if self._gamertag not in self._squad:
             self._squad = [self._gamertag] + self._squad
 
-    def set_squad(self, lst: List[str]):
-        self._squad = lst
-
-    def set_gamertag(self, val: str):
-        self._gamertag = val
-
     def __repr__(self):
         return self.gamertag
 
@@ -128,7 +127,17 @@ class User:
         """Returns the users gamertag"""
         return self._gamertag
 
+    @gamertag.setter
+    def gamertag(self, val: str):
+        """Set User Gamertag"""
+        self._gamertag = val
+
     @property
-    def squad(self) -> List[str]:
+    def squad_lst(self) -> List[str]:
         """Returns the users squad gamertags as a list"""
         return self._squad
+
+    @squad_lst.setter
+    def squad_lst(self, lst: List[str]):
+        """Set squad list"""
+        self._squad = lst

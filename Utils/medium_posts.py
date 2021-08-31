@@ -1,3 +1,11 @@
+"""Various calculations used for generating the research for medium posts.
+
+Usage:
+ ./medium_posts.py
+
+Author:
+ Peter Rigali - 2021-08-30
+"""
 from typing import List
 import pandas as pd
 import numpy as np

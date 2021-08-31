@@ -12,10 +12,10 @@
 #
 import os
 import sys
+# sys.path.insert(0, os.path.abspath('..\..'))
 sys.path.insert(0, os.path.abspath('C:\\Users\\Peter\\Desktop\\Personal\\11_Repository\\Call of Duty Related\\Call-Of-Duty-Warzone-Analysis\\'))
 sys.path.append('C:\\Users\\Peter\\Desktop\\Personal\\11_Repository\\Call of Duty Related\\Call-Of-Duty-Warzone-Analysis\\Classes\\')
 sys.path.append('C:\\Users\\Peter\\Desktop\\Personal\\11_Repository\\Call of Duty Related\\Call-Of-Duty-Warzone-Analysis\\Utils\\')
-
 
 # -- Project information -----------------------------------------------------
 
@@ -32,7 +32,8 @@ release = 'v2.2.0'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.autodoc']
+import numpydoc
+extensions = ['sphinx.ext.autodoc', 'numpydoc', 'sphinx.ext.intersphinx']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -48,7 +49,8 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'classic'
+import sphinx_rtd_theme
+html_theme = 'sphinx_rtd_theme'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

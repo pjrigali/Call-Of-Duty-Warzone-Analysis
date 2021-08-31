@@ -1,3 +1,11 @@
+"""Squad class object.
+
+Usage:
+ ./squad.py
+
+Author:
+ Peter Rigali - 2021-08-30
+"""
 from typing import List, Dict
 import pandas as pd
 import numpy as np
@@ -68,7 +76,22 @@ def _get_stats(doc_filter: DocumentFilter) -> Dict[str, float]:
 
 @dataclass
 class Performance:
-    """The Performance class is used to evaluate a players performance on a given map and mode"""
+    """
+
+    The Performance class is used to evaluate a players performance on a given map and mode
+
+    :param original_df: Input data.
+    :type original_df: pd.DataFrame
+    :param nap_choice: Map filter. Either 'mp_e' for Rebirth and 'mp_d' for Verdansk.
+    :type map_choice: str
+    :param mode_choice: Mode filter. Either 'solo', 'duo', 'trio', or 'quad'.
+    :type mode_choice: str
+    :param uno: Input person uno Id.
+    :type uno: str
+    :example: *None*
+    :note: *None
+
+    """
 
     original_df: pd.DataFrame
     map_choice: str
@@ -114,8 +137,20 @@ def _get_stats_per_map(map_choice: str, original_df: pd.DataFrame, uno: str) -> 
 
 @dataclass
 class Person:
-    """The Person class is used to gather all map/mode stats for a given player"""
+    """
 
+    The Person class is used to gather all map/mode stats for a given player
+
+    :param original_df: Input data.
+    :type original_df: pd.DataFrame
+    :param uno: Input person uno Id.
+    :type uno: str
+    :param gamertag: Input person's gamertag.
+    :type gamertag: str
+    :example: *None*
+    :note: *None
+
+    """
     original_df: pd.DataFrame
     uno: str
     gamertag: str
@@ -125,9 +160,6 @@ class Person:
         self._gamertag = gamertag
         self._rebirth_stats = _get_stats_per_map(map_choice='mp_e', original_df=original_df, uno=uno)
         self._verdansk_stats = _get_stats_per_map(map_choice='mp_d', original_df=original_df, uno=uno)
-
-    def set_uno(self, val: str):
-        self._uno = val
 
     def __repr__(self):
         return self.gamertag
@@ -141,6 +173,11 @@ class Person:
     def uno(self) -> str:
         """Returns player uno"""
         return self._uno
+
+    @uno.setter
+    def uno(self, val: str):
+        """Set Uno value"""
+        self._uno = val
 
     @property
     def rebirth(self) -> dict:
@@ -158,25 +195,20 @@ class Squad:
     """
     Calculate stats for all maps/modes for each squad memeber.
 
-    Parameters
-    ----------
-    squad_lst : List[str]
-        List of gamertags. Include your gamertag in the list.
-    original_df : pd.DataFrame
-        Orginal DataFrame for stats to be calculated from.
-    uno_name_dic : dict
-        A dict of all gamertags and respective unos.
+    :param squad_lst: List of gamertags. Include your gamertag in the list.
+    :type squad_lst: List[str]
+    :param original_df: Original DataFrame for stats to be calculated from.
+    :type original_df: pd.DataFrame
+    :param uno_name_dic: A dict of all gamertags and respective unos.
+    :type uno_name_dic: dict
+    :example:
+        >>> from credentials import user_inputs
+        >>> from user import User
+        >>> from squad import Squad
+        >>> _User = User(info=user_inputs)
+        >>> _Squad = Squad(squad_lst=_User.squad_lst, original_df=cod.our_df, uno_name_dic=cod.name_uno_dict)
+    :note: This will calculate and return the stats for all squad members.
 
-    Examples
-    --------
-
-    >>> from credentials import user_inputs
-    >>> from Classes.user import User
-    >>> from Classes.squad import Squad
-    >>> _User = User(info=user_inputs)
-    >>> _Squad = Squad(squad_lst=_User.squad, original_df=cod.our_df, uno_name_dic=cod.name_uno_dict)
-
-    This will calculate and return the stats for all squad memebers.
     """
     squad_lst: List[str]
     original_df: pd.DataFrame

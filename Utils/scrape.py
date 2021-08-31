@@ -1,3 +1,11 @@
+"""Functions for dealing with new data.
+
+Usage:
+ ./scrape.py
+
+Author:
+ Peter Rigali - 2021-08-30
+"""
 import requests
 import json
 import pandas as pd
@@ -5,18 +13,15 @@ import pandas as pd
 
 def connect_to_api(_id: str):
     """
-    Connect to Cod API to receive lobby information.
 
-    Parameters
-    ----------
-    _id : str
-        A matchID str.
+    Connect to Call of Duty API.
 
-    Returns
-    ----------
-    Json
-
-    Returns a Json of lobby data related to specified matchID.
+    :param _id: A matchID str.
+    :type _id: str
+    :return: A Json of lobby data related to specified matchID.
+    :rtype: Json
+    :example: *None*
+    :note: Connect to Cod API to receive lobby information.
 
     """
 
@@ -28,19 +33,17 @@ def connect_to_api(_id: str):
 
 def clean_api_data(json_object) -> pd.DataFrame:
     """
-    Takes a Json object related to a matchID and constructs a pd.DataFrame with all relevant information.
 
+    Cleans the JSON output from *connect_to_api*
+
+    :param json_object: Json object.
+    :type json_object: Json
+    :return: Match information in a table.
+    :rtype: pd.DataFrame
+    :example: *None*
+    :note: Takes a Json object related to a matchID and constructs a pd.DataFrame with all relevant information.
     This will need to be saved(or concatenated to an existing csv) and
     loaded through the _evaulate_df() to work properly in this model.
-
-    Parameters
-    ----------
-    json_object : Json
-        A lobby json.
-
-    Returns
-    ----------
-    pd.DataFrame.
 
     """
 
