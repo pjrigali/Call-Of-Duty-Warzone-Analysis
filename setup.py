@@ -10,7 +10,7 @@ def read_file(*parts):
 
 setup(
     name='warzone analysis',
-    version='2.3.0',
+    version='2.4.0',
     # packages=['Classes', 'Utils',],
     packages=['warzone',],
     author='Peter Rigali',

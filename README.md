@@ -6,15 +6,6 @@ A package for analysis of _Call of Duty Warzone_ matches.
 # Installation
     pip install warzone-analysis
 
-
-To build, need the following dictionary to input into CallofDuty:
-```python
-    user_inputs = {'repo': 'local data directory',
-                   'gamertag': 'your gamertag',
-                   'squad': ['friend gamertag1', 'friend gamertag2', '... etc'],
-                   'file_name': 'Match_Data.csv'}
-```
-
 # Usage
 
 ```python
