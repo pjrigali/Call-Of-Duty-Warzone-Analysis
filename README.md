@@ -1,10 +1,10 @@
 # Call-Of-Duty-Warzone-Analysis
 [![Documentation Status](https://readthedocs.org/projects/call-of-duty-warzone-analysis/badge/?version=latest)](https://call-of-duty-warzone-analysis.readthedocs.io/en/latest/?badge=latest)
 
-A module for analysis of _Call of Duty Warzone_ matches.
+A package for analysis of _Call of Duty Warzone_ matches.
 
 # Installation
-    pip install warzone-analysis==2.2.1
+    pip install warzone-analysis
 
 
 To build, need the following dictionary to input into CallofDuty:

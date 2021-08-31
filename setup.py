@@ -9,7 +9,7 @@ def read_file(*parts):
         return reader.read()
 
 setup(
-    name='warzone',
+    name='warzone analysis',
     version='2.3.0',
     # packages=['Classes', 'Utils',],
     packages=['warzone',],
