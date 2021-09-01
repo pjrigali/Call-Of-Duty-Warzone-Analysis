@@ -66,7 +66,8 @@ user_input_dict = {'repo': 'location of saved data',
 cod = CallofDuty(user_input_dict=user_input_dict, squad_data=True, hacker_data=False, streamer_mode=False)
 ```
 
-### Below are some write-ups detailing and utilizing the package.
+## Below are some write-ups utilizing the package.
+
 ![Warzone Analysis Part 5](https://miro.medium.com/max/700/1*7POapiPrZludtwW9Pwam7g.png)
 
 [Best time to Play](https://medium.com/@peterjrigali/warzone-analysis-part-5-a7eae20eda37)
