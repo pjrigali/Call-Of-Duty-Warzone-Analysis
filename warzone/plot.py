@@ -143,11 +143,11 @@ class Line:
 
             d = data[ind]
             if ind in normalize_x:
-                d = normalize(d)
+                d = normalize(np.array(d))
             elif ind in running_mean_x:
-                d = running_mean(d, running_mean_value)
+                d = running_mean(np.array(d), running_mean_value)
             elif ind in cumulative_mean_x:
-                d = cumulative_mean(d)
+                d = cumulative_mean(np.array(d))
 
             ax.plot(d, color=color_lst[count], label=ind)
             count += 1
@@ -317,11 +317,11 @@ class Scatter:
 
             d = data[ind]
             if ind in normalize_x:
-                d = normalize(d)
+                d = normalize(np.array(d))
             elif ind in running_mean_x:
-                d = running_mean(d, running_mean_value)
+                d = running_mean(np.array(d), running_mean_value)
             elif ind in cumulative_mean_x:
-                d = cumulative_mean(d)
+                d = cumulative_mean(np.array(d))
 
             ax.scatter(x=x_axis, y=d, color=color_lst[count], label=ind)
 
@@ -547,6 +547,8 @@ class Table:
     :type sequential_cells: bool
     :param color_map: Color map used in cells, default = 'Greens'. *Optional*
     :type color_map: str
+    :param font_color: Color of text inside cells, default is 'black'. *Optional*
+    :type font_color: str
     :example: *None*
     :note: *None*
 
@@ -564,6 +566,7 @@ class Table:
                  edge_color: Optional[str] = 'w',
                  sequential_cells: Optional[bool] = None,
                  color_map: Optional[str] = 'Greens',
+                 font_color: Optional[str] = 'black',
                  ):
         data['index'] = list(data.index)
 
@@ -613,6 +616,8 @@ class Table:
             else:
                 if sequential_cells is None:
                     cell.set_facecolor(row_colors[r % len(row_colors)])
+                if c != 0 and c != 'index':
+                    cell.set_text_props(color=font_color)
 
         ax.axis('tight')
         ax.axis('off')
