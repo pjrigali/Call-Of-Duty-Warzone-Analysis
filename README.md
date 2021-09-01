@@ -24,8 +24,9 @@ The secondary goal is help the user understand the conditions that affect how th
 
 ### Installing
 
-The package can be accessed via pip install.
 [Pypi Documentation](https://pypi.org/project/warzone-analysis/)
+
+The package can be accessed via pip install.
 
     pip install warzone-analysis
 
@@ -65,10 +66,23 @@ user_input_dict = {'repo': 'location of saved data',
 cod = CallofDuty(user_input_dict=user_input_dict, squad_data=True, hacker_data=False, streamer_mode=False)
 ```
 
-**Below are some write-ups detailing and utilizing the package.**
+### Below are some write-ups detailing and utilizing the package.
+![Warzone Analysis Part 5](https://miro.medium.com/max/700/1*7POapiPrZludtwW9Pwam7g.png)
+
+[Best time to Play](https://medium.com/@peterjrigali/warzone-analysis-part-5-a7eae20eda37)
+_Example of the get_daily_hourly_weekday_stats() function._
+
+![Warzone Analysis Part 4](https://miro.medium.com/max/700/1*GQvRO-AlvZ4nSm1KYLNj8A.png)
+
+[get_weapons and meta_weapons](https://medium.com/@peterjrigali/warzone-package-part-4-10f04acc3251)
+_Goes through how to use the get_weapons and meta_weapons functions._
+
+![Warzone Analysis Part 3](https://miro.medium.com/max/700/1*w0T6lztljOKIAFbeSR3ayQ.png)
 
 [Plot Examples](https://medium.com/@peterjrigali/warzone-package-part-3-c1cfa2be46bc)
 _Examples for using the built-in Line, Scatter, Histogram and Table Classes._
+
+![Warzone Analysis Part 2](https://miro.medium.com/max/503/1*lr4Ar60U43khmE2b4muEzw.png)
 
 [Squad Class Example](https://medium.com/@peterjrigali/warzone-package-part-2-3ff94902f355)
 _Exploring the Squad Class built inside CallofDuty Class._
@@ -76,11 +90,17 @@ _Exploring the Squad Class built inside CallofDuty Class._
 [Scraping and Api Connection](https://medium.com/@peterjrigali/warzone-package-part-1-b64d753e949c)
 _Outlines process for grabbing your past matches and connecting to the Call of Duty public endpoints._
 
+![More Hackers Now?](https://miro.medium.com/max/700/1*xX3zZd389SBH4CRCYCciVg.png)
+
 [More Hackers Now?](https://medium.com/@peterjrigali/more-hackers-now-51c7cbe0ac87)
 _Exploring tracking hackers in your lobby and how these numbers have changed over time._
 
+![Engagement Based Matchmaking in Warzone](https://miro.medium.com/max/700/1*QDLXPryYTAcGgOaefglUCw.png)
+
 [Engagement Based Matchmaking in Warzone](https://medium.com/@peterjrigali/engagement-based-matchmaking-in-warzone-part-1-48b1ef72ada0)
 _Exploring the evidence for Engagement Based Matchmaking_
+
+![Detect Hackers in your Warzone Lobby](https://miro.medium.com/max/700/1*LKy6t87G-qM2lZj9FU6Vbg.png)
 
 [Detect Hackers in your Warzone Lobby](https://medium.com/@peterjrigali/how-to-tell-if-hackers-are-in-your-warzone-lobby-part-1-393360c38104)
 _Do lobbies die out quicker when hackers are present?_
