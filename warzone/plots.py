@@ -11,8 +11,8 @@ import pandas as pd
 import numpy as np
 from typing import List, Optional
 from scipy.stats import norm
-from base import normalize, running_mean, cumulative_mean
-from document_filter import DocumentFilter
+from warzone.base import normalize, running_mean, cumulative_mean
+from warzone.document_filter import DocumentFilter
 
 
 def personal_plot(doc_filter: DocumentFilter) -> None:

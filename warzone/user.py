@@ -8,7 +8,6 @@ Author:
 """
 from typing import List
 from dataclasses import dataclass
-from warzone.credentials import user_inputs
 
 
 @dataclass
@@ -61,7 +60,7 @@ class User:
     def __init__(self, info: dict = None):
 
         if info is None:
-            info = user_inputs
+            raise AttributeError('Need to pass an input dict')
 
         if info['file_name'] is None:
             raise AttributeError('Need to pass a file name')

@@ -7,11 +7,11 @@ Author:
  Peter Rigali - 2021-08-30
 """
 from typing import Union, List
+from dataclasses import dataclass
 import numpy as np
 from statsmodels import regression
 from statsmodels.tools import add_constant
-from document_filter import DocumentFilter
-from dataclasses import dataclass
+from warzone.document_filter import DocumentFilter
 
 
 @dataclass

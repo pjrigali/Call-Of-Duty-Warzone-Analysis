@@ -10,8 +10,8 @@ from typing import List
 import pandas as pd
 import numpy as np
 import datetime
-from user import User
-from squad import Squad
+from warzone.user import User
+from warzone.squad import Squad
 
 
 def sm_whole(_user_class: User, data: pd.DataFrame) -> None:

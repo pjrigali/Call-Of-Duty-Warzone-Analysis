@@ -10,10 +10,10 @@ import pandas as pd
 import numpy as np
 from scipy import stats
 from typing import List, Optional, Union
-from gun_dictionary import gun_dict
-from outlier import stack, outlier_hist, outlier_std, outlier_var, outlier_distance, outlier_knn
-from outlier import outlier_cooks_distance, outlier_regression
-from document_filter import DocumentFilter
+from warzone.gun_dictionary import gun_dict
+from warzone.outlier import stack, outlier_hist, outlier_std, outlier_var, outlier_distance, outlier_knn
+from warzone.outlier import outlier_cooks_distance, outlier_regression
+from warzone.document_filter import DocumentFilter
 
 
 def first_top5_bottom_stats(doc_filter: DocumentFilter, col_lst: Union[List[str], str]) -> pd.DataFrame:
@@ -281,14 +281,14 @@ def get_daily_hourly_weekday_stats(doc_filter: DocumentFilter) -> list:
                 place = int(np.mean(df[df['matchID'] == match]['teamPlacement']))
                 if place == 1:
                     wins.append(1)
-                elif (1 < place) & (place >= num):
+                elif 1 < place and place >= num:
                     top_fives.append(1)
                 else:
                     wins.append(0)
                     top_fives.append(0)
 
             return [int(df['kills'].sum()), int(df['deaths'].sum()), np.sum(wins), np.sum(top_fives), len(_matches),
-                    np.mean(df['teamPlacement'])]
+                    np.mean(df['placementPercent'])]
         else:
             return [0, 0, 0, 0, 0, 0]
 
@@ -361,7 +361,7 @@ def get_daily_hourly_weekday_stats(doc_filter: DocumentFilter) -> list:
                             lst.append(dfn.loc[i, 'teamPlacement'])
                         else:
                             lst.append(dfn.loc[i, val])
-                if (val == 'averagePlacement') | (val == 'kdRatio'):
+                if val == 'averagePlacement' or val == 'kdRatio':
                     temp_dic[_hour] = np.mean(lst)
                 else:
                     temp_dic[_hour] = sum(lst)

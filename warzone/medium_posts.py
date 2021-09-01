@@ -422,3 +422,71 @@ import statsmodels.api as sm
 # data.df = data.df.dropna(subset=['kills_log'], how='all')
 #
 # reg2 = Regression(doc_filter=data, x_column='kills_log', y_column='placementPercent')
+
+
+# Meta weapons
+# doc_whole = DocumentFilter(original_df=cod.whole, map_choice='mp_e', mode_choice='quad')
+# meta_weapon_info = meta_weapons(doc_filter=doc_whole, top_1=None, top_5_or_10=None, col=None, mu=None)
+
+# data = pd.DataFrame()
+# data['Krig'] = running_mean(np.array(meta_weapon_info['Krig']), num=30)
+# data['FARA'] = running_mean(np.array(meta_weapon_info['FARA']), num=30)
+# data['Ffar'] = running_mean(np.array(meta_weapon_info['Ffar']), num=30)
+# data['Kar'] = running_mean(np.array(meta_weapon_info['Kar']), num=30)
+# data.index = pd.to_datetime(meta_weapon_info.index)
+#
+# Line(data=data, color_lst=None, title='Weapon Comparison', ylabel='Percent', xlabel='Date')
+# plt.show()
+
+# best_weapons = get_weapons(doc_filter=doc_whole)
+# best_weapons['kdRatio'] = best_weapons['kills'] / best_weapons['deaths']
+# data = best_weapons[best_weapons['kills'] > 1000].sort_values(['kdRatio','kills'], ascending=False).head(15).round(2)
+#
+# Table(data=data, col_widths=0.15, fig_size=(10, 4))
+# plt.show()
+
+# t = dict(zip(gun_dict.values(), gun_dict.keys()))
+# gun_dict_keys_lst = [i for i in list(gun_dict.keys()) if i != 'none' and i != 'nan']
+#
+# weapon_name_type_dic = {}
+# for weapon_name in gun_dict_keys_lst:
+#     weapon_name_type_dic[gun_dict[weapon_name]] = weapon_name.split('_')[1]
+#
+# weapon_type_name_dic = {}
+# for weapon_type in set(weapon_name_type_dic.values()):
+#     weapon_lst = []
+#     for weapon_name in weapon_name_type_dic.keys():
+#         if weapon_name_type_dic[weapon_name] == weapon_type:
+#             weapon_lst.append(weapon_name)
+#     weapon_type_name_dic[weapon_type] = weapon_lst
+#
+# type_percent_dic = {}
+# for weapon_type in weapon_type_name_dic.keys():
+#     type_percent_dic[weapon_type] = list(meta_weapon_info[weapon_type_name_dic[weapon_type]].sum(axis=1))
+#
+# col_lst = ['Assault Rifle', 'SMG', 'Shotgun', 'Sniper', 'LMG']
+# data = pd.DataFrame.from_dict(type_percent_dic)[['ar', 'sm', 'sh', 'sn', 'lm']]
+# data.columns = col_lst
+# data.index = meta_weapon_info.index
+# line = Line(data=data, running_mean_x=col_lst, running_mean_value=30, title='Weapon Type Preference (Top 5 Placement)', ylabel='Percent', xlabel='Date').ax
+# line.set_xticklabels(pd.to_datetime(meta_weapon_info.index, format="%Y-%m"))
+# plt.show()
+
+# col_lst = []
+# mw_lst = []
+# cw_lst = []
+# for col in meta_weapon_info.columns:
+#     if 't9' in t[col]:
+#         col_lst.append('cw')
+#         cw_lst.append(col)
+#     else:
+#         col_lst.append('mw')
+#         mw_lst.append(col)
+#
+# data = pd.DataFrame()
+# data['mw'] = running_mean(np.array(meta_weapon_info[mw_lst].sum(axis=1)), num=30)
+# data['cw'] = running_mean(np.array(meta_weapon_info[cw_lst].sum(axis=1)), num=30)
+# data.index = pd.to_datetime(meta_weapon_info.index)
+# Line(data=data, color_lst=['tab:orange', 'tab:blue'], title='Weapon Preference', ylabel='Percent', xlabel='Date')
+# plt.show()
+
