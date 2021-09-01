@@ -75,7 +75,7 @@ _Example of the get_daily_hourly_weekday_stats() function._
 
 ![Warzone Analysis Part 4](https://miro.medium.com/max/700/1*GQvRO-AlvZ4nSm1KYLNj8A.png)
 
-[get_weapons and meta_weapons](https://medium.com/@peterjrigali/warzone-package-part-4-10f04acc3251)
+[What's the Meta?](https://medium.com/@peterjrigali/warzone-package-part-4-10f04acc3251)
 _Goes through how to use the get_weapons and meta_weapons functions._
 
 ![Warzone Analysis Part 3](https://miro.medium.com/max/700/1*w0T6lztljOKIAFbeSR3ayQ.png)
