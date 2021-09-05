@@ -25,10 +25,11 @@ CallofDuty
         *Optional*
     :type squad_data: bool
     :param hacker_data: This requires a separate csv with hacker data saved.
-        This data can be collected by finding hackers after the fact and scraping there data from CodTracker.
-        Default is False. *Optional*
+        This data can be collected by finding hackers after the fact and
+        scraping there data from CodTracker. Default is False. *Optional*
     :type hacker_data: bool
-    :param streamer_mode: If True, will hide user inputted Gamertag's and Uno's, default is False. *Optional*
+    :param streamer_mode: If True, will hide user inputted Gamertag's and Uno's,
+        default is False. *Optional*
     :type streamer_mode: bool
     :example:
         .. code-block:: python
@@ -38,7 +39,10 @@ CallofDuty
                       'gamertag': 'your gamertag',
                       'squad': ['friend gamertag1', 'friend gamertag2', '... etc'],
                       'file_name': 'match_data.csv'}
-            cod = CallofDuty(user_input_dict=inputs, squad_data=True, hacker_data=False, streamer_mode=False)
+            cod = CallofDuty(user_input_dict=inputs,
+                             squad_data=True,
+                             hacker_data=False,
+                             streamer_mode=False)
     :note: This will calculate and build the CallofDuty class.
 
 .. autosummary::
@@ -544,7 +548,9 @@ Squad class object.
             from warzone.user import User
             from warzone.squad import Squad
             _User = User(info=user_inputs)
-            _Squad = Squad(squad_lst=_User.squad_lst, original_df=cod.our_df, uno_name_dic=cod.name_uno_dict)
+            _Squad = Squad(squad_lst=_User.squad_lst,
+                           original_df=cod.our_df,
+                           uno_name_dic=cod.name_uno_dict)
     :note: This will calculate and return the stats for all squad members.
         This is not intended to be used outside of building the CallofDuty Class.
 
