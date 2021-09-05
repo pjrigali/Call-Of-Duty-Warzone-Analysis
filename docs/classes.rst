@@ -6,7 +6,7 @@ Classes
    :description: This chapter describes various classes for Analyzing and Visualizing stats.
    :keywords: Call of Duty, Warzone, Python, Data Science
 
-This chapter documents the classes used.
+This chapter documents the Classes used in this package.
 
 .. _CallofDuty:
 
@@ -17,57 +17,56 @@ CallofDuty
 .. class:: CallofDuty(hacker_data, squad_data, streamer_mode):
 
     Calculate stats for all maps/modes for each squad member.
+    Loads in existing user data.
 
     :param user_input_dict: A dict of user inputs.
     :type user_input_dict: dict
-    :param squad_data: If True, will build the Squad class. default is True. *Optional*
+    :param squad_data: If True, will build the Squad class, default is True.
+        *Optional*
     :type squad_data: bool
-    :param hacker_data: This Requires a seperate csv with hacker data saved. This data can be collected by
-        finding hackers after the fact and scraping there data from CodTracker, this can then be used to find
-        hackers in other games. Default is False. *Optional*
+    :param hacker_data: This requires a separate csv with hacker data saved.
+        This data can be collected by finding hackers after the fact and scraping there data from CodTracker.
+        Default is False. *Optional*
     :type hacker_data: bool
-    :param streamer_mode: If True, will hide User inputted Gamertag's and Uno's. default is False. *Optional*
+    :param streamer_mode: If True, will hide user inputted Gamertag's and Uno's, default is False. *Optional*
     :type streamer_mode: bool
     :example:
-        >>> from warzone.call_of_duty import CallofDuty
-            >>> inputs = {'repo': 'local data directory',
-            >>>        'gamertag': 'your gamertag',
-            >>>        'squad': ['friend gamertag1', 'friend gamertag2', '... etc'],
-            >>>        'file_name': 'match_data.csv'}
-            >>> cod = CallofDuty(user_input_dict=inputs, squad_data=True, hacker_data=False, streamer_mode=False)
-                >>> from call_of_duty import CallofDuty
-        >>> inputs = {'repo': 'local data directory',
-        >>>        'gamertag': 'your gamertag',
-        >>>        'squad': ['friend gamertag1', 'friend gamertag2', '... etc'],
-        >>>        'file_name': 'match_data.csv'}
-        >>> cod = CallofDuty(user_input_dict=inputs, squad_data=True, hacker_data=False, streamer_mode=False)
+        .. code-block:: python
+
+            from warzone.call_of_duty import CallofDuty
+            inputs = {'repo': 'local data directory',
+                      'gamertag': 'your gamertag',
+                      'squad': ['friend gamertag1', 'friend gamertag2', '... etc'],
+                      'file_name': 'match_data.csv'}
+            cod = CallofDuty(user_input_dict=inputs, squad_data=True, hacker_data=False, streamer_mode=False)
     :note: This will calculate and build the CallofDuty class.
 
 .. autosummary::
-    call_of_duty.CallofDuty.whole
-    call_of_duty.CallofDuty.gun_dictionary
-    call_of_duty.CallofDuty.last_match_date_time
-    call_of_duty.CallofDuty.name_uno_dict
-    call_of_duty.CallofDuty.my_uno
-    call_of_duty.CallofDuty.our_df
-    call_of_duty.CallofDuty.other_df
-    call_of_duty.CallofDuty.hacker_df
-    call_of_duty.CallofDuty.name_uno_dict_hacker
-    call_of_duty.CallofDuty.user
-    call_of_duty.CallofDuty.squad
+    warzone.call_of_duty.CallofDuty.whole
+    warzone.call_of_duty.CallofDuty.gun_dictionary
+    warzone.call_of_duty.CallofDuty.last_match_date_time
+    warzone.call_of_duty.CallofDuty.name_uno_dict
+    warzone.call_of_duty.CallofDuty.my_uno
+    warzone.call_of_duty.CallofDuty.our_df
+    warzone.call_of_duty.CallofDuty.other_df
+    warzone.call_of_duty.CallofDuty.hacker_df
+    warzone.call_of_duty.CallofDuty.name_uno_dict_hacker
+    warzone.call_of_duty.CallofDuty.user
+    warzone.call_of_duty.CallofDuty.squad
 
 .. _DocumentFilter:
 
 DocumentFilter
 --------------
-DocumentFilter class objects.
+DocumentFilter class object.
+
+Uses a set of filters to return desired data to be used in later analysis.
 
 .. :currentmodule:: document_filter
 
 .. class:: DocumentFilter(hacker_data, squad_data, streamer_mode):
 
     Get a selection from a DataFrame.
-    Uses a set of filters to return a desired set of data to be used in later analysis.
 
     :param original_df: Input DataFrame to be filtered.
     :type original_df: pd.DataFrame
@@ -79,53 +78,71 @@ DocumentFilter class objects.
     :type username: str
     :param uno: Filter by a players uno. *Optional*
     :type uno: str
-    :param username_dic: Required if 'username' or 'username_lst' is used. {username1: uno1, username2: uno2, etc}. *Optional*
+    :param username_dic: Required if 'username' or 'username_lst' is used. *Optional*
     :type username_dic: dict
     :param username_lst: Filter using a list of usernames. *Optional*
     :type username_lst: List[str]
     :example:
-        >>> from warzone.document_filter import DocumentFilter
-            >>> doc = DocumentFilter(original_df=cod.our_df, map_choice='mp_e', mode_choice='quad')
-                >>> from document_filter import DocumentFilter
-        >>> doc = DocumentFilter(original_df=cod.our_df, map_choice='mp_e', mode_choice='quad')
-    :note: All inputs, except original_df,  are *Optional* amd defaults are set to None.
-        This will return any data with map = rebirth and mode = Quads.
-        By specifiying 'cod.our_df', this will only return data related to the user.
+        .. code-block:: python
+
+            from warzone.document_filter import DocumentFilter
+            doc = DocumentFilter(original_df=cod.our_df, map_choice='mp_e', mode_choice='quad')
+    :note: All inputs, except **original_df**, are *Optional* and defaults are set to None.
+        The example will return any data with **map = rebirth** and **mode = Quads**.
+        By specifying **cod.our_df**, this will only return data related to the user and their teammates.
 
 .. autosummary::
-    document_filter.DocumentFilter.df
-    document_filter.DocumentFilter.map_choice
-    document_filter.DocumentFilter.mode_choice
-    document_filter.DocumentFilter.uno
-    document_filter.DocumentFilter.username
-    document_filter.DocumentFilter.username_lst
-    document_filter.DocumentFilter.unique_ids
-    document_filter.DocumentFilter.ids
-    document_filter.DocumentFilter.username_dic
+    warzone.document_filter.DocumentFilter.df
+    warzone.document_filter.DocumentFilter.map_choice
+    warzone.document_filter.DocumentFilter.mode_choice
+    warzone.document_filter.DocumentFilter.uno
+    warzone.document_filter.DocumentFilter.username
+    warzone.document_filter.DocumentFilter.username_lst
+    warzone.document_filter.DocumentFilter.unique_ids
+    warzone.document_filter.DocumentFilter.ids
+    warzone.document_filter.DocumentFilter.username_dic
 
 .. _Plot:
 
-Plot
-----
-Plot class objects.
+Plot Classes
+------------
+Plot Class objects.
 
-font size = ['xx-small', 'x-small', 'small', 'medium', 'large', 'x-large', 'xx-large']
+Possible Font Size Strings:
+    * 'xx-small'
+    * 'x-small'
+    * 'small'
+    * 'medium'
+    * 'large'
+    * 'x-large'
+    * 'xx-large'
 
-Legend location = ['best', 'upper right', 'upper left', 'lower left', 'lower right', 'right', 'center left', 'center right', 'lower center', 'upper center', 'center']
+Possible Legend Locations:
+    * 'best'
+    * 'upper right'
+    * 'upper left'
+    * 'lower left'
+    * 'lower right'
+    * 'right'
+    * 'center left'
+    * 'center right'
+    * 'lower center'
+    * 'upper center'
+    * 'center
 
 .. :currentmodule:: plot
 
-.. class:: Line:
+.. class:: Line(data):
 
-    Class for plotting line plots.
+    Class for Line plots.
 
     :param data: Input data.
-    :type data: pd.DataFrame,
+    :type data: pd.DataFrame
     :param limit: Limit the length of data. *Optional*
     :type limit: int
     :param label_lst: List of labels to include, if None will include all columns. *Optional*
     :type label_lst: List[str]
-    :param color_lst: List of colors to graph. *Optional*
+    :param color_lst: List of colors to graph, needs to be same length as label_lst. *Optional*
     :type color_lst: List[str]
     :param normalize_x: List of columns to normalize. *Optional*
     :type normalize_x: List[str]
@@ -167,15 +184,25 @@ Legend location = ['best', 'upper right', 'upper left', 'lower left', 'lower rig
     :type legend_transparency: float
     :param legend_location: legend location, default = 'lower right'. *Optional*
     :type legend_location: str
-    :example: *None*
+    :example:
+        .. code-block:: python
+
+            from warzone.plot import Line
+            Line(data=data,
+                 color_lst=['tab:orange', 'tab:blue'],
+                 title='Weapon Preference',
+                 ylabel='Percent',
+                 xlabel='Date')
+            plt.show()
+        .. image:: https://miro.medium.com/max/700/1*qMtEJwbMB9DpOOUKx5VDtg.png
     :note: *None*
 
 .. autosummary::
-    plot.Line.ax
+    warzone.plot.Line.ax
 
-.. class:: Scatter:
+.. class:: Scatter(data):
 
-    Class for plotting scatter plots.
+    Class for Scatter plots.
 
     :param data: Input data.
     :type data: pd.DataFrame,
@@ -231,19 +258,33 @@ Legend location = ['best', 'upper right', 'upper left', 'lower left', 'lower rig
     :type legend_transparency: float
     :param legend_location: legend location, default = 'lower right'. *Optional*
     :type legend_location: str
-    :param compare_two: If given will return a scatter comparing two variables,default is None. *Optional*
+    :param compare_two: If given will return a scatter comparing two variables, default is None. *Optional*
     :type compare_two: List[str]
-    :param y_limit: If given will limit the y axis.
+    :param y_limit: If given will limit the y axis, default is None. *Optional*
     :type y_limit: float
-    :example: *None*
-    :note: *None*
+    :example:
+        .. code-block:: python
+
+            from warzone.plot import Scatter
+            Scatter(data=data,
+                     compare_two=['teamSurvivalTime', 'placementPercent'],
+                     normalize_x=['teamSurvivalTime'],
+                     color_lst=['tab:orange'],
+                     regression_line=['placementPercent'],
+                     regression_line_color='tab:blue',
+                     title='Team Survival Time vs Placement Percent',
+                     ylabel='Placement Percent',
+                     xlabel='Team Survival Time (seconds)')
+             plt.show()
+        .. image:: https://miro.medium.com/max/700/1*w0T6lztljOKIAFbeSR3ayQ.png
+    :note: Slope of the regression line is noted in he legend.
 
 .. autosummary::
-    plot.Scatter.ax
+    warzone.plot.Scatter.ax
 
-.. class:: Histogram:
+.. class:: Histogram(data):
 
-    Class for plotting histograms.
+    Class for Histogram plots.
 
     :param data: Input data.
     :type data: pd.DataFrame,
@@ -305,15 +346,26 @@ Legend location = ['best', 'upper right', 'upper left', 'lower left', 'lower rig
     :type legend_transparency: float
     :param legend_location: legend location, default = 'lower right'. *Optional*
     :type legend_location: str
-    :example: *None*
+    :example:
+        .. code-block:: python
+
+            from warzone.plot import Histogram
+            Histogram(data=data,
+                      label_lst=['kills_log'],
+                      include_norm='kills_log',
+                      title='Kills Histogram')
+            plt.show()
+        .. image:: https://miro.medium.com/max/700/1*gzO4N258m-0pEb-5pmaKFA.png
     :note: *None*
 
 .. autosummary::
-    plot.Histogram.ax
+    warzone.plot.Histogram.ax
 
-.. class:: Table:
+.. class:: Table(data):
 
-    Class for plotting tables.
+    Class for Table plots.
+
+    `Possible Color Maps <https://matplotlib.org/stable/tutorials/colors/colormaps.html>`_
 
     :param data: Input data.
     :type data: pd.DataFrame
@@ -323,6 +375,8 @@ Legend location = ['best', 'upper right', 'upper left', 'lower left', 'lower rig
     :type fig_size: tuple
     :param font_size: Font size inside cells, default = 'medium'. *Optional*
     :type font_size: str
+    :param font_color: Color of text inside cells, default is 'black'. *Optional*
+    :type font_color: str
     :param col_widths: Width of columns, default = 0.30. *Optional*
     :type col_widths: float
     :param row_colors: Color of rows. *Optional*
@@ -335,11 +389,25 @@ Legend location = ['best', 'upper right', 'upper left', 'lower left', 'lower rig
     :type sequential_cells: bool
     :param color_map: Color map used in cells, default = 'Greens'. *Optional*
     :type color_map: str
-    :example: *None*
-    :note: *None*
+    :example:
+        .. code-block:: python
+
+            from warzone.plot import Table
+            Table(data=data,
+                  col_widths=0.15,
+                  fig_size=(10, 4),
+                  sequential_cells=True)
+            plt.show()
+        .. image:: https://cdn-images-1.medium.com/max/800/1*AE_sEF5gWDrtUaPHogR7CQ.png
+
+        Or with color: (color_map = "Oranges")
+
+        .. image:: https://miro.medium.com/max/700/1*WIh5zrwCc5pZRJJVS6WMeQ.png
+    :note: Will have to update **figure_size** and **col_widths** depending on the size of the table.
+        If a cmap is provided, only float dtype columns will show changes.
 
 .. autosummary::
-    plot.Table.ax
+    warzone.plot.Table.ax
 
 .. _Regression:
 
@@ -349,9 +417,9 @@ Regression class object.
 
 .. :currentmodule:: regression
 
-.. class:: Regression:
+.. class:: Regression(doc_filter, x_column, y_column):
 
-    Calculate a linear regression.
+    Class of calculating a linear regression.
 
     :param doc_filter: Input DocumentFilter.
     :type doc_filter: DocumentFilter
@@ -360,35 +428,64 @@ Regression class object.
     :param y_column: Name of column to be used as y variable in regression.
     :type y_column: str
     :example:
-        >>> from warzone.document_filter import DocumentFilter
-            >>> from warzone.regression import Regression
-            >>> doc = DocumentFilter(original_df=cod.our_df, map_choice='mp_e', mode_choice='quad')
-            >>> model = Regression(doc_filter=doc, x_column='kills', y_column='placementPercent')
-                >>> from document_filter import DocumentFilter
-        >>> from regression import Regression
-        >>> doc = DocumentFilter(original_df=cod.our_df, map_choice='mp_e', mode_choice='quad')
-        >>> model = Regression(doc_filter=doc, x_column='kills', y_column='placementPercent')
+        .. code-block:: python
+
+            from warzone.document_filter import DocumentFilter
+            from warzone.regression import Regression
+            doc = DocumentFilter(original_df=cod.our_df, map_choice='mp_e', mode_choice='quad')
+            model = Regression(doc_filter=doc, x_column='kills', y_column='placementPercent')
     :note: This will return a Regression object with regression result information.
 
 .. autosummary::
-    regression.Regression.r2
-    regression.Regression.constant_coefficient
-    regression.Regression.x_coefficient
-    regression.Regression.lower_confidence
-    regression.Regression.upper_confidence
-    regression.Regression.pvalue
-    regression.Regression.residuals
-    regression.Regression.mse
-    regression.Regression.ssr
-    regression.Regression.ess
-    regression.Regression.confidence
-    regression.Regression.coefficients
+    warzone.regression.Regression.r2
+    warzone.regression.Regression.constant_coefficient
+    warzone.regression.Regression.x_coefficient
+    warzone.regression.Regression.lower_confidence
+    warzone.regression.Regression.upper_confidence
+    warzone.regression.Regression.pvalue
+    warzone.regression.Regression.residuals
+    warzone.regression.Regression.mse
+    warzone.regression.Regression.ssr
+    warzone.regression.Regression.ess
+    warzone.regression.Regression.confidence
+    warzone.regression.Regression.coefficients
+
+.. _User:
+
+User
+----
+User class object.
+
+.. :currentmodule:: user
+
+.. class:: User:
+
+    Organizes the Users input data.
+
+    :param info: User input dict.
+    :type info: dict
+    :example:
+        .. code-block:: python
+
+            from warzone.user import User
+            inputs = {'repo': 'local data directory',
+                      'gamertag': 'your gamertag',
+                      'squad': ['friend gamertag1', 'friend gamertag2', '... etc'],
+                      'file_name': 'match_data.csv'}
+            user = User(info=inputs)
+    :note: *This class is not intended to be used outside of creating the CallofDuty Class.*
+
+.. autosummary::
+    warzone.user.User.file_name
+    warzone.user.User.repo
+    warzone.user.User.gamertag
+    warzone.user.User.squad_lst
 
 .. _Squad:
 
 Squad
 -----
-Squad class objects.
+Squad class object.
 
 .. :currentmodule:: squad
 
@@ -405,13 +502,12 @@ Squad class objects.
     :param uno: Input person uno Id.
     :type uno: str
     :example: *None*
-    :note: *None*
+    :note: *This class is not intended to be used outside of creating the Squad Class.*
 
 .. autosummary::
-    squad.Performance.map
-    squad.Performance.mode
-    squad.Performance.stats
-
+    warzone.squad.Performance.map
+    warzone.squad.Performance.mode
+    warzone.squad.Performance.stats
 
 .. class:: Person:
 
@@ -424,17 +520,17 @@ Squad class objects.
     :param gamertag: Input person's gamertag.
     :type gamertag: str
     :example: *None*
-    :note: *None*
+    :note: *This class is not intended to be used outside of creating the Squad Class.*
 
 .. autosummary::
-    squad.Person.gamertag
-    squad.Person.uno
-    squad.Person.rebirth
-    squad.Person.verdansk
+    warzone.squad.Person.gamertag
+    warzone.squad.Person.uno
+    warzone.squad.Person.rebirth
+    warzone.squad.Person.verdansk
 
-.. class:: Squad:
+.. class:: Squad(squad_lst, original_df, uno_name_dic):
 
-    Calculate stats for all maps/modes for each squad memeber.
+    Calculate stats for all maps/modes for each squad member.
 
     :param squad_lst: List of gamertags. Include your gamertag in the list.
     :type squad_lst: List[str]
@@ -443,64 +539,15 @@ Squad class objects.
     :param uno_name_dic: A dict of all gamertags and respective unos.
     :type uno_name_dic: dict
     :example:
-        >>> from warzone.credentials import user_inputs
-                >>> from warzone.user import User
-                >>> from warzone.squad import Squad
-                >>> _User = User(info=user_inputs)
-                >>> _Squad = Squad(squad_lst=_User.squad_lst, original_df=cod.our_df, uno_name_dic=cod.name_uno_dict)
-                    >>> from credentials import user_inputs
-            >>> from warzone.user import User
-            >>> from warzone.squad import Squad
-            >>> _User = User(info=user_inputs)
-            >>> _Squad = Squad(squad_lst=_User.squad_lst, original_df=cod.our_df, uno_name_dic=cod.name_uno_dict)
-                >>> from warzone.credentials import user_inputs
-            >>> from user import User
-            >>> from squad import Squad
-            >>> _User = User(info=user_inputs)
-            >>> _Squad = Squad(squad_lst=_User.squad_lst, original_df=cod.our_df, uno_name_dic=cod.name_uno_dict)
-                >>> from credentials import user_inputs
-        >>> from user import User
-        >>> from squad import Squad
-        >>> _User = User(info=user_inputs)
-        >>> _Squad = Squad(squad_lst=_User.squad_lst, original_df=cod.our_df, uno_name_dic=cod.name_uno_dict)
+        .. code-block:: python
+
+            from warzone.user import User
+            from warzone.squad import Squad
+            _User = User(info=user_inputs)
+            _Squad = Squad(squad_lst=_User.squad_lst, original_df=cod.our_df, uno_name_dic=cod.name_uno_dict)
     :note: This will calculate and return the stats for all squad members.
+        This is not intended to be used outside of building the CallofDuty Class.
 
 .. autosummary::
-    squad.Squad.squad_dic
-    squad.Squad.squad_df
-
-.. _User:
-
-User
-----
-User class objects.
-
-.. :currentmodule:: user
-
-.. class:: User:
-
-    Organizes the Users input data.
-
-    :param info: User input dict.
-    :type info: dict
-    :example:
-        >>> from warzone.user import User
-            >>> inputs = {'repo': 'local data directory',
-            >>>        'gamertag': 'your gamertag',
-            >>>        'squad': ['friend gamertag1', 'friend gamertag2', '... etc'],
-            >>>        'file_name': 'match_data.csv'}
-            >>> user = User(info=inputs)
-                >>> from user import User
-        >>> inputs = {'repo': 'local data directory',
-        >>>        'gamertag': 'your gamertag',
-        >>>        'squad': ['friend gamertag1', 'friend gamertag2', '... etc'],
-        >>>        'file_name': 'match_data.csv'}
-        >>> user = User(info=inputs)
-    :note: *None*
-
-
-.. autosummary::
-    user.User.file_name
-    user.User.repo
-    user.User.gamertag
-    user.User.squad_lst
+    warzone.squad.Squad.squad_dic
+    warzone.squad.Squad.squad_df

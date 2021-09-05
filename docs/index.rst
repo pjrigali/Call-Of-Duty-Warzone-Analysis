@@ -12,7 +12,7 @@ Welcome to Warzone Analysis's documentation!
 
    intro
    classes
-   utils
+   functions
    glossary
 
 Indices and tables

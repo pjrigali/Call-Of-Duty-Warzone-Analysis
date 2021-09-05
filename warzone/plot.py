@@ -41,7 +41,7 @@ class Line:
     :type limit: int
     :param label_lst: List of labels to include, if None will include all columns. *Optional*
     :type label_lst: List[str]
-    :param color_lst: List of colors to graph. *Optional*
+    :param color_lst: List of colors to graph, needs to be same length as label_lst. *Optional*
     :type color_lst: List[str]
     :param normalize_x: List of columns to normalize. *Optional*
     :type normalize_x: List[str]
@@ -184,7 +184,7 @@ class Scatter:
     :type limit: int
     :param label_lst: List of labels to include, if None will include all columns. *Optional*
     :type label_lst: List[str]
-    :param color_lst: List of colors to graph. *Optional*
+    :param color_lst: List of colors to graph, needs to be same length as label_lst. *Optional*
     :type color_lst: List[str]
     :param normalize_x: List of columns to normalize. *Optional*
     :type normalize_x: List[str]
@@ -232,7 +232,7 @@ class Scatter:
     :type legend_transparency: float
     :param legend_location: legend location, default = 'lower right'. *Optional*
     :type legend_location: str
-    :param compare_two: If given will return a scatter comparing two variables,default is None. *Optional*
+    :param compare_two: If given will return a scatter comparing two variables, default is None. *Optional*
     :type compare_two: List[str]
     :param y_limit: If given will limit the y axis.
     :type y_limit: List[float]
@@ -373,7 +373,7 @@ class Histogram:
     :type limit: int
     :param label_lst: List of labels to include, if None will include all columns. *Optional*
     :type label_lst: List[str]
-    :param color_lst: List of colors to graph. *Optional*
+    :param color_lst: List of colors to graph, needs to be same length as label_lst. *Optional*
     :type color_lst: List[str]
     :param include_norm: Include norm. If included, requires a column str, default = None. *Optional*
     :type include_norm: str
@@ -535,6 +535,8 @@ class Table:
     :type fig_size: tuple
     :param font_size: Font size inside cells, default = 'medium'. *Optional*
     :type font_size: str
+    :param font_color: Color of text inside cells, default is 'black'. *Optional*
+    :type font_color: str
     :param col_widths: Width of columns, default = 0.30. *Optional*
     :type col_widths: float
     :param row_colors: Color of rows. *Optional*
@@ -547,8 +549,6 @@ class Table:
     :type sequential_cells: bool
     :param color_map: Color map used in cells, default = 'Greens'. *Optional*
     :type color_map: str
-    :param font_color: Color of text inside cells, default is 'black'. *Optional*
-    :type font_color: str
     :example: *None*
     :note: *None*
 

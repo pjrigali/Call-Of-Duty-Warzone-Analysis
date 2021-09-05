@@ -99,27 +99,27 @@ class DocumentFilter:
 
     @property
     def map_choice(self) -> Optional[str]:
-        """Returns the map used to filter"""
+        """Returns the map_choice used to filter"""
         return self._map
 
     @property
     def mode_choice(self) -> Optional[str]:
-        """Returns the mode used to filter"""
+        """Returns the mode_choice used to filter"""
         return self._mode
 
     @property
     def uno(self) -> Optional[str]:
-        """Returns the uno used to filter"""
+        """Returns the Uno used to filter"""
         return self._uno
 
     @property
     def username(self) -> Optional[str]:
-        """Returns the username used to filter"""
+        """Returns the Username used to filter"""
         return self._username
 
     @property
     def username_lst(self) -> Optional[List[str]]:
-        """Returns the username list used to filter"""
+        """Returns the Username List used to filter"""
         return self._username_lst
 
     @property
@@ -134,5 +134,5 @@ class DocumentFilter:
 
     @property
     def username_dic(self) -> Optional[dict]:
-        """Returns username: uno dict"""
+        """Returns {username: uno} dict"""
         return self._username_dic
