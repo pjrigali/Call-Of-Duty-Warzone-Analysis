@@ -22,7 +22,7 @@ Usage
                    'gamertag': 'your gamertag',
                    'squad': ['friend gamertag1', 'friend gamertag2', '... etc'],
                    'file_name': 'match_data.csv'}
-    cod = CallofDuty(user_input_dict=inputs,
+    cod = CallofDuty(user_input_dict=user_inputs,
                      squad_data=True,
                      hacker_data=False,
                      streamer_mode=False)
