@@ -18,8 +18,14 @@ Usage
 
     import warzone
     from warzone import CallofDuty
-    cod = CallofDuty(squad_data=True, hacker_data=False, streamer_mode=True)
-
+    user_inputs = {'repo': 'local data directory',
+                   'gamertag': 'your gamertag',
+                   'squad': ['friend gamertag1', 'friend gamertag2', '... etc'],
+                   'file_name': 'match_data.csv'}
+    cod = CallofDuty(user_input_dict=inputs,
+                     squad_data=True,
+                     hacker_data=False,
+                     streamer_mode=False)
 This is the core class which gathers the users previous matches and holds all objects the user may need.
 
 More Info
