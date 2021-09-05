@@ -12,8 +12,10 @@ from warzone.user import User
 from warzone.squad import Squad
 from warzone.build import sm_whole, sm_gamertags, evaluate_df, get_our_and_other_df, get_match_id_set
 from warzone.gun_dictionary import gun_dict
+from dataclasses import dataclass
 
 
+@dataclass
 class CallofDuty:
     """
 
