@@ -2,7 +2,7 @@
 
 [![Documentation Status](https://readthedocs.org/projects/call-of-duty-warzone-analysis/badge/?version=latest)](https://call-of-duty-warzone-analysis.readthedocs.io/en/latest/?badge=latest)
 [![PyPI](https://img.shields.io/pypi/v/warzone-analysis?color=brightgreen&logoColor=lightgrey)](https://pypi.org/project/warzone-analysis/)
-[![Downloads](https://static.pepy.tech/personalized-badge/warzone-analysis?period=month&units=international_system&left_color=grey&right_color=blue&left_text=Downloads)](https://pepy.tech/project/warzone-analysis)
+[![Downloads](https://static.pepy.tech/personalized-badge/warzone-analysis?period=total&units=international_system&left_color=grey&right_color=blue&left_text=Downloads)](https://pepy.tech/project/warzone-analysis)
 [![GitHub commit activity](https://img.shields.io/github/commit-activity/m/pjrigali/Call-Of-Duty-Warzone-Analysis?color=blue&label=commits&logoColor=blue)](https://github.com/pjrigali)
 
 A package for analysis of _Call of Duty Warzone_ matches.
