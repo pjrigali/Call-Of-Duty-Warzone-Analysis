@@ -21,6 +21,7 @@ class User:
     :example:
         >>> from warzone.user import User
         >>> inputs = {'repo': 'local data directory',
+        >>>        'json_repo': 'local json data directory'
         >>>        'gamertag': 'your gamertag',
         >>>        'squad': ['friend gamertag1', 'friend gamertag2', '... etc'],
         >>>        'file_name': 'match_data.csv'}
@@ -34,6 +35,9 @@ class User:
 
     _repo: str
     """Directory location of data"""
+
+    _json_repo: str
+    """Directory location of json data"""
 
     _gamertag: str
     """Users gamertag"""
@@ -82,31 +86,36 @@ class User:
         else:
             self._squad: List[str] = info['squad']
 
+        if info['json_repo'] is None:
+            raise AttributeError('Need to pass a directory')
+        else:
+            self._json_repo: str = info['json_repo']
+
         # Need for Scraping
-        if 'headers' not in info.keys():
-            self.headers = {'Needed for scraping': 'Needed for scraping'}
-        else:
-            self.headers = info['headers']
-
-        if 'codtrackerid' not in info.keys():
-            self.CodTrackerID = 'Needed for scraping'
-        else:
-            self.CodTrackerID = info['codtrackerid']
-
-        if 'username' not in info.keys():
-            self.USERNAME = 'Needed for scraping'
-        else:
-            self.USERNAME = info['username']
-
-        if 'password' not in info.keys():
-            self.PASSWORD = 'Needed for scraping'
-        else:
-            self.PASSWORD = info['password']
-
-        if 'driverpath' not in info.keys():
-            self.DRIVER_PATH = 'Needed for scraping'
-        else:
-            self.DRIVER_PATH = info['driverpath']
+        # if 'headers' not in info.keys():
+        #     self.headers = {'Needed for scraping': 'Needed for scraping'}
+        # else:
+        #     self.headers = info['headers']
+        #
+        # if 'codtrackerid' not in info.keys():
+        #     self.CodTrackerID = 'Needed for scraping'
+        # else:
+        #     self.CodTrackerID = info['codtrackerid']
+        #
+        # if 'username' not in info.keys():
+        #     self.USERNAME = 'Needed for scraping'
+        # else:
+        #     self.USERNAME = info['username']
+        #
+        # if 'password' not in info.keys():
+        #     self.PASSWORD = 'Needed for scraping'
+        # else:
+        #     self.PASSWORD = info['password']
+        #
+        # if 'driverpath' not in info.keys():
+        #     self.DRIVER_PATH = 'Needed for scraping'
+        # else:
+        #     self.DRIVER_PATH = info['driverpath']
 
         if self._gamertag not in self._squad:
             self._squad = [self._gamertag] + self._squad
@@ -123,6 +132,11 @@ class User:
     def repo(self) -> str:
         """Returns the directory location of the users data"""
         return self._repo
+
+    @property
+    def json_repo(self) -> str:
+        """Returns the directory location of the users json data"""
+        return self._json_repo
 
     @property
     def gamertag(self) -> str:
