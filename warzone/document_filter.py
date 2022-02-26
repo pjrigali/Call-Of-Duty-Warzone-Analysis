@@ -11,12 +11,15 @@ from dataclasses import dataclass
 import pandas as pd
 
 
-def _check_empty(data: pd.DataFrame) -> pd.DataFrame:
+def _check_empty(data: pd.DataFrame, return_empty: bool = True) -> pd.DataFrame:
     """Checks if the input dataframe is empty"""
-    if data.empty:
-        raise AttributeError('Based on input params, the dataframe will be empty.')
-    else:
+    if return_empty:
         return data
+    else:
+        if data.empty:
+            raise AttributeError('Based on input params, the dataframe will be empty.')
+        else:
+            return data
 
 
 def get_uno_username_dict(data: pd.DataFrame) -> dict:
@@ -30,37 +33,38 @@ def get_uno_username_dict(data: pd.DataFrame) -> dict:
     return {i.split('-splitpoint-')[1]: i.split('-splitpoint-')[0] for i in comb_set if type(i) == str}
 
 
-def _accept_list(data: pd.DataFrame, col: str, lst: List[str]) -> pd.DataFrame:
+def _accept_list(data: pd.DataFrame, col: str, lst: List[str], return_empty: bool = True) -> pd.DataFrame:
     """Handles a list of str's as an input"""
     if col not in data.columns:
         raise AttributeError(col + ' not included in the passed dataframe column list')
     else:
         lst_dic = {i: True for i in lst}
         data_lst = data[col].tolist()
-        return _check_empty(data=data.iloc[[i for i, j in enumerate(data_lst) if str(j) in lst_dic]])
+        new_data = data.iloc[[i for i, j in enumerate(data_lst) if str(j) in lst_dic]]
+        return _check_empty(data=new_data, return_empty=return_empty)
 
 
-def _accept_str(data: pd.DataFrame, col: str, string: str) -> pd.DataFrame:
+def _accept_str(data: pd.DataFrame, col: str, string: str, return_empty: bool = True) -> pd.DataFrame:
     """Handles a str input"""
     if col not in data.columns:
         raise AttributeError(col + ' not included in the passed dataframe column list')
     else:
-        return _check_empty(data=data[data[col] == string])
+        return _check_empty(data=data[data[col] == string], return_empty=return_empty)
 
 
 def _evaluate_data(data: pd.DataFrame, col: str, val: Union[str, List[str]],
-                   dic: Optional[Dict[str, str]] = None) -> pd.DataFrame:
+                   dic: Optional[Dict[str, str]] = None, return_empty: bool = True) -> pd.DataFrame:
     """Filters data based on input col and val"""
     if dic is None:
         if type(val) == str:
-            return _accept_str(data=data, col=col, string=val)
+            return _accept_str(data=data, col=col, string=val, return_empty=return_empty)
         elif type(val) == list:
-            return _accept_list(data=data, col=col, lst=val)
+            return _accept_list(data=data, col=col, lst=val, return_empty=return_empty)
     else:
         if type(val) == str:
-            return _accept_str(data=data, col=col, string=dic[val])
+            return _accept_str(data=data, col=col, string=dic[val], return_empty=return_empty)
         elif type(val) == list:
-            return _accept_list(data=data, col=col, lst=[dic[i] for i in val])
+            return _accept_list(data=data, col=col, lst=[dic[i] for i in val], return_empty=return_empty)
 
 
 @dataclass
@@ -85,6 +89,10 @@ class DocumentFilter:
     :type uno: str or list
     :param username_dic: If 'username' is used, will create if not passed. {username1: uno1, etc}. *Optional*
     :type username_dic: dict
+    :param sort_dataframe: If passed will sort dataframe using this column.
+    :type sort_dataframe: str
+    :param return_empty: If False, will not return empty DataFrame.
+    :type return_empty: bool
     :example:
         >>> from warzone.document_filter import DocumentFilter
         >>> doc = DocumentFilter(input_df=cod.our_df, map_choice='mp_e', mode_choice='quad')
@@ -101,26 +109,27 @@ class DocumentFilter:
                  username: Union[str, List[str]] = None,
                  uno: Union[str, List[str]] = None,
                  username_dic: Optional[Dict[str, str]] = None,
-                 sort_dataframe: str = 'startDateTime'
+                 sort_dataframe: str = 'startDateTime',
+                 return_empty: bool = True,
                  ):
 
         data = input_df.copy()
         if map_choice:
-            data = _evaluate_data(data=data, col='map', val=map_choice, dic=None)
+            data = _evaluate_data(data=data, col='map', val=map_choice, dic=None, return_empty=return_empty)
 
         if mode_choice:
-            data = _evaluate_data(data=data, col='mode', val=mode_choice, dic=None)
+            data = _evaluate_data(data=data, col='mode', val=mode_choice, dic=None, return_empty=return_empty)
 
         if team_size:
-            data = _evaluate_data(data=data, col='teamSize', val=team_size, dic=None)
+            data = _evaluate_data(data=data, col='teamSize', val=team_size, dic=None, return_empty=return_empty)
 
         if username:
             if username_dic is None:
                 username_dic = get_uno_username_dict(data=data)
-            data = _evaluate_data(data=data, col='uno', val=username, dic=username_dic)
+            data = _evaluate_data(data=data, col='uno', val=username, dic=username_dic, return_empty=return_empty)
 
         if uno:
-            data = _evaluate_data(data=data, col='uno', val=uno, dic=None)
+            data = _evaluate_data(data=data, col='uno', val=uno, dic=None, return_empty=return_empty)
 
         self._df = data.sort_values(sort_dataframe, ascending=True).reset_index(drop=True)
         self._unique_id_lst = self.df['matchID'].unique().tolist()
@@ -132,10 +141,14 @@ class DocumentFilter:
         self._uno = uno
         self._username_dic = username_dic
         self._sort_data = sort_dataframe
+        self._return_empty = return_empty
         self._len = self._df.shape[0]
 
     def __len__(self):
         return self._len
+
+    def __getitem__(self):
+        return self._df
 
     def __repr__(self):
         return 'DocumentFilter'
@@ -194,3 +207,8 @@ class DocumentFilter:
     def sort_criteria(self) -> str:
         """Returns column used for sorting"""
         return self._sort_data
+
+    @property
+    def return_empty(self) -> bool:
+        """Returns if the class will accept an empty result"""
+        return self._return_empty
