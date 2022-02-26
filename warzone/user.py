@@ -20,12 +20,16 @@ class User:
     :type info: dict
     :example:
         >>> from warzone.user import User
-        >>> inputs = {'repo': 'local data directory',
-        >>>        'json_repo': 'local json data directory'
-        >>>        'gamertag': 'your gamertag',
-        >>>        'squad': ['friend gamertag1', 'friend gamertag2', '... etc'],
-        >>>        'file_name': 'match_data.csv'}
-        >>> user = User(info=inputs)
+        >>> user_input_dict = {
+        >>>     'repo': 'location of saved data',
+        >>>     'json_repo': 'location of saved data in single json format',
+        >>>     'hacker_repo': 'location of saved hacker data',
+        >>>     'gamertag': 'your Ganertag',
+        >>>     'squad': ['squadmate1', 'squadmate2', 'etc'],
+        >>>     'file_name': 'Match_Data.csv',
+        >>>     'hacker_file_name': 'hacker_df.csv',
+        >>>     }
+        >>> user = User(info=user_input_dict)
     :note: *None*
 
     """
@@ -33,33 +37,23 @@ class User:
     _file_name: str
     """File name of users data"""
 
+    _hacker_file_name: str
+    """File name of hacker data"""
+
     _repo: str
     """Directory location of data"""
 
     _json_repo: str
     """Directory location of json data"""
 
+    _hacker_repo: str
+    """Directory location of hacker json data"""
+
     _gamertag: str
     """Users gamertag"""
 
     _squad: List[str]
     """List of gamertags"""
-
-    # Need for Scraping
-    # headers: Optional[dict]
-    # """Headers from local machine"""
-    #
-    # CodTrackerID: Optional[str]
-    # """Cod Tracker ID for the user"""
-    #
-    # USERNAME: Optional[str]
-    # """Username for login to Cod Tracker"""
-    #
-    # PASSWORD: Optional[str]
-    # """Password for login to Cod Tracker"""
-    #
-    # DRIVER_PATH: Optional[str]
-    # """Driver path used for Selenium scraping"""
 
     def __init__(self, info: dict = None):
 
@@ -70,6 +64,11 @@ class User:
             raise AttributeError('Need to pass a file name')
         else:
             self._file_name: str = info['file_name']
+
+        if info['hacker_file_name'] is None:
+            raise AttributeError('Need to pass a file name')
+        else:
+            self._hacker_file_name: str = info['hacker_file_name']
 
         if info['repo'] is None:
             raise AttributeError('Need to pass a repo directory')
@@ -91,31 +90,10 @@ class User:
         else:
             self._json_repo: str = info['json_repo']
 
-        # Need for Scraping
-        # if 'headers' not in info.keys():
-        #     self.headers = {'Needed for scraping': 'Needed for scraping'}
-        # else:
-        #     self.headers = info['headers']
-        #
-        # if 'codtrackerid' not in info.keys():
-        #     self.CodTrackerID = 'Needed for scraping'
-        # else:
-        #     self.CodTrackerID = info['codtrackerid']
-        #
-        # if 'username' not in info.keys():
-        #     self.USERNAME = 'Needed for scraping'
-        # else:
-        #     self.USERNAME = info['username']
-        #
-        # if 'password' not in info.keys():
-        #     self.PASSWORD = 'Needed for scraping'
-        # else:
-        #     self.PASSWORD = info['password']
-        #
-        # if 'driverpath' not in info.keys():
-        #     self.DRIVER_PATH = 'Needed for scraping'
-        # else:
-        #     self.DRIVER_PATH = info['driverpath']
+        if info['hacker_repo'] is None:
+            raise AttributeError('Need to pass a directory')
+        else:
+            self._hacker_repo: str = info['hacker_repo']
 
         if self._gamertag not in self._squad:
             self._squad = [self._gamertag] + self._squad
@@ -137,6 +115,11 @@ class User:
     def json_repo(self) -> str:
         """Returns the directory location of the users json data"""
         return self._json_repo
+
+    @property
+    def hacker_repo(self) -> str:
+        """Returns the directory location of the hacker json data"""
+        return self._hacker_repo
 
     @property
     def gamertag(self) -> str:
