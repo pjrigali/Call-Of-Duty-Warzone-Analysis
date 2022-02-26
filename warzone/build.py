@@ -274,7 +274,7 @@ def get_hacker_probability(our_df: pd.DataFrame, other_df: pd.DataFrame) -> list
     for _mode in ["royale", "resurgence"]:
         for team_size in ['solo', 'duo', 'trio', 'quad']:
             our_data_n = our_df[(our_df['mode'] == _mode) & (our_df['teamSize'] == team_size)]
-            our_data_dic[_mode][team_size] = {col: np.mean(our_data_n[col].fillna(0.0)) for col in col_lst}
+            our_data_dic[_mode][team_size] = {col: our_data_n[col].fillna(0.0).mean() for col in col_lst}
 
     col_dic = {'royale': {'above': ['deaths', 'objectiveBrKioskBuy', 'missionsComplete',
                                     'objectiveMedalScoreKillSsRadarDrone'],
@@ -331,7 +331,7 @@ def get_our_and_other_df(data: pd.DataFrame, _my_uno: str, name_uno_dict: dict, 
     return our_df, other_df
 
 
-def get_hacker_and_other_df(data: pd.DataFrame, min_count: int = 10):
+def get_hacker_and_other_df(data: pd.DataFrame, min_count: int = 5):
     """Similar to evaluate_df but used for the hacker data"""
     uno_lst = data['uno'].tolist()
 
