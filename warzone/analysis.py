@@ -244,7 +244,7 @@ def match_difficulty(our_doc_filter: DocumentFilter, other_doc_filter: DocumentF
 
         lst = list(match_dic_df_norm.sum(axis=1) - match_dic_df_norm['ourPlacement'])
         minn, maxn = np.min(lst), np.max(lst)
-        diff = pd.DataFrame([(j - minn) / (maxn - minn) for j in lst], columns=['difficulty'], index=match_dic_df.index)
+        diff = pd.DataFrame(((j - minn) / (maxn - minn) for j in lst), columns=['difficulty'], index=match_dic_df.index)
         diff['ourPlacement'] = match_dic_df['ourPlacement']
         return diff
 
@@ -274,6 +274,7 @@ def get_daily_hourly_weekday_stats(doc_filter: DocumentFilter) -> list:
         num = 5
 
     def _stat_calc(df: pd.DataFrame) -> list:
+        """Stat calculator function"""
         _matches = set(df['matchID'])
         if len(_matches) > 0:
             wins, top_fives = [], []
@@ -387,66 +388,45 @@ def get_weapons(doc_filter: DocumentFilter) -> pd.DataFrame:
 
     """
     data = doc_filter.df
-    gun_dict_keys_lst = [i for i in list(gun_dict.keys()) if i != 'none' and i != 'nan']
 
-    def _get_row(ind: int, i: int) -> str:
-        return data['primaryWeapon_' + str(i)].iloc[ind] + '___' + data['secondaryWeapon_' + str(i)].iloc[ind]
+    # Get Weapons
+    excluded_weapons = {"iw8_fists": True, "none": True, "nan": True}
+    included_wzgunname_dic = {}
+    included_gunname_dic = {}
+    for wz_gun_name in gun_dict.keys():
+        if wz_gun_name not in excluded_weapons:
+            included_wzgunname_dic[wz_gun_name] = True
+            included_gunname_dic[gun_dict[wz_gun_name]] = True
 
-    val_count = sum([1 if 'primaryWeaponAttachement' in col else 0 for col in data.columns])
-    row_lst = []
-    for i in range(1, val_count):
-        temp = data['primaryWeaponAttachements_' + str(i)].fillna('none')
-        temp_lst = [_get_row(ind=ind, i=i) if j != 0 and j.count('none') == 0 else '___' for ind, j in enumerate(temp)]
-        if i == 1:
-            row_lst = temp_lst
+    # Get weapon indexes
+    gun_ind_dic = {gun: set() for gun in included_gunname_dic.keys()}
+    for ind, person in enumerate(data['loadouts'].tolist()):
+        for loadout in person:
+            primary, secondary = loadout[0], loadout[1]
+            if primary != "iw8_fists" and secondary != "iw8_fists":
+                if primary in included_wzgunname_dic:
+                    gun_ind_dic[gun_dict[primary]].add(ind)
+                if secondary in included_wzgunname_dic:
+                    gun_ind_dic[gun_dict[secondary]].add(ind)
+
+    # Get weapon stats
+    weapon_type_dic = dict(zip(included_gunname_dic.keys(), included_wzgunname_dic.keys()))
+    gun_stats_dic = {gun: {'kills': 0, 'deaths': 0, 'headshots': 0, 'assists': 0} for gun in list(gun_dict.values())}
+    for key, value in gun_ind_dic.items():
+        temp_df = data.iloc[list(value)]
+        for col in ['kills', 'deaths', 'headshots', 'assists']:
+            gun_stats_dic[key][col] = temp_df[col].sum()
+        gun_stats_dic[key]['averagePlacementPercent'] = temp_df['placementPercent'].mean()
+        gun_stats_dic[key]['count'] = len(temp_df)
+        if gun_stats_dic[key]['kills'] != 0 and gun_stats_dic[key]['deaths'] != 0:
+            gun_stats_dic[key]['kdRatio'] = gun_stats_dic[key]['kills'] / gun_stats_dic[key]['deaths']
         else:
-            row_lst = [row_lst[ind] + temp_lst[ind] for ind, row in enumerate(row_lst)]
-
-    weapon_ind_lst = []
-    kills, deaths, assists, headshots, average_placement, weapon_type, count = [], [], [], [], [], [], []
-    for weapon_name in gun_dict_keys_lst:
-        ind_lst = [ind for ind, row in enumerate(row_lst) if weapon_name in row]
-        weapon_ind_lst += ind_lst
-
-        temp_df = data.iloc[ind_lst]
-        if temp_df.empty is False:
-            kills.append(np.sum(temp_df['kills']))
-            deaths.append(np.sum(temp_df['deaths']))
-            assists.append(np.sum(temp_df['assists']))
-            headshots.append(np.sum(temp_df['headshots']))
-            average_placement.append(np.mean(temp_df['placementPercent']))
-            count.append(len(temp_df))
+            gun_stats_dic[key]['kdRatio'] = 0.0
+        if '_' in weapon_type_dic[key]:
+            gun_stats_dic[key]['weaponType'] = weapon_type_dic[key].split('_')[1]
         else:
-            kills.append(0)
-            deaths.append(0)
-            assists.append(0)
-            headshots.append(0)
-            average_placement.append(0)
-            count.append(0)
-        weapon_type.append(weapon_name.split('_')[1])
-
-    weapon_ind_lst = list(set(weapon_ind_lst))
-    final_df = pd.DataFrame()
-    for col in ['kills', 'deaths', 'headshots', 'assists']:
-        total = np.sum(data[col].iloc[weapon_ind_lst])
-        if col == 'kills':
-            base_total = np.sum(kills)
-            lst = kills
-        elif col == 'deaths':
-            base_total = np.sum(deaths)
-            lst = deaths
-        elif col == 'headshots':
-            base_total = np.sum(headshots)
-            lst = headshots
-        else:
-            base_total = np.sum(assists)
-            lst = assists
-        final_df[col] = list(np.ceil(np.multiply(total, [row / base_total if row != 0 else 0 for row in lst])))
-
-    final_df.index = [gun_dict[i] for i in gun_dict_keys_lst]
-    final_df['averagePlacement'] = average_placement
-    final_df['weaponType'] = weapon_type
-    final_df['count'] = count
+            gun_stats_dic[key]['weaponType'] = 'None'
+    final_df = pd.DataFrame.from_dict(gun_stats_dic, orient='index')
     return final_df
 
 
@@ -517,12 +497,12 @@ def meta_weapons(doc_filter: DocumentFilter, top_5_or_10: Optional[bool] = False
 
     """
     if top_5_or_10 is True or top_1 is True:
-        if doc_filter.map_choice is None:
-            raise AttributeError('Include a map_choice in the DocumentFilter')
+        if doc_filter.mode_choice is None:
+            raise AttributeError('Include a mode_choice in the DocumentFilter')
 
     data = doc_filter.df
 
-    if doc_filter.map_choice == 'mp_d':
+    if doc_filter.mode_choice == 'royale':
         num = 10
     else:
         num = 5
@@ -534,54 +514,144 @@ def meta_weapons(doc_filter: DocumentFilter, top_5_or_10: Optional[bool] = False
     else:
         data = data.reset_index(drop=True)
 
-    def _get_row(ind: int, i: int) -> str:
-        return data['primaryWeapon_' + str(i)].iloc[ind] + '___' + data['secondaryWeapon_' + str(i)].iloc[ind]
+    # Get Dates
+    dates = data['startDate'].tolist()
+    date_ind_dic = {date: set() for date in dates}
+    for ind, date in enumerate(dates):
+        date_ind_dic[date].add(ind)
 
-    val_count = sum([1 if 'primaryWeaponAttachement' in col else 0 for col in data.columns])
-    row_lst = []
-    for i in range(1, val_count):
-        temp = data['primaryWeaponAttachements_' + str(i)].fillna('none')
-        temp_lst = [_get_row(ind=ind, i=i) if j != 0 and j.count('none') == 0 else '___' for ind, j in enumerate(temp)]
-        if i == 1:
-            row_lst = temp_lst
+    # Get Weapons
+    excluded_weapons = {"iw8_fists": True, "none": True, "nan": True}
+    included_wzgunname_dic = {}
+    included_gunname_dic = {}
+    for wz_gun_name in gun_dict.keys():
+        if wz_gun_name not in excluded_weapons:
+            included_wzgunname_dic[wz_gun_name] = True
+            included_gunname_dic[gun_dict[wz_gun_name]] = True
+
+    # Get Loadouts
+    loadouts = data['loadouts'].tolist()
+
+    # Get indexes for each weapon
+    gun_ind_dic = {gun: set() for gun in included_gunname_dic.keys()}
+    for ind, person in enumerate(loadouts):
+        for loadout in person:
+            primary, secondary = loadout[0], loadout[1]
+            if primary != "iw8_fists" and secondary != "iw8_fists":
+                if primary in included_wzgunname_dic:
+                    gun_ind_dic[gun_dict[primary]].add(ind)
+                if secondary in included_wzgunname_dic:
+                    gun_ind_dic[gun_dict[secondary]].add(ind)
+
+    # Count uses of weapon on specific days
+    weapon_date_ind_dic = {date: {weapon_name: 0 for weapon_name in included_gunname_dic} for date in dates}
+    for key, value in date_ind_dic.items():
+        temp_df_index = list(data.iloc[list(value)].index)
+        temp_df_index_dic = {ind: True for ind in temp_df_index}
+        if col is None:
+            for gun in gun_ind_dic.keys():
+                for ind in gun_ind_dic[gun]:
+                    if ind in temp_df_index_dic:
+                        weapon_date_ind_dic[key][gun] += 1
         else:
-            row_lst = [row_lst[ind] + temp_lst[ind] for ind, row in enumerate(row_lst)]
+            for gun in gun_ind_dic.keys():
+                temp_ind = [ind for ind in gun_ind_dic[gun] if ind in temp_df_index_dic]
+                weapon_date_ind_dic[key][gun] = sum(data.iloc[temp_ind][col])
 
-    dates = list(data['startDate'].unique())
-    gun_dict_keys_lst = [i for i in list(gun_dict.keys()) if i != 'none' and i != 'nan']
-    final_dic = {}
-    weapon_date_ind_dic = {date: {weapon_name: [] for weapon_name in gun_dict_keys_lst} for date in dates}
-    for date in dates:
-        temp_df = data[data['startDate'] == date]
-        temp_ind_lst = list(temp_df.index)
-        temp_arr = np.array(row_lst)[temp_ind_lst]
-        temp_dic = {}
-        for weapon_name in gun_dict_keys_lst:
-            ind_lst = [ind for ind, row in enumerate(temp_arr) if weapon_name in row]
-            if len(ind_lst) != 0:
-                t = temp_df.iloc[ind_lst]
-                weapon_date_ind_dic[date][weapon_name] = list(t.index)
-                if col:
-                    if mu:
-                        val = np.mean(t[col])
-                    else:
-                        val = np.sum(t[col])
-                else:
-                    val = len(t)
-            else:
-                val = 0
-            temp_dic[weapon_name] = val
-        final_dic[date] = temp_dic
-
-    base_df = pd.DataFrame.from_dict(final_dic, orient='index')
-    base_df.columns = [gun_dict[i] for i in list(base_df.columns)]
-
+    # Get percent use from total
     if mu:
-        return base_df.sort_index()
+        for key, value in weapon_date_ind_dic.items():
+            total = sum(value.values())
+            for key1, value1 in value.items():
+                if value1 > 0:
+                    weapon_date_ind_dic[key][key1] = value1 / total
+                else:
+                    weapon_date_ind_dic[key][key1] = 0.0
+    final_df = pd.DataFrame.from_dict(weapon_date_ind_dic, orient='index')
+    return final_df
+
+
+def get_desired_kd(doc_filter: DocumentFilter, desired_kd: float, future_game_count: Optional[int] = 100,
+                   max_kills_per_game: Optional[int] = None, min_deaths_per_game: Optional[int] = None,
+                   use_dist: Optional[bool] = True, optimize: Optional[bool] = True) -> dict:
+    """
+
+    Calculates required kills per game, over a desired number of games to get a desired overall kd.
+
+    :param doc_filter: Input DocumentFilter.
+    :type doc_filter: DocumentFilter
+    :param desired_kd: Desired kdRatio.
+    :type desired_kd: float
+    :param future_game_count: Number of future games to include in the simulation, default is 100. *Optional*
+    :type future_game_count: int.
+    :param max_kills_per_game: Upper limit on max kills per game, default is None. *Optional*
+    :type max_kills_per_game: int.
+    :param min_deaths_per_game: Lower limit on deaths per game, default is None. *Optional*
+    :type min_deaths_per_game: int.
+    :param use_dist: If True, will calculate kills and deaths using a normal distribution, default is True. *Optional*
+    :type use_dist: bool.
+    :param optimize: If True, will see if the desired kdRatio is possible in less games, default is True. *Optional*
+    :type optimize: bool.
+    :return: A dictionary with the following keys: {'Current kdRatio', 'Desired kdRatio', 'Games Required',
+        'Resulting kdRatio', 'Required Kills Per Game', 'Required Deaths Per Game', 'Required Next kdRatio'}.
+    :rtype: dict
+    :example: *None*
+    :note: The intent for this function is that the DocumentFilter has a map, mode, username, and username_dic.
+        If no solution can be found the function raises and error.
+
+    """
+    if max_kills_per_game is None:
+        max_kills_per_game = int(np.quantile(doc_filter.df['kills'].tolist(), .977))
+    if min_deaths_per_game is None:
+        min_deaths_per_game = int(np.quantile(doc_filter.df['deaths'].tolist(), .159))
+
+    kills = sum(doc_filter.df['kills'].tolist())
+    deaths = sum(doc_filter.df['deaths'].tolist())
+    temp_dic = {'Current kdRatio': round(kills / deaths, 3), 'Desired kdRatio': round(desired_kd, 3),
+                'Games Required': future_game_count, 'Resulting kdRatio': 0.0, 'Required Kills Per Game': 0,
+                'Required Deaths Per Game': min_deaths_per_game, 'Required Next kdRatio': 0.0}
+    for game_count in list(range(future_game_count, 1, -1)):
+        kills_per_game = 0
+        if use_dist is False:
+            for kill_count in range(1, max_kills_per_game):
+                temp_kd = (kills + kill_count * game_count) / (deaths + min_deaths_per_game * game_count)
+                if temp_kd >= desired_kd:
+                    kills_per_game = kill_count
+                    required_kd = (kill_count * game_count) / (min_deaths_per_game * game_count)
+                    break
+        else:
+            kills_std = int(np.quantile(doc_filter.df['kills'].tolist(), .159))
+            if kills_std == 0:
+                kills_std = 1
+            else:
+                kills_std = int(np.quantile(doc_filter.df['kills'].tolist(), .50)) - kills_std
+            deaths_mu = int(np.quantile(doc_filter.df['deaths'].tolist(), .50))
+            deaths_std = int(np.quantile(doc_filter.df['kills'].tolist(), .159))
+            if deaths_std < min_deaths_per_game:
+                deaths_std = deaths_mu - min_deaths_per_game
+            for kill_count in range(1, max_kills_per_game):
+                kills_dist = stats.norm.rvs(kill_count, kills_std, size=game_count)
+                temp_kills_lst = (int(i) for i in kills_dist)
+                new_kills = sum([0 if i < 0 else i for i in temp_kills_lst])
+                deaths_dist = stats.norm.rvs(deaths_mu, deaths_std, size=game_count)
+                temp_deaths_lst = [int(i) for i in deaths_dist]
+                new_deaths = sum([min_deaths_per_game if i < 0 else i for i in temp_deaths_lst])
+                temp_kd = (kills + new_kills) / (deaths + new_deaths)
+                if temp_kd >= desired_kd:
+                    kills_per_game = kill_count
+                    required_kd = new_kills / new_deaths
+                    break
+
+        if game_count <= temp_dic['Games Required'] and kills_per_game > 0 and required_kd >= desired_kd:
+            temp_dic['Games Required'] = game_count
+            temp_dic['Resulting kdRatio'] = round(temp_kd, 3)
+            temp_dic['Required Kills Per Game'] = kills_per_game
+            temp_dic['Required Next kdRatio'] = round(required_kd, 3)
+
+        if optimize is False:
+            break
+
+    if temp_dic['Required Kills Per Game'] == 0:
+        raise AttributeError('Either not enough future games or desired kd is too high')
     else:
-        final_df = pd.DataFrame(index=dates, columns=base_df.columns)
-        for date in dates:
-            row = base_df.loc[date]
-            total = np.sum(row)
-            final_df.loc[date] = [row[weapon_name] / total if row[weapon_name] != 0 else 0.0 for weapon_name in base_df.columns]
-        return final_df.sort_index()
+        return temp_dic
