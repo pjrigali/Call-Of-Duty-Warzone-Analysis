@@ -58,8 +58,8 @@ def _get_stats(doc_filter: DocumentFilter) -> dict:
         if stats_dic['top_5_count'] != 0:
             stats_dic['top_5_percent'] = stats_dic['top_5_count'] / stats_dic['game_count']
 
-    if sum(df['kills'].tolist()) > 0:
-        temp_kd = sum(df['kills'].tolist()) / sum(df['deaths'].tolist())
+    if df['kills'].sum() > 0:
+        temp_kd = df['kills'].sum() / df['deaths'].sum()
     else:
         temp_kd = 0.0
     stats_dic['average_kdRatio'] = temp_kd
@@ -68,15 +68,15 @@ def _get_stats(doc_filter: DocumentFilter) -> dict:
         col_lst = lst_dic[lst]
         if lst == 'mu':
             for col in col_lst:
-                stats_dic['average_' + col] = np.mean(df[col])
+                stats_dic['average_' + col] = df[col].mean()
             continue
         elif lst == 'sum':
             for col in col_lst:
-                stats_dic['total_' + col] = np.sum(df[col])
+                stats_dic['total_' + col] = df[col].sum()
             continue
         elif lst == 'max':
             for col in col_lst:
-                stats_dic['max_' + col] = np.max(df[col])
+                stats_dic['max_' + col] = df[col].max()
 
     temp_dic = {str(i): float(stats_dic[i]) for i in stats_dic.keys()}
     if stats_dic['total_timePlayed'] > 0.0:
