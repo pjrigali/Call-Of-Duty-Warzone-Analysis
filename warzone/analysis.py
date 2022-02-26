@@ -54,13 +54,13 @@ def first_top5_bottom_stats(doc_filter: DocumentFilter, col_lst: Union[List[str]
         bottom = data[data['teamPlacement'] > num][col]
         top_five = data[(data['teamPlacement'] <= num) & (data['teamPlacement'] > 1)][col]
         top_one = data[data['teamPlacement'] == 1][col]
-        base_df[col + '_mu'] = [np.mean(top_one), np.mean(top_five), np.mean(bottom)]
-        base_df[col + '_std'] = [np.std(top_one), np.std(top_five), np.std(bottom)]
-        base_df[col + '_var'] = [np.var(top_one), np.var(top_five), np.var(bottom)]
-        base_df[col + '_max'] = [np.max(top_one), np.max(top_five), np.max(bottom)]
-        base_df[col + '_min'] = [np.min(top_one), np.min(top_five), np.min(bottom)]
-        base_df[col + '_skew'] = [stats.skew(top_one), stats.skew(top_five), stats.skew(bottom)]
-        base_df[col + '_kurt'] = [stats.kurtosis(top_one), stats.kurtosis(top_five), stats.kurtosis(bottom)]
+        base_df[col + '_mu'] = [top_one.mean(), top_five.mean(), bottom.mean()]
+        base_df[col + '_std'] = [top_one.std(), top_five.std(), bottom.std()]
+        base_df[col + '_var'] = [top_one.var(), top_five.var(), bottom.var()]
+        base_df[col + '_max'] = [top_one.max(), top_five.max(), bottom.max()]
+        base_df[col + '_min'] = [top_one.min(), top_five.min(), bottom.min()]
+        base_df[col + '_skew'] = [top_one.skew(), top_five.skew(), bottom.skew()]
+        base_df[col + '_kurt'] = [top_one.kurt(), top_five.kurt(), bottom.kurt()]
     base_df.index = ['first', cut_off, 'bottom']
     return base_df
 
@@ -96,21 +96,22 @@ def bucket_stats(doc_filter: DocumentFilter, placement: Union[List[int], int],
 
     base_dic = {}
     for col in col_lst:
-        for name in ['_mu', '_std', '_var', '_max', '_min', '_skew', '_kurt']:
+        for name in ['_mu', '_std', '_var', '_max', '_min', '_skew', '_kurt', '_med']:
             base_dic[col + name] = []
 
-    id_lst = doc_filter.unique_ids
+    id_lst = doc_filter.unique_match_ids
     for match_id in id_lst:
         temp = data[data['matchID'] == match_id]
         for col in col_lst:
             tempn = temp[col]
-            base_dic[col + '_mu'].append(np.mean(tempn))
-            base_dic[col + '_std'].append(np.std(tempn))
-            base_dic[col + '_var'].append(np.var(tempn))
-            base_dic[col + '_max'].append(np.max(tempn))
-            base_dic[col + '_min'].append(np.min(tempn))
-            base_dic[col + '_skew'].append(stats.skew(tempn))
-            base_dic[col + '_kurt'].append(stats.kurtosis(tempn))
+            base_dic[col + '_mu'].append(tempn.mean())
+            base_dic[col + '_std'].append(tempn.std())
+            base_dic[col + '_var'].append(tempn.var())
+            base_dic[col + '_max'].append(tempn.max())
+            base_dic[col + '_min'].append(tempn.min())
+            base_dic[col + '_skew'].append(tempn.skew())
+            base_dic[col + '_kurt'].append(tempn.kurt())
+            base_dic[col + '_med'].append(tempn.median())
 
     base_df = pd.DataFrame.from_dict(base_dic, orient='columns').fillna(0.0)
     base_df.index = id_lst
@@ -132,12 +133,12 @@ def previous_next_placement(doc_filter: DocumentFilter) -> pd.DataFrame:
     placement_lst = data['teamPlacement'].unique()
     placement_dic = {}
     for place in placement_lst:
-        temp = data[data['teamPlacement'] == place].index
+        temp = list(data[data['teamPlacement'] == place].index)
         temp_lst_prev, temp_lst_next = [], []
         for prev in temp:
             if prev - 1 > 0:
                 temp_lst_prev.append(data.iloc[prev - 1]['teamPlacement'])
-            if prev + 1 < np.max(temp):
+            if prev + 1 < max(temp):
                 temp_lst_next.append(data.iloc[prev + 1]['teamPlacement'])
         placement_dic[place] = [np.mean(temp_lst_prev), np.mean(temp_lst_next)]
     col_lst = ['previous placement', 'next placement']
@@ -226,10 +227,10 @@ def match_difficulty(our_doc_filter: DocumentFilter, other_doc_filter: DocumentF
     for i in match_dic.keys():
         temp = other_df[other_df['matchID'] == i]
         for col in col_lst_mu:
-            match_dic[i][col + '_mu'] = np.mean(temp[col])
+            match_dic[i][col + '_mu'] = temp[col].mean()
         for col in col_lst_sum:
-            match_dic[i][col + '_sum'] = np.sum(temp[col])
-        match_dic[i]['ourPlacement'] = np.mean(our_df[our_df['matchID'] == i]['placementPercent'])
+            match_dic[i][col + '_sum'] = temp[col].sum()
+        match_dic[i]['ourPlacement'] = our_df[our_df['matchID'] == i]['placementPercent'].mean()
     match_dic_df = pd.DataFrame.from_dict(match_dic, orient='index')
 
     if test:
@@ -238,12 +239,12 @@ def match_difficulty(our_doc_filter: DocumentFilter, other_doc_filter: DocumentF
     else:
         match_dic_df_norm = pd.DataFrame(index=match_dic_df.index)
         for i in list(match_dic_df.columns):
-            temp = list(match_dic_df[i].fillna(0))
-            minn, maxn = np.min(temp), np.max(temp)
+            temp = match_dic_df[i].fillna(0)
+            minn, maxn = temp.min(), temp.max()
             match_dic_df_norm[i] = [(j - minn) / (maxn - minn) for j in temp]
 
-        lst = list(match_dic_df_norm.sum(axis=1) - match_dic_df_norm['ourPlacement'])
-        minn, maxn = np.min(lst), np.max(lst)
+        lst = match_dic_df_norm.sum(axis=1) - match_dic_df_norm['ourPlacement']
+        minn, maxn = lst.min(), lst.max()
         diff = pd.DataFrame(((j - minn) / (maxn - minn) for j in lst), columns=['difficulty'], index=match_dic_df.index)
         diff['ourPlacement'] = match_dic_df['ourPlacement']
         return diff
@@ -279,7 +280,7 @@ def get_daily_hourly_weekday_stats(doc_filter: DocumentFilter) -> list:
         if len(_matches) > 0:
             wins, top_fives = [], []
             for match in _matches:
-                place = int(np.mean(df[df['matchID'] == match]['teamPlacement']))
+                place = int(df[df['matchID'] == match]['teamPlacement'].mean())
                 if place == 1:
                     wins.append(1)
                 elif 1 < place and place >= num:
@@ -288,8 +289,8 @@ def get_daily_hourly_weekday_stats(doc_filter: DocumentFilter) -> list:
                     wins.append(0)
                     top_fives.append(0)
 
-            return [int(df['kills'].sum()), int(df['deaths'].sum()), np.sum(wins), np.sum(top_fives), len(_matches),
-                    np.mean(df['placementPercent'])]
+            return [int(df['kills'].sum()), int(df['deaths'].sum()), sum(wins), sum(top_fives), len(_matches),
+                    df['placementPercent'].mean()]
         else:
             return [0, 0, 0, 0, 0, 0]
 
@@ -601,16 +602,16 @@ def get_desired_kd(doc_filter: DocumentFilter, desired_kd: float, future_game_co
 
     """
     if max_kills_per_game is None:
-        max_kills_per_game = int(np.quantile(doc_filter.df['kills'].tolist(), .977))
+        max_kills_per_game = int(doc_filter.df['kills'].quantile(.977))
     if min_deaths_per_game is None:
-        min_deaths_per_game = int(np.quantile(doc_filter.df['deaths'].tolist(), .159))
+        min_deaths_per_game = int(doc_filter.df['deaths'].quantile(.159))
 
-    kills = sum(doc_filter.df['kills'].tolist())
-    deaths = sum(doc_filter.df['deaths'].tolist())
+    kills = doc_filter.df['kills'].sum()
+    deaths = doc_filter.df['deaths'].sum()
     temp_dic = {'Current kdRatio': round(kills / deaths, 3), 'Desired kdRatio': round(desired_kd, 3),
                 'Games Required': future_game_count, 'Resulting kdRatio': 0.0, 'Required Kills Per Game': 0,
                 'Required Deaths Per Game': min_deaths_per_game, 'Required Next kdRatio': 0.0}
-    for game_count in list(range(future_game_count, 1, -1)):
+    for game_count in range(future_game_count, 1, -1):
         kills_per_game = 0
         if use_dist is False:
             for kill_count in range(1, max_kills_per_game):
@@ -620,13 +621,13 @@ def get_desired_kd(doc_filter: DocumentFilter, desired_kd: float, future_game_co
                     required_kd = (kill_count * game_count) / (min_deaths_per_game * game_count)
                     break
         else:
-            kills_std = int(np.quantile(doc_filter.df['kills'].tolist(), .159))
+            kills_std = int(doc_filter.df['kills'].quantile(.159))
             if kills_std == 0:
                 kills_std = 1
             else:
-                kills_std = int(np.quantile(doc_filter.df['kills'].tolist(), .50)) - kills_std
-            deaths_mu = int(np.quantile(doc_filter.df['deaths'].tolist(), .50))
-            deaths_std = int(np.quantile(doc_filter.df['kills'].tolist(), .159))
+                kills_std = int(doc_filter.df['kills'].quantile(.50)) - kills_std
+            deaths_mu = int(doc_filter.df['deaths'].quantile(.50))
+            deaths_std = int(doc_filter.df['kills'].quantile(.159))
             if deaths_std < min_deaths_per_game:
                 deaths_std = deaths_mu - min_deaths_per_game
             for kill_count in range(1, max_kills_per_game):
