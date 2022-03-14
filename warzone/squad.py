@@ -6,7 +6,7 @@ Usage:
 Author:
  Peter Rigali - 2021-08-30
 """
-from typing import List, Dict
+from typing import List, Dict, Tuple
 import pandas as pd
 import numpy as np
 from dataclasses import dataclass

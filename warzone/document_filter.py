@@ -132,8 +132,8 @@ class DocumentFilter:
             data = _evaluate_data(data=data, col='uno', val=uno, dic=None, return_empty=return_empty)
 
         self._df = data.sort_values(sort_dataframe, ascending=True).reset_index(drop=True)
-        self._unique_id_lst = self.df['matchID'].unique().tolist()
-        self._id_lst = self.df['matchID'].tolist()
+        self._unique_id_lst = tuple(self.df['matchID'].unique().tolist())
+        self._id_lst = tuple(self.df['matchID'].tolist())
         self._map = map_choice
         self._mode = mode_choice
         self._team_size = team_size
@@ -144,14 +144,16 @@ class DocumentFilter:
         self._return_empty = return_empty
         self._len = self._df.shape[0]
 
-    def __len__(self):
-        return self._len
-
     def __getitem__(self):
         return self._df
 
     def __repr__(self):
         return 'DocumentFilter'
+
+    @property
+    def len(self) -> int:
+        """Returns length of output Dataframe"""
+        return self._len
 
     @property
     def df(self) -> pd.DataFrame:
@@ -164,37 +166,37 @@ class DocumentFilter:
         self._df = val
 
     @property
-    def map_choice(self):
+    def map_choice(self) -> Optional[str]:
         """Returns the map_choice used to filter"""
         return self._map
 
     @property
-    def mode_choice(self):
+    def mode_choice(self) -> Optional[str]:
         """Returns the mode_choice used to filter"""
         return self._mode
 
     @property
-    def team_size(self):
+    def team_size(self) -> Optional[str]:
         """Returns the team_size used to filter"""
         return self._team_size
 
     @property
-    def uno(self):
+    def uno(self) -> Optional[str]:
         """Returns the Uno used to filter"""
         return self._uno
 
     @property
-    def username(self):
+    def username(self) -> Optional[str]:
         """Returns the Username used to filter"""
         return self._username
 
     @property
-    def unique_match_ids(self) -> List[str]:
+    def unique_match_ids(self) -> tuple:
         """Returns unique match ids from the filtered DataFrame"""
         return self._unique_id_lst
 
     @property
-    def match_ids(self) -> List[str]:
+    def match_ids(self) -> tuple:
         """Returns match ids from the filtered DataFrame"""
         return self._id_lst
 
