@@ -6,7 +6,7 @@ Usage:
 Author:
  Peter Rigali - 2021-08-30
 """
-from typing import List
+from typing import List, Tuple
 from dataclasses import dataclass
 
 
@@ -52,7 +52,7 @@ class User:
     _gamertag: str
     """Users gamertag"""
 
-    _squad: List[str]
+    _squad: Tuple[str]
     """List of gamertags"""
 
     def __init__(self, info: dict = None):
@@ -83,7 +83,7 @@ class User:
         if info['squad'] is None:
             raise AttributeError('Need to pass a list of gamertags')
         else:
-            self._squad: List[str] = info['squad']
+            self._squad: Tuple[str] = tuple(info['squad'])
 
         if info['json_repo'] is None:
             raise AttributeError('Need to pass a directory')
@@ -96,7 +96,7 @@ class User:
             self._hacker_repo: str = info['hacker_repo']
 
         if self._gamertag not in self._squad:
-            self._squad = [self._gamertag] + self._squad
+            self._squad = tuple([self._gamertag] + list(self._squad))
 
     def __repr__(self):
         return self.gamertag
@@ -132,11 +132,11 @@ class User:
         self._gamertag = val
 
     @property
-    def squad_lst(self) -> List[str]:
+    def squad_lst(self) -> Tuple[str]:
         """Returns the users squad gamertags as a list"""
         return self._squad
 
     @squad_lst.setter
     def squad_lst(self, lst: List[str]):
         """Set squad list"""
-        self._squad = lst
+        self._squad = tuple(lst)
