@@ -13,6 +13,7 @@ import datetime
 from warzone.user import User
 from warzone.squad import Squad
 import os
+import random
 
 
 def build_from_json(path: str, save: bool = False) -> pd.DataFrame:
@@ -99,25 +100,93 @@ def sm_unos(_user: User, _squad: Squad) -> None:
     length, count = (20 - len(str(len(_user.squad_lst)))), 1
     for i in _user.squad_lst:
         val = '0' * length + str(count)
-        _squad.squad_dic[i].uno = val
+        _squad.squad_stats[i].uno = val
         count += 1
 
 
+def find_types(df: pd.DataFrame, keep_bool: bool = False):
+    type_dic = {"int": {"int8": (1, np.int8), "int16": (2, np.int16), "int32": (3, np.int32), "int64": (4, np.int64)},
+                "uint": {"uint8": (1, np.uint8), "uint16": (2, np.uint16), "uint32": (3, np.uint32),
+                         "uint64": (4, np.uint64)},
+                "float": {"float16": (1, np.float16), "float32": (2, np.float32), "float64": (3, np.float64)}}
+    class_name_dic = {str: "str", bool: "bool", np.bool_: "np.bool_"}
+    for key, val in type_dic.items():
+        for key1, val1 in val.items():
+            class_name_dic[val1[1]] = key1
+    col_type_dic = {}
+    empty_cols = []
+    other_type_cols = {}
+    for col in df.columns:
+        data = df[col].dropna().reset_index(drop=True)
+        if data.empty:
+            empty_cols.append(col)
+            continue
+        test_val = data[random.choice(range(len(data)))]
+        if test_val is None:
+            test_val = data[random.choice(range(len(data)))]
+        if isinstance(test_val, str):
+            col_type_dic[col] = str
+        elif isinstance(test_val, (int, float, np.integer, np.float)):
+            test_object = np.min_scalar_type(np.max(data))
+            meta_type = test_object.name.split("t")[0] + "t"
+            col_type_dic[col] = type_dic[meta_type][test_object.name][1]
+        elif isinstance(test_val, (bool, np.bool_, np.bool)):
+            if keep_bool:
+                other_type_cols[col] = np.bool_
+            else:
+                empty_cols.append(col)
+        else:
+            other_type_cols[col] = type(test_val)
+    final_dic = {i: "_empty_" for i in empty_cols}
+    for key, val in col_type_dic.items():
+        final_dic[key] = class_name_dic[val]
+    return final_dic
+
+
+def load_cols_dtypes(repo: str, from_json: bool):
+    if from_json:
+        repo1, repo2 = repo + 'CSV', repo + 'CSV\\' + "dtype_info.csv"
+    else:
+        repo1, repo2 = repo, repo + "dtype_info.csv"
+    if "dtype_info.csv" in {str(i): True for i in next(os.walk(repo1))[2]}:
+        type_df = pd.read_csv(repo2, index_col='Unnamed: 0')
+        included_cols, new_dtype_dic = [], {}
+        for col in type_df.columns:
+            if type_df[col][0] != "_empty_":
+                included_cols.append(col)
+                new_dtype_dic[col] = type_df[col][0]
+        return included_cols, new_dtype_dic
+    else:
+        return None, None
+
+
 def evaluate_df(file_name: Optional[str] = None, repo: Optional[str] = None, json_path: Optional[str] = None,
-                build_json: Optional[bool] = False, from_json: Optional[bool] = False) -> pd.DataFrame:
+                build_json: Optional[bool] = False, from_json: Optional[bool] = False,
+                reset_dtype: bool = False) -> pd.DataFrame:
     """Loads, Cleans, and Builds a DataFrame"""
     dtype_dic = {'matchID': 'str',
                  'player_uno': 'str',
                  'player_username': 'str',
                  'player_team': 'str'}
-
     if build_json:
         df = build_from_json(path=json_path, save=build_json)
     elif build_json is False and from_json is True:
-        df = pd.read_csv(json_path + 'CSV\\' + next(os.walk(json_path + 'CSV'))[2][0], index_col='Unnamed: 0',
-                         dtype=dtype_dic)
+        if reset_dtype:
+            df = pd.read_csv(json_path + 'CSV\\' + next(os.walk(json_path + 'CSV'))[2][0], dtype=dtype_dic,
+                             index_col='Unnamed: 0')
+            pd.DataFrame(find_types(df=df, keep_bool=False), index=[0]).to_csv(json_path + 'CSV\\' + "dtype_info.csv",
+                                                                               header=True)
+        else:
+            included_cols, dtype_dic_new = load_cols_dtypes(repo=json_path, from_json=from_json)
+            df = pd.read_csv(json_path + 'CSV\\' + next(os.walk(json_path + 'CSV'))[2][0], dtype=dtype_dic_new,
+                             usecols=included_cols)
     else:
-        df = pd.read_csv(repo + file_name, index_col='Unnamed: 0', dtype=dtype_dic).drop_duplicates(keep='first')
+        if reset_dtype:
+            df = pd.read_csv(repo + file_name, dtype=dtype_dic, index_col='Unnamed: 0').drop_duplicates(keep='first')
+            pd.DataFrame(find_types(df=df, keep_bool=False), index=[0]).to_csv(repo + "dtype_info.csv", header=True)
+        else:
+            included_cols, dtype_dic_new = load_cols_dtypes(repo=repo, from_json=from_json)
+            df = pd.read_csv(repo + file_name, dtype=dtype_dic_new, usecols=included_cols).drop_duplicates(keep='first')
 
     if build_json is True or from_json is True:
         lst = df['player_loadouts'].tolist()
@@ -132,12 +201,11 @@ def evaluate_df(file_name: Optional[str] = None, repo: Optional[str] = None, jso
         df['player_loadouts'] = new_lst
 
     # Fix Columns
-    temp_col_lst = df.columns.tolist()
-    col_lst = ['missionStatsByType_', 'brMissionStats_', 'playerStats_', 'player_']
+    # temp_col_lst = df.columns.tolist()
     new_col_dic, new_col_lst = {}, []
-    for col in temp_col_lst:
+    for col in df.columns:
         new_col = col
-        for seperator in col_lst:
+        for seperator in ['missionStatsByType_', 'brMissionStats_', 'playerStats_', 'player_']:
             if seperator in col:
                 new_col = col.split(seperator)[1]
                 break
@@ -173,13 +241,11 @@ def evaluate_df(file_name: Optional[str] = None, repo: Optional[str] = None, jso
     headshot_lst = df['headshots'].tolist()
     kill_lst = df['kills'].tolist()
     ran = range(len(df))
-    hs_r = [0.0 if headshot_lst[ind] == 0 or kill_lst[ind] == 0 else headshot_lst[ind] / kill_lst[ind] for ind in ran]
-    df['headshotRatio'] = hs_r
-
+    df['headshotRatio'] = [0.0 if headshot_lst[ind] == 0 or kill_lst[ind] == 0 else headshot_lst[ind] / kill_lst[ind] for ind in ran]
     # Update map column for Verdansk and Rebirth (mp_d or mp_e)
-    map_lst = df['map'].tolist()
+    # map_lst = df['map'].to_list()
     new_map_lst = []
-    for row in map_lst:
+    for row in df['map']:
         if "mp_d" in row:
             new_map_lst.append("verdansk")
             continue
@@ -220,7 +286,6 @@ def evaluate_df(file_name: Optional[str] = None, repo: Optional[str] = None, jso
                  "br_dmz_38": True, "br_dmz_plunquad": True, "br_dmz_76:": True, "br_dmz_plndcndy": True,
                  "br_rebirth_cal_res_royale": True, "br_rebirth_resurgence_mini": True, "br_rebirth_rbrthquad": True,
                  "br_truckwar_trwarsquads": True, "br_jugg_brquadjugr": True, "br_dbd_dbd": True, "br_77": True}
-
     mode_dic = {'resurgence': resur_dic, 'royale': royale_dic, 'plunder': plunder_dic}
     team_size_dic = {'solo': solos_dic, 'duo': duos_dic, 'trio': trios_dic, 'quad': quads_dic}
 
@@ -247,8 +312,7 @@ def evaluate_df(file_name: Optional[str] = None, repo: Optional[str] = None, jso
     df['mode'] = new_mode_lst
 
     # Fix Blown out Damage Taken
-    large_damage_taken = list(df[df['damageTaken'] > 100000].index)
-    for i in large_damage_taken:
+    for i in list(df[df['damageTaken'] > 100000].index):
         df.loc[i, 'damageTaken'] = df.loc[i, 'damageDone']
 
     return df.sort_values('startDateTime', ascending=True).reset_index(drop=True)
@@ -257,7 +321,7 @@ def evaluate_df(file_name: Optional[str] = None, repo: Optional[str] = None, jso
 def get_uno_username_dict(data: pd.DataFrame) -> dict:
     """Return a dict {gamertag: uno, gamertag1: uno1, etc}"""
     comb_set = set(data['uno'] + '-splitpoint-' + data['username'])
-    return {i.split('-splitpoint-')[1]: i.split('-splitpoint-')[0] for i in comb_set if type(i) == str}
+    return {i.split('-splitpoint-')[1]: i.split('-splitpoint-')[0] for i in comb_set if isinstance(i, str)}
 
 
 def get_hacker_probability(our_df: pd.DataFrame, other_df: pd.DataFrame) -> list:
@@ -316,7 +380,7 @@ def get_hacker_probability(our_df: pd.DataFrame, other_df: pd.DataFrame) -> list
     return ret
 
 
-def get_our_and_other_df(data: pd.DataFrame, _my_uno: str, name_uno_dict: dict, squad_name_lst: List[str]):
+def get_our_and_other_df(data: pd.DataFrame, _my_uno: str):
     """Returns two DataFrames. First is all data related to the player and their teammates,
        Second is everyone who is not a teammate"""
 
