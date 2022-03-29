@@ -7,6 +7,7 @@ import random
 from warzone.utils.gun_dictionary import gun_dict
 # from warzone.classes.user import User
 # from warzone.classes.squad import Squad
+from pyjr.utils.tools import _to_metatype
 
 # User
 # None
@@ -527,7 +528,14 @@ def get_hacker_and_other_df(data: pd.DataFrame, min_count: int = 5):
     comb_dic = {i: True for i, j in enumerate(base_lst) if j in hacker_id_team_dic}
     other = [i for i in data.index if i not in comb_dic]
     our_df, other_df = data.iloc[list(comb_dic.keys())].copy(), data.iloc[other].copy()
-    return our_df, other_df
+
+    # Get hacker name uno dic
+    temp_dic = {}
+    for i in hacker_uno_dic.keys():
+        temp = data[data['uno'] == i]['username'].unique().tolist()
+        for name in temp:
+            temp_dic[name] = i
+    return temp_dic, our_df, other_df
 
 
 # TSanalysis
