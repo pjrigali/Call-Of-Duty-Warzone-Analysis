@@ -25,8 +25,8 @@ class Squad:
     :type uno_name_dic: dict
     :example:
         >>> from warzone.credentials import user_inputs
-        >>> from warzone.user import User
-        >>> from warzone.squad import Squad
+        >>> from warzone.classes.user import User
+        >>> from warzone.classes.squad import Squad
         >>> _User = User(info=user_inputs)
         >>> _Squad = Squad(squad_lst=_User.squad_lst, original_df=cod.our_df, uno_name_dic=cod.name_uno_dict)
     :note: This will calculate and return the stats for all squad members.

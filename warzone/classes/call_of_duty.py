@@ -10,8 +10,8 @@ from dataclasses import dataclass
 import pandas as pd
 from warzone.classes.user import User
 from warzone.classes.squad import Squad
-from warzone.utils.build import sm_whole, sm_gamertags, evaluate_df, get_our_and_other_df, get_uno_username_dict
-from warzone.utils.build import get_hacker_and_other_df
+from warzone.utils.class_functions import sm_whole, sm_gamertags, evaluate_df, get_our_and_other_df
+from warzone.utils.class_functions import get_uno_username_dict, get_hacker_and_other_df
 from warzone.utils.gun_dictionary import gun_dict
 
 
@@ -36,7 +36,7 @@ class CallofDuty:
     :param from_json: If True will load the csv created from the json files. *Optional*
     :type from_json: bool
     :example:
-        >>> from warzone.call_of_duty import CallofDuty
+        >>> from warzone.classes.call_of_duty import CallofDuty
         >>> user_input_dict = {
         >>>     'repo': 'location of saved data',
         >>>     'json_repo': 'location of saved data in single json format',

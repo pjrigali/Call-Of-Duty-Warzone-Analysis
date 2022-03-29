@@ -94,7 +94,7 @@ class DocumentFilter:
     :param return_empty: If False, will not return empty DataFrame.
     :type return_empty: bool
     :example:
-        >>> from warzone.document_filter import DocumentFilter
+        >>> from warzone.classes.document_filter import DocumentFilter
         >>> doc = DocumentFilter(input_df=cod.our_df, map_choice='mp_e', mode_choice='quad')
     :note: All inputs, except original_df,  are *Optional* amd defaults are set to None.
         This will return any data with map = rebirth and mode = Quads.
