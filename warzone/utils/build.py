@@ -1,17 +1,17 @@
 """Various internal functions used when building CallofDuty class objects.
 
 Usage:
- ./build.py
+ ./warzone/utils/build.py
 
 Author:
  Peter Rigali - 2021-08-30
 """
-from typing import List, Optional
+from typing import Optional
 import pandas as pd
 import numpy as np
 import datetime
-from warzone.user import User
-from warzone.squad import Squad
+from warzone.classes.user import User
+from warzone.classes.squad import Squad
 import os
 import random
 

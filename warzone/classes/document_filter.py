@@ -1,14 +1,15 @@
 """DocumentFilter class object.
 
 Usage:
- ./document_filter.py
+ ./warzone/classes/document_filter.py
 
 Author:
  Peter Rigali - 2021-08-30
 """
-from typing import Optional, List, Dict, Union
 from dataclasses import dataclass
+from typing import Optional, List, Dict, Union
 import pandas as pd
+import datetime
 
 
 def _check_empty(data: pd.DataFrame, return_empty: bool = True) -> pd.DataFrame:
@@ -28,12 +29,11 @@ def get_uno_username_dict(data: pd.DataFrame) -> dict:
         raise AttributeError('uno required in dataframe')
     if 'username' not in data.columns:
         raise AttributeError('username required in dataframe')
-
     comb_set = (data['uno'] + '-splitpoint-' + data['username']).unique().tolist()
-    return {i.split('-splitpoint-')[1]: i.split('-splitpoint-')[0] for i in comb_set if type(i) == str}
+    return {i.split('-splitpoint-')[1]: i.split('-splitpoint-')[0] for i in comb_set if isinstance(i, str)}
 
 
-def _accept_list(data: pd.DataFrame, col: str, lst: List[str], return_empty: bool = True) -> pd.DataFrame:
+def _accept_list(data: pd.DataFrame, col: str, lst: Union[List[str], List[int]], return_empty: bool = True) -> pd.DataFrame:
     """Handles a list of str's as an input"""
     if col not in data.columns:
         raise AttributeError(col + ' not included in the passed dataframe column list')
@@ -52,18 +52,18 @@ def _accept_str(data: pd.DataFrame, col: str, string: str, return_empty: bool = 
         return _check_empty(data=data[data[col] == string], return_empty=return_empty)
 
 
-def _evaluate_data(data: pd.DataFrame, col: str, val: Union[str, List[str]],
+def _evaluate_data(data: pd.DataFrame, col: str, val: Union[str, List[str], int, List[int]],
                    dic: Optional[Dict[str, str]] = None, return_empty: bool = True) -> pd.DataFrame:
     """Filters data based on input col and val"""
     if dic is None:
-        if type(val) == str:
+        if isinstance(val, str):
             return _accept_str(data=data, col=col, string=val, return_empty=return_empty)
-        elif type(val) == list:
+        elif isinstance(val, list):
             return _accept_list(data=data, col=col, lst=val, return_empty=return_empty)
     else:
-        if type(val) == str:
+        if isinstance(val, str):
             return _accept_str(data=data, col=col, string=dic[val], return_empty=return_empty)
-        elif type(val) == list:
+        elif isinstance(val, list):
             return _accept_list(data=data, col=col, lst=[dic[i] for i in val], return_empty=return_empty)
 
 
@@ -101,8 +101,12 @@ class DocumentFilter:
         By specifiying 'cod.our_df', this will only return data related to the user.
 
     """
+
+    __slots__ = ["df", "unique_match_ids", "match_ids", "map_choice", "mode_choice", "team_size", "username", "uno",
+                 "username_dic", "sort_data", "return_empty", "position", "return_sessions", "len"]
+
     def __init__(self,
-                 input_df: pd.DataFrame,
+                 input_df: pd.DataFrame = None,
                  map_choice: Union[str, List[str]] = None,
                  mode_choice: Union[str, List[str]] = None,
                  team_size: Union[str, List[str]] = None,
@@ -111,7 +115,30 @@ class DocumentFilter:
                  username_dic: Optional[Dict[str, str]] = None,
                  sort_dataframe: str = 'startDateTime',
                  return_empty: bool = True,
+                 position: str = 'all',
+                 args: Optional[dict] = None,
                  ):
+
+        if args:
+            new = {"input_df": input_df, "map_choice": map_choice, "mode_choice": mode_choice,
+                   "team_size": team_size, "username": username, "uno": uno, "username_dic": username_dic,
+                   "sort_dataframe": sort_dataframe, "return_empty": return_empty, "position": position,
+                   "args": args}
+
+            for key, val in new.items():
+                if key not in args.keys():
+                    args[key] = new[key]
+
+            input_df = args["input_df"]
+            map_choice = args["map_choice"]
+            mode_choice = args["mode_choice"]
+            team_size = args["team_size"]
+            username = args["username"]
+            uno = args["uno"]
+            username_dic = args["username_dic"]
+            sort_dataframe = args["sort_dataframe"]
+            return_empty = args["return_empty"]
+            position = args["position"]
 
         data = input_df.copy()
         if map_choice:
@@ -131,86 +158,50 @@ class DocumentFilter:
         if uno:
             data = _evaluate_data(data=data, col='uno', val=uno, dic=None, return_empty=return_empty)
 
-        self._df = data.sort_values(sort_dataframe, ascending=True).reset_index(drop=True)
-        self._unique_id_lst = tuple(self.df['matchID'].unique().tolist())
-        self._id_lst = tuple(self.df['matchID'].tolist())
-        self._map = map_choice
-        self._mode = mode_choice
-        self._team_size = team_size
-        self._username = username
-        self._uno = uno
-        self._username_dic = username_dic
-        self._sort_data = sort_dataframe
-        self._return_empty = return_empty
-        self._len = self._df.shape[0]
+        if position:
+            if position == 'all':
+                data = data
+            elif position == 'first':
+                data = _evaluate_data(data=data, col='teamPlacement', val=[1], dic=None, return_empty=return_empty)
+            else:
+                if mode_choice == "royale":
+                    val = list(range(1, 10))
+                else:
+                    val = list(range(1, 5))
+                data = _evaluate_data(data=data, col='teamPlacement', val=val, dic=None, return_empty=return_empty)
 
-    def __getitem__(self):
-        return self._df
+        self.df = data.sort_values(sort_dataframe, ascending=True).reset_index(drop=True)
+        self.unique_match_ids = tuple(self.df['matchID'].unique().tolist())
+        self.match_ids = tuple(self.df['matchID'].tolist())
+        self.map_choice = map_choice
+        self.mode_choice = mode_choice
+        self.team_size = team_size
+        self.username = username
+        self.uno = uno
+        self.username_dic = username_dic
+        self.sort_data = sort_dataframe
+        self.return_empty = return_empty
+        self.position = position
+        self.len = self.df.shape[0]
+
+    def get_sessions(self, minutes: int = 60):
+        """Splits games into sessions based on a threshold between games"""
+        id_dic, ind_dic, count, past_game = {}, {}, 0, None
+        for ind, row in self.df.iterrows():
+            if past_game is None:
+                past_game, id_dic[row['matchID']], ind_dic[count] = row['endDateTime'], True, [ind]
+                continue
+            elif row['matchID'] in id_dic:
+                ind_dic[count].append(ind)
+            else:
+                if row['startDateTime'] - past_game <= datetime.timedelta(minutes=minutes):
+                    past_game, id_dic[row['matchID']] = row['endDateTime'], True
+                    ind_dic[count].append(ind)
+                else:
+                    count += 1
+                    past_game, ind_dic[count] = row['endDateTime'], [ind]
+        session_df_dic = {key: self.df.iloc[val] for key, val in ind_dic.items()}
+        return session_df_dic
 
     def __repr__(self):
         return 'DocumentFilter'
-
-    @property
-    def len(self) -> int:
-        """Returns length of output Dataframe"""
-        return self._len
-
-    @property
-    def df(self) -> pd.DataFrame:
-        """Returns the filtered DataFrame"""
-        return self._df
-
-    @df.setter
-    def df(self, val: pd.DataFrame):
-        """Set df value"""
-        self._df = val
-
-    @property
-    def map_choice(self) -> Optional[str]:
-        """Returns the map_choice used to filter"""
-        return self._map
-
-    @property
-    def mode_choice(self) -> Optional[str]:
-        """Returns the mode_choice used to filter"""
-        return self._mode
-
-    @property
-    def team_size(self) -> Optional[str]:
-        """Returns the team_size used to filter"""
-        return self._team_size
-
-    @property
-    def uno(self) -> Optional[str]:
-        """Returns the Uno used to filter"""
-        return self._uno
-
-    @property
-    def username(self) -> Optional[str]:
-        """Returns the Username used to filter"""
-        return self._username
-
-    @property
-    def unique_match_ids(self) -> tuple:
-        """Returns unique match ids from the filtered DataFrame"""
-        return self._unique_id_lst
-
-    @property
-    def match_ids(self) -> tuple:
-        """Returns match ids from the filtered DataFrame"""
-        return self._id_lst
-
-    @property
-    def username_dic(self) -> Optional[Dict[str, str]]:
-        """Returns {username: uno} dict"""
-        return self._username_dic
-
-    @property
-    def sort_criteria(self) -> str:
-        """Returns column used for sorting"""
-        return self._sort_data
-
-    @property
-    def return_empty(self) -> bool:
-        """Returns if the class will accept an empty result"""
-        return self._return_empty

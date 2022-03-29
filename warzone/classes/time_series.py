@@ -1,8 +1,16 @@
+"""User class object.
+
+Usage:
+ ./warzone/classes/time_series.py
+
+Author:
+ Peter Rigali - 2021-08-30
+"""
 from dataclasses import dataclass
-from typing import List, Union, Optional, Dict
+from typing import List, Optional, Dict
 import datetime
 import pandas as pd
-from warzone.document_filter import DocumentFilter
+from warzone.classes.document_filter import DocumentFilter
 from warzone.analysis import match_difficulty
 
 _mu_lst = ['headshots', 'kills', 'deaths', 'longestStreak', 'scorePerMinute', 'distanceTraveled',
@@ -179,3 +187,50 @@ class TSanalysis:
     def other_data(self) -> dict:
         """Returns dict of other data"""
         return self._other_dic
+
+# our = ts_data.our_data[0]['median']['kills'].tolist()
+# other = ts_data.other_data[0]['median']['kills'].tolist()
+
+# Euclidian Distance
+# t = math.dist(our, other) / len(our)
+
+# MAPE
+# can not handle zero in denominator
+# def mape(actual, pred):
+#     actual = np.array([i if i != 0 else .01 for i in actual])
+#     pred = np.array([i if i != 0 else .01 for i in pred])
+#     return np.mean(np.abs((actual - pred) / actual)) * 100
+# t = mape(our, other)
+
+# Auto-Correlation
+# def acf(x, length=50):
+#     return [1]+[np.corrcoef(x[:-i], x[i:])[0,1] for i in range(1, length)]
+# t = acf(our)
+# tt = acf(other)
+# ttt = np.corrcoef(t, tt)[0, 1]
+
+# Correlation
+# t = np.corrcoef(our, other)[0, 1]
+
+# Dynamic Time Warping
+# from fastdtw import fastdtw
+# from scipy.spatial.distance import euclidean
+#
+# our_stack = np.zeros((len(our), 2))
+# our_stack[:, 0] = our
+# other_stack = np.zeros((len(our), 2))
+# other_stack[:, 0] = other
+#
+# distance_matrix = fastdtw(our_stack, other_stack, dist=euclidean)[0]
+
+# from pyts.approximation import SymbolicAggregateApproximation
+# from pyts.transformation import BagOfPatterns
+# sax = SymbolicAggregateApproximation(n_bins=6, strategy='normal')
+# X_sax_our = sax.fit_transform(our_stack)
+# X_sax_other = sax.fit_transform(other_stack)
+# t = ''.join(X_sax_our[:, 0])
+# tt = ''.join(X_sax_other[:, 0])
+# X = np.array([our, other])
+# bop = BagOfPatterns(window_size=50, word_size=2, n_bins=6,sparse=False)
+# X_bop = bop.fit_transform(X)
+# t = bop.vocabulary_

@@ -1,18 +1,17 @@
 """Various calculations used for generating the research for medium posts.
 
 Usage:
- ./medium_posts.py
+ ./warzone/medium_posts.py
 
 Author:
  Peter Rigali - 2021-08-30
 """
-from typing import List
 import pandas as pd
 import numpy as np
 import datetime
 import matplotlib.pyplot as plt
-from document_filter import DocumentFilter
-from base import running_mean, cumulative_mean, normalize
+from warzone.classes.document_filter import DocumentFilter
+from warzone.utils.base import running_mean, cumulative_mean, normalize
 
 
 def find_hackers_from_hacker_df(hacker_doc_filter: DocumentFilter, our_doc_filter: DocumentFilter) -> pd.DataFrame:
@@ -395,8 +394,6 @@ def squad_effect(doc_filter: DocumentFilter, username: str, username_dic: dict):
 #           include_norm='kills',
 #           title='Kills Histogram')
 # plt.show()
-from scipy import stats
-import statsmodels.api as sm
 
 # kill_df = pd.DataFrame()
 # kill_df['kills'] = data.df['kills']

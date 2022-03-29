@@ -1,7 +1,7 @@
 """Various one off plots.
 
 Usage:
- ./plots.py
+ ./warzone/plots.py
 
 Author:
  Peter Rigali - 2021-08-30
@@ -10,9 +10,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 from typing import List, Optional
-from scipy.stats import norm
-from warzone.base import normalize, running_mean, cumulative_mean
-from warzone.document_filter import DocumentFilter
+from warzone.utils.base import running_mean, cumulative_mean
+from warzone.classes.document_filter import DocumentFilter
 
 
 def personal_plot(doc_filter: DocumentFilter) -> None:

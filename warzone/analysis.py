@@ -1,19 +1,17 @@
 """One off functions for various analysis.
 
 Usage:
- ./analysis.py
+ ./warzone/analysis.py
 
 Author:
  Peter Rigali - 2021-08-30
 """
+from typing import List, Optional, Union
 import pandas as pd
 import numpy as np
 from scipy import stats
-from typing import List, Optional, Union
-from warzone.gun_dictionary import gun_dict
-from warzone.outlier import stack, outlier_hist, outlier_std, outlier_var, outlier_distance, outlier_knn
-from warzone.outlier import outlier_cooks_distance, outlier_regression
-from warzone.document_filter import DocumentFilter
+from warzone.utils.gun_dictionary import gun_dict
+from warzone.classes.document_filter import DocumentFilter
 
 
 def first_top5_bottom_stats(doc_filter: DocumentFilter, col_lst: Union[List[str], str]) -> pd.DataFrame:
@@ -431,45 +429,45 @@ def get_weapons(doc_filter: DocumentFilter) -> pd.DataFrame:
     return final_df
 
 
-def find_hackers(doc_filter: DocumentFilter, y_column: str, col_lst: List[str], std: int = 3) -> List[int]:
-    """
-
-    Calculate hackers based on various Outlier detection methods.
-
-    :param doc_filter: Input DocumentFilter.
-    :type doc_filter: DocumentFilter
-    :param y_column: A column to consider for Outlier analysis.
-    :type y_column: str
-    :param col_lst: A list of columns used for Outlier analysis.
-    :type col_lst: List[str]
-    :param std: The std to be considered for as a threshold, default is 3.
-    :type std: int
-    :return: Returns an index of suspected hackers.
-    :rtype: List[int]
-    :example: *None*
-    :note: The intent is for a map_choice and mode_choice to be fed into the DocumentFilter.
-
-    """
-    data = doc_filter.df
-    y_n = np.array(data[y_column])
-    ind = []
-    for col in col_lst:
-        x_n = np.array(data[col])
-        x_y = stack(x_n, y_n, False)
-        analysis = [list(outlier_var(arr=x_n, per=0.95, plus=True)),
-                    list(outlier_std(arr=x_n, _std=std, plus=True)),
-                    list(outlier_distance(arr=x_y, _std=std, plus=True)),
-            #         list(outlier_hist(arr=x_n, per=0.75)),
-            #         list(outlier_knn(arr=x_y, plus=True)),
-            #         list(outlier_cooks_distance(arr=x_y, return_df=False)),
-            #         list(outlier_regression(arr=x_y, _std=std))
-                    ]
-        ind.append(sum(analysis, []))
-
-    temp_dict = {i: 0 for i in set(sum(ind, []))}
-    for i in sum(ind, []):
-        temp_dict[i] += 1
-    return [i for i in temp_dict.keys() if temp_dict[i] >= 3 * len(col_lst)]
+# def find_hackers(doc_filter: DocumentFilter, y_column: str, col_lst: List[str], std: int = 3) -> List[int]:
+#     """
+#
+#     Calculate hackers based on various Outlier detection methods.
+#
+#     :param doc_filter: Input DocumentFilter.
+#     :type doc_filter: DocumentFilter
+#     :param y_column: A column to consider for Outlier analysis.
+#     :type y_column: str
+#     :param col_lst: A list of columns used for Outlier analysis.
+#     :type col_lst: List[str]
+#     :param std: The std to be considered for as a threshold, default is 3.
+#     :type std: int
+#     :return: Returns an index of suspected hackers.
+#     :rtype: List[int]
+#     :example: *None*
+#     :note: The intent is for a map_choice and mode_choice to be fed into the DocumentFilter.
+#
+#     """
+#     data = doc_filter.df
+#     y_n = np.array(data[y_column])
+#     ind = []
+#     for col in col_lst:
+#         x_n = np.array(data[col])
+#         x_y = stack(x_n, y_n, False)
+#         analysis = [list(outlier_var(arr=x_n, per=0.95, plus=True)),
+#                     list(outlier_std(arr=x_n, _std=std, plus=True)),
+#                     list(outlier_distance(arr=x_y, _std=std, plus=True)),
+#             #         list(outlier_hist(arr=x_n, per=0.75)),
+#             #         list(outlier_knn(arr=x_y, plus=True)),
+#             #         list(outlier_cooks_distance(arr=x_y, return_df=False)),
+#             #         list(outlier_regression(arr=x_y, _std=std))
+#                     ]
+#         ind.append(sum(analysis, []))
+#
+#     temp_dict = {i: 0 for i in set(sum(ind, []))}
+#     for i in sum(ind, []):
+#         temp_dict[i] += 1
+#     return [i for i in temp_dict.keys() if temp_dict[i] >= 3 * len(col_lst)]
 
 
 def meta_weapons(doc_filter: DocumentFilter, top_5_or_10: Optional[bool] = False, top_1: Optional[bool] = False,

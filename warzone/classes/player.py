@@ -1,7 +1,15 @@
-import pandas as pd
+"""Person class object.
+
+Usage:
+ ./warzone/classes/player.py
+
+Author:
+ Peter Rigali - 2021-03-29
+"""
 from dataclasses import dataclass
-from warzone.document_filter import DocumentFilter
-from warzone.gun_dictionary import gun_dict
+import pandas as pd
+from warzone.classes.document_filter import DocumentFilter
+from warzone.utils.gun_dictionary import gun_dict
 
 MU_LST = ['headshots', 'kills', 'deaths', 'longestStreak', 'scorePerMinute', 'distanceTraveled',
           'percentTimeMoving', 'damageDone', 'damageTaken', 'missionsComplete', 'timePlayed', 'objectiveBrCacheOpen',

@@ -1,19 +1,19 @@
 """Functions for dealing with new data.
 
 Usage:
- ./scrape.py
+ ./warzone/utils/scrape.py
 
 Author:
  Peter Rigali - 2021-08-30
 """
-from typing import List
 from dataclasses import dataclass
+from typing import List
 import requests
 import json
 import pandas as pd
 import time
 from collections.abc import MutableMapping
-from warzone.call_of_duty import CallofDuty
+from warzone.classes.call_of_duty import CallofDuty
 
 
 def _check_str(lst: list) -> tuple:
