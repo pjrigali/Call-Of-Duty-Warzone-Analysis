@@ -505,7 +505,6 @@ def get_our_and_other_df(data: pd.DataFrame, _my_uno: str):
 def get_hacker_and_other_df(data: pd.DataFrame, min_count: int = 5):
     """Similar to evaluate_df but used for the hacker data"""
     uno_lst = data['uno'].tolist()
-
     # Count
     dic, dic_count = {}, {}
     for _uno in uno_lst:

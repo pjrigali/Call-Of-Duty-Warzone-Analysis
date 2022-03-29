@@ -23,7 +23,7 @@ class User:
     """
 
     __slots__ = ["file_name", "hacker_file_name", "repo", "json_repo", "hacker_repo", "gamertag", "squad_lst",
-                 "favorite"]
+                 "favorite", "hacker_json_repo"]
 
     def __init__(self, info: dict = None):
 
@@ -68,6 +68,10 @@ class User:
         self.favorite = None
         if info['favorite']:
             self.favorite = info['favorite']
+
+        self.hacker_json_repo = None
+        if info['hacker_json_repo']:
+            self.hacker_json_repo = info['hacker_json_repo']
 
     def __repr__(self):
         return self.gamertag

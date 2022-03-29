@@ -7,12 +7,12 @@ Author:
  Peter Rigali - 2021-08-30
 """
 from dataclasses import dataclass
-import pandas as pd
 from warzone.classes.user import User
 from warzone.classes.squad import Squad
 from warzone.utils.class_functions import streamer_mode_whole, streamer_mode_gamertags, evaluate_df
-from warzone.utils.class_functions import uno_username_dict, get_hacker_and_other_df, get_our_and_other_df
+from warzone.utils.class_functions import uno_username_dict, get_our_and_other_df
 from warzone.utils.gun_dictionary import gun_dict
+from warzone.classes.hacker import Hacker
 
 
 @dataclass
@@ -52,7 +52,7 @@ class CallofDuty:
     """
 
     __slots__ = ["User", "whole_df", "gun_dic", "last_match_date_time", "name_uno_dic", "my_uno", "our_df", "other_df",
-                 "hacker_whole", "hacker_name_uno_dic", "hacker_df", "hacker_other_df", "Squad"]
+                 "Squad", 'hacker']
 
     def __init__(self,
                  user_input_dict: dict,
@@ -63,9 +63,9 @@ class CallofDuty:
                  from_json: bool = False,
                  reset_dtype: bool = False):
         self.User = User(info=user_input_dict)
-        self.whole_df: pd.DataFrame = evaluate_df(file_name=self.User.file_name, repo=self.User.repo,
-                                                  json_path=self.User.json_repo, build_json=build_json,
-                                                  from_json=from_json, reset_dtype=reset_dtype)
+        self.whole_df = evaluate_df(file_name=self.User.file_name, repo=self.User.repo,
+                                    json_path=self.User.json_repo, build_json=build_json,
+                                    from_json=from_json, reset_dtype=reset_dtype)
 
         if streamer_mode:
             streamer_mode_whole(_user_class=self.User, data=self.whole_df)
@@ -79,15 +79,13 @@ class CallofDuty:
 
         self.my_uno = self.name_uno_dic[self.User.gamertag]
         self.our_df, self.other_df = get_our_and_other_df(data=self.whole_df, _my_uno=self.my_uno)
-        self.hacker_whole, self.hacker_name_uno_dic, self.hacker_df, self.hacker_other_df = None, None, None, None
+
+        self.hacker = None
         if hacker_data:
-            self.hacker_whole = evaluate_df(file_name=None, repo=self.User.repo, json_path=self.User.hacker_repo,
-                                            build_json=build_json, from_json=from_json)
-            self.hacker_name_uno_dic = uno_username_dict(data=self.hacker_whole)
-            self.hacker_df, self.hacker_other_df = get_hacker_and_other_df(data=self.hacker_whole)
+            self.hacker = Hacker(user=self.User, build_json=build_json, from_json=from_json, reset_dtype=reset_dtype)
 
         self.Squad = Squad(squad_lst=self.User.squad_lst, original_df=self.our_df, uno_name_dic=self.name_uno_dic,
-                           build_all=squad_data, favorite=user_input_dict['favorite'])
+                           build_all=squad_data, favorite=self.User.favorite)
 
     def __repr__(self):
         return 'Call of Duty'
