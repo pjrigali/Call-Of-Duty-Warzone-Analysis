@@ -17,19 +17,7 @@ class User:
 
     :param info: User input dict.
     :type info: dict
-    :example:
-        >>> from warzone.classes.user import User
-        >>> user_input_dict = {
-        >>>     'repo': 'location of saved data',
-        >>>     'json_repo': 'location of saved data in single json format',
-        >>>     'hacker_repo': 'location of saved hacker data',
-        >>>     'gamertag': 'your Ganertag',
-        >>>     'squad_lst': ['squadmate1', 'squadmate2', 'etc'],
-        >>>     'file_name': 'Match_Data.csv',
-        >>>     'hacker_file_name': 'hacker_df.csv',
-        >>>     'favorite': {'fav_map': 'rebirth', 'fav_mode': 'resurgence', 'fav_team_size': 'quad'}
-        >>>     }
-        >>> user = User(info=user_input_dict)
+    :example: *None*
     :note: *None*
 
     """

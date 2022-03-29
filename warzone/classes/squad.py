@@ -23,12 +23,7 @@ class Squad:
     :type original_df: pd.DataFrame
     :param uno_name_dic: A dict of all gamertags and respective unos.
     :type uno_name_dic: dict
-    :example:
-        >>> from warzone.credentials import user_inputs
-        >>> from warzone.classes.user import User
-        >>> from warzone.classes.squad import Squad
-        >>> _User = User(info=user_inputs)
-        >>> _Squad = Squad(squad_lst=_User.squad_lst, original_df=cod.our_df, uno_name_dic=cod.name_uno_dict)
+    :example: *None*
     :note: This will calculate and return the stats for all squad members.
 
     """
