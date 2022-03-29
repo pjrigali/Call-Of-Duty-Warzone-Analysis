@@ -1,12 +1,12 @@
-from typing import Optional, Dict
+from typing import Optional, Dict, Union, List
 import pandas as pd
 import numpy as np
 import datetime
 import os
 import random
 from warzone.utils.gun_dictionary import gun_dict
-from warzone.classes.user import User
-from warzone.classes.squad import Squad
+# from warzone.classes.user import User
+# from warzone.classes.squad import Squad
 
 # User
 # None
@@ -39,12 +39,12 @@ MAX_LST = ['headshots', 'kills', 'deaths', 'distanceTraveled', 'damageDone', 'da
 """A list of columns to compute the max for"""
 
 
-def _get_indexes(original_df: pd.DataFrame, uno: str):
+def get_indexes_for_player(original_df: pd.DataFrame, uno: str) -> tuple:
     lst = original_df["uno"].tolist()
     return tuple([ind for ind, val in enumerate(lst) if val == uno])
 
 
-def _build_stats(df: pd.DataFrame, stat_type: str):
+def get_player_stats(df: pd.DataFrame, stat_type: str):
     if stat_type == "sum":
         return {col: df[col].sum() for col in SUM_LST}
     elif stat_type == "mean":
@@ -55,7 +55,7 @@ def _build_stats(df: pd.DataFrame, stat_type: str):
         return {col: df[col].max() for col in MAX_LST}
 
 
-def _build_weapons(df: pd.DataFrame, stat_type: str):
+def get_player_weapons(df: pd.DataFrame, stat_type: str):
     loadouts = df["loadouts"]
     excluded_weapons = {"iw8_fists": True, "none": True, "nan": True}
     gun_ind_dic = {key: [] for key in gun_dict.keys()}
@@ -102,7 +102,7 @@ def _build_weapons(df: pd.DataFrame, stat_type: str):
     return {gun_dict[key]: dic[key] for key in dic.keys()}
 
 
-def _build_time(df: pd.DataFrame, stat_type: str):
+def get_player_time(df: pd.DataFrame, stat_type: str):
     seconds = df['timePlayed']
     minutes = seconds / 60
     hours = minutes / 60
@@ -119,7 +119,7 @@ def _build_time(df: pd.DataFrame, stat_type: str):
 
 
 # CallofDuty
-def build_from_json(path: str, save: bool = False) -> pd.DataFrame:
+def _build_from_json(path: str, save: bool = False) -> pd.DataFrame:
     """Creates a Dataframe from json files"""
     import json
     from collections.abc import MutableMapping
@@ -175,7 +175,7 @@ def build_from_json(path: str, save: bool = False) -> pd.DataFrame:
     return df
 
 
-def sm_whole(_user_class: User, data: pd.DataFrame) -> None:
+def streamer_mode_whole(_user_class, data: pd.DataFrame) -> None:
     """Hides gamertags and unos in whole dataset"""
     count = 1
     length = (20 - len(str(len(_user_class.squad_lst))))
@@ -191,14 +191,14 @@ def sm_whole(_user_class: User, data: pd.DataFrame) -> None:
     data['uno'] = temp_uno_lst
 
 
-def sm_gamertags(_user: User) -> None:
+def streamer_mode_gamertags(_user) -> None:
     """Hides gamertags"""
     temp_lst = ['friend_gamertag_' + str(i + 1) for i, j in enumerate(_user.squad_lst)]
     _user.squad_lst = temp_lst
     _user.gamertag = temp_lst[0]
 
 
-def sm_unos(_user: User, _squad: Squad) -> None:
+def streamer_mode_uno(_user, _squad) -> None:
     """Hides unos"""
     length, count = (20 - len(str(len(_user.squad_lst)))), 1
     for i in _user.squad_lst:
@@ -207,7 +207,7 @@ def sm_unos(_user: User, _squad: Squad) -> None:
         count += 1
 
 
-def find_types(df: pd.DataFrame, keep_bool: bool = False):
+def _find_types(df: pd.DataFrame, keep_bool: bool = False):
     type_dic = {"int": {"int8": (1, np.int8), "int16": (2, np.int16), "int32": (3, np.int32), "int64": (4, np.int64)},
                 "uint": {"uint8": (1, np.uint8), "uint16": (2, np.uint16), "uint32": (3, np.uint32),
                          "uint64": (4, np.uint64)},
@@ -246,7 +246,7 @@ def find_types(df: pd.DataFrame, keep_bool: bool = False):
     return final_dic
 
 
-def load_cols_dtypes(repo: str, from_json: bool):
+def _load_cols_dtypes(repo: str, from_json: bool):
     if from_json:
         repo1, repo2 = repo + 'CSV', repo + 'CSV\\' + "dtype_info.csv"
     else:
@@ -272,23 +272,23 @@ def evaluate_df(file_name: Optional[str] = None, repo: Optional[str] = None, jso
                  'player_username': 'str',
                  'player_team': 'str'}
     if build_json:
-        df = build_from_json(path=json_path, save=build_json)
+        df = _build_from_json(path=json_path, save=build_json)
     elif build_json is False and from_json is True:
         if reset_dtype:
             df = pd.read_csv(json_path + 'CSV\\' + next(os.walk(json_path + 'CSV'))[2][0], dtype=dtype_dic,
                              index_col='Unnamed: 0')
-            pd.DataFrame(find_types(df=df, keep_bool=False), index=[0]).to_csv(json_path + 'CSV\\' + "dtype_info.csv",
+            pd.DataFrame(_find_types(df=df, keep_bool=False), index=[0]).to_csv(json_path + 'CSV\\' + "dtype_info.csv",
                                                                                header=True)
         else:
-            included_cols, dtype_dic_new = load_cols_dtypes(repo=json_path, from_json=from_json)
+            included_cols, dtype_dic_new = _load_cols_dtypes(repo=json_path, from_json=from_json)
             df = pd.read_csv(json_path + 'CSV\\' + next(os.walk(json_path + 'CSV'))[2][0], dtype=dtype_dic_new,
                              usecols=included_cols)
     else:
         if reset_dtype:
             df = pd.read_csv(repo + file_name, dtype=dtype_dic, index_col='Unnamed: 0').drop_duplicates(keep='first')
-            pd.DataFrame(find_types(df=df, keep_bool=False), index=[0]).to_csv(repo + "dtype_info.csv", header=True)
+            pd.DataFrame(_find_types(df=df, keep_bool=False), index=[0]).to_csv(repo + "dtype_info.csv", header=True)
         else:
-            included_cols, dtype_dic_new = load_cols_dtypes(repo=repo, from_json=from_json)
+            included_cols, dtype_dic_new = _load_cols_dtypes(repo=repo, from_json=from_json)
             df = pd.read_csv(repo + file_name, dtype=dtype_dic_new, usecols=included_cols).drop_duplicates(keep='first')
 
     if build_json is True or from_json is True:
@@ -421,8 +421,12 @@ def evaluate_df(file_name: Optional[str] = None, repo: Optional[str] = None, jso
     return df.sort_values('startDateTime', ascending=True).reset_index(drop=True)
 
 
-def get_uno_username_dict(data: pd.DataFrame) -> dict:
+def uno_username_dict(data: pd.DataFrame) -> dict:
     """Return a dict {gamertag: uno, gamertag1: uno1, etc}"""
+    if 'uno' not in data.columns:
+        raise AttributeError('uno required in dataframe')
+    if 'username' not in data.columns:
+        raise AttributeError('username required in dataframe')
     comb_set = set(data['uno'] + '-splitpoint-' + data['username'])
     return {i.split('-splitpoint-')[1]: i.split('-splitpoint-')[0] for i in comb_set if isinstance(i, str)}
 
@@ -573,3 +577,49 @@ def _get_group_stats(args) -> Dict[str, pd.DataFrame]:
             'lower': pd.concat([group.quantile(q=lower)[quantile_lst].sort_index(ascending=True), t], axis=1),
             'upper': pd.concat([group.quantile(q=upper)[quantile_lst].sort_index(ascending=True), t], axis=1),
             'raw': data}
+
+
+# DocumentFilter
+def _check_empty(data: pd.DataFrame, return_empty: bool = True) -> pd.DataFrame:
+    """Checks if the input dataframe is empty"""
+    if return_empty:
+        return data
+    else:
+        if data.empty:
+            raise AttributeError('Based on input params, the dataframe will be empty.')
+        else:
+            return data
+
+
+def _accept_list(data: pd.DataFrame, col: str, lst: Union[List[str], List[int]], return_empty: bool = True) -> pd.DataFrame:
+    """Handles a list of str's as an input"""
+    if col not in data.columns:
+        raise AttributeError(col + ' not included in the passed dataframe column list')
+    else:
+        lst_dic = {i: True for i in lst}
+        data_lst = data[col].tolist()
+        new_data = data.iloc[[i for i, j in enumerate(data_lst) if str(j) in lst_dic]]
+        return _check_empty(data=new_data, return_empty=return_empty)
+
+
+def _accept_str(data: pd.DataFrame, col: str, string: str, return_empty: bool = True) -> pd.DataFrame:
+    """Handles a str input"""
+    if col not in data.columns:
+        raise AttributeError(col + ' not included in the passed dataframe column list')
+    else:
+        return _check_empty(data=data[data[col] == string], return_empty=return_empty)
+
+
+def apply_filter(data: pd.DataFrame, col: str, val: Union[str, List[str], int, List[int]],
+                 dic: Optional[Dict[str, str]] = None, return_empty: bool = True) -> pd.DataFrame:
+    """Filters data based on input col and val"""
+    if dic is None:
+        if isinstance(val, str):
+            return _accept_str(data=data, col=col, string=val, return_empty=return_empty)
+        elif isinstance(val, list):
+            return _accept_list(data=data, col=col, lst=val, return_empty=return_empty)
+    else:
+        if isinstance(val, str):
+            return _accept_str(data=data, col=col, string=dic[val], return_empty=return_empty)
+        elif isinstance(val, list):
+            return _accept_list(data=data, col=col, lst=[dic[i] for i in val], return_empty=return_empty)

@@ -10,8 +10,8 @@ from dataclasses import dataclass
 import pandas as pd
 from warzone.classes.user import User
 from warzone.classes.squad import Squad
-from warzone.utils.class_functions import sm_whole, sm_gamertags, evaluate_df, get_our_and_other_df
-from warzone.utils.class_functions import get_uno_username_dict, get_hacker_and_other_df
+from warzone.utils.class_functions import streamer_mode_whole, streamer_mode_gamertags, evaluate_df
+from warzone.utils.class_functions import uno_username_dict, get_hacker_and_other_df, get_our_and_other_df
 from warzone.utils.gun_dictionary import gun_dict
 
 
@@ -68,14 +68,14 @@ class CallofDuty:
                                                   from_json=from_json, reset_dtype=reset_dtype)
 
         if streamer_mode:
-            sm_whole(_user_class=self.User, data=self.whole_df)
+            streamer_mode_whole(_user_class=self.User, data=self.whole_df)
 
         self.gun_dic = gun_dict
         self.last_match_date_time = self.whole_df['startDateTime'].tolist()[-1]
-        self.name_uno_dic = get_uno_username_dict(data=self.whole_df)
+        self.name_uno_dic = uno_username_dict(data=self.whole_df)
 
         if streamer_mode:
-            sm_gamertags(_user=self.User)
+            streamer_mode_gamertags(_user=self.User)
 
         self.my_uno = self.name_uno_dic[self.User.gamertag]
         self.our_df, self.other_df = get_our_and_other_df(data=self.whole_df, _my_uno=self.my_uno)
@@ -83,7 +83,7 @@ class CallofDuty:
         if hacker_data:
             self.hacker_whole = evaluate_df(file_name=None, repo=self.User.repo, json_path=self.User.hacker_repo,
                                             build_json=build_json, from_json=from_json)
-            self.hacker_name_uno_dic = get_uno_username_dict(data=self.hacker_whole)
+            self.hacker_name_uno_dic = uno_username_dict(data=self.hacker_whole)
             self.hacker_df, self.hacker_other_df = get_hacker_and_other_df(data=self.hacker_whole)
 
         self.Squad = Squad(squad_lst=self.User.squad_lst, original_df=self.our_df, uno_name_dic=self.name_uno_dic,

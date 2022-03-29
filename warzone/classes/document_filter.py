@@ -7,64 +7,10 @@ Author:
  Peter Rigali - 2021-08-30
 """
 from dataclasses import dataclass
-from typing import Optional, List, Dict, Union
+from typing import List, Dict, Union
 import pandas as pd
 import datetime
-
-
-def _check_empty(data: pd.DataFrame, return_empty: bool = True) -> pd.DataFrame:
-    """Checks if the input dataframe is empty"""
-    if return_empty:
-        return data
-    else:
-        if data.empty:
-            raise AttributeError('Based on input params, the dataframe will be empty.')
-        else:
-            return data
-
-
-def get_uno_username_dict(data: pd.DataFrame) -> dict:
-    """Return a dict {gamertag: uno, gamertag1: uno1, etc}"""
-    if 'uno' not in data.columns:
-        raise AttributeError('uno required in dataframe')
-    if 'username' not in data.columns:
-        raise AttributeError('username required in dataframe')
-    comb_set = (data['uno'] + '-splitpoint-' + data['username']).unique().tolist()
-    return {i.split('-splitpoint-')[1]: i.split('-splitpoint-')[0] for i in comb_set if isinstance(i, str)}
-
-
-def _accept_list(data: pd.DataFrame, col: str, lst: Union[List[str], List[int]], return_empty: bool = True) -> pd.DataFrame:
-    """Handles a list of str's as an input"""
-    if col not in data.columns:
-        raise AttributeError(col + ' not included in the passed dataframe column list')
-    else:
-        lst_dic = {i: True for i in lst}
-        data_lst = data[col].tolist()
-        new_data = data.iloc[[i for i, j in enumerate(data_lst) if str(j) in lst_dic]]
-        return _check_empty(data=new_data, return_empty=return_empty)
-
-
-def _accept_str(data: pd.DataFrame, col: str, string: str, return_empty: bool = True) -> pd.DataFrame:
-    """Handles a str input"""
-    if col not in data.columns:
-        raise AttributeError(col + ' not included in the passed dataframe column list')
-    else:
-        return _check_empty(data=data[data[col] == string], return_empty=return_empty)
-
-
-def _evaluate_data(data: pd.DataFrame, col: str, val: Union[str, List[str], int, List[int]],
-                   dic: Optional[Dict[str, str]] = None, return_empty: bool = True) -> pd.DataFrame:
-    """Filters data based on input col and val"""
-    if dic is None:
-        if isinstance(val, str):
-            return _accept_str(data=data, col=col, string=val, return_empty=return_empty)
-        elif isinstance(val, list):
-            return _accept_list(data=data, col=col, lst=val, return_empty=return_empty)
-    else:
-        if isinstance(val, str):
-            return _accept_str(data=data, col=col, string=dic[val], return_empty=return_empty)
-        elif isinstance(val, list):
-            return _accept_list(data=data, col=col, lst=[dic[i] for i in val], return_empty=return_empty)
+from warzone.utils.class_functions import uno_username_dict, apply_filter
 
 
 @dataclass
@@ -112,11 +58,11 @@ class DocumentFilter:
                  team_size: Union[str, List[str]] = None,
                  username: Union[str, List[str]] = None,
                  uno: Union[str, List[str]] = None,
-                 username_dic: Optional[Dict[str, str]] = None,
+                 username_dic: Dict[str, str] = None,
                  sort_dataframe: str = 'startDateTime',
                  return_empty: bool = True,
                  position: str = 'all',
-                 args: Optional[dict] = None,
+                 args: dict = None,
                  ):
 
         if args:
@@ -142,33 +88,33 @@ class DocumentFilter:
 
         data = input_df.copy()
         if map_choice:
-            data = _evaluate_data(data=data, col='map', val=map_choice, dic=None, return_empty=return_empty)
+            data = apply_filter(data=data, col='map', val=map_choice, dic=None, return_empty=return_empty)
 
         if mode_choice:
-            data = _evaluate_data(data=data, col='mode', val=mode_choice, dic=None, return_empty=return_empty)
+            data = apply_filter(data=data, col='mode', val=mode_choice, dic=None, return_empty=return_empty)
 
         if team_size:
-            data = _evaluate_data(data=data, col='teamSize', val=team_size, dic=None, return_empty=return_empty)
+            data = apply_filter(data=data, col='teamSize', val=team_size, dic=None, return_empty=return_empty)
 
         if username:
             if username_dic is None:
-                username_dic = get_uno_username_dict(data=data)
-            data = _evaluate_data(data=data, col='uno', val=username, dic=username_dic, return_empty=return_empty)
+                username_dic = uno_username_dict(data=data)
+            data = apply_filter(data=data, col='uno', val=username, dic=username_dic, return_empty=return_empty)
 
         if uno:
-            data = _evaluate_data(data=data, col='uno', val=uno, dic=None, return_empty=return_empty)
+            data = apply_filter(data=data, col='uno', val=uno, dic=None, return_empty=return_empty)
 
         if position:
             if position == 'all':
                 data = data
             elif position == 'first':
-                data = _evaluate_data(data=data, col='teamPlacement', val=[1], dic=None, return_empty=return_empty)
+                data = apply_filter(data=data, col='teamPlacement', val=[1], dic=None, return_empty=return_empty)
             else:
                 if mode_choice == "royale":
                     val = list(range(1, 10))
                 else:
                     val = list(range(1, 5))
-                data = _evaluate_data(data=data, col='teamPlacement', val=val, dic=None, return_empty=return_empty)
+                data = apply_filter(data=data, col='teamPlacement', val=val, dic=None, return_empty=return_empty)
 
         self.df = data.sort_values(sort_dataframe, ascending=True).reset_index(drop=True)
         self.unique_match_ids = tuple(self.df['matchID'].unique().tolist())

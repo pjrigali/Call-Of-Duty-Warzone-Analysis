@@ -9,7 +9,7 @@ Author:
 from dataclasses import dataclass
 import pandas as pd
 from warzone.classes.document_filter import DocumentFilter
-from warzone.utils.class_functions import _get_indexes, _build_time, _build_stats, _build_weapons
+from warzone.utils.class_functions import get_indexes_for_player, get_player_time, get_player_stats, get_player_weapons
 
 
 @dataclass
@@ -34,7 +34,7 @@ class Person:
     def __init__(self, original_df: pd.DataFrame, uno: str, gamertag: str):
         self.uno = uno
         self.gamertag = gamertag
-        self.index_lst = _get_indexes(original_df=original_df, uno=uno)
+        self.index_lst = get_indexes_for_player(original_df=original_df, uno=uno)
         self.performance_dict = None
         self.favorite_dict = None
         self._original_df = original_df
@@ -44,11 +44,11 @@ class Person:
         df = DocumentFilter(input_df=self._original_df.iloc[list(self.index_lst)], map_choice=map_choice,
                             mode_choice=mode_choice, team_size=team_size, position=position).df
         if stats_weapon_time == "stats":
-            dic = _build_stats(df=df, stat_type=stat_type)
+            dic = get_player_stats(df=df, stat_type=stat_type)
         elif stats_weapon_time == "weapons":
-            dic = _build_weapons(df=df, stat_type=stat_type)
+            dic = get_player_weapons(df=df, stat_type=stat_type)
         elif stats_weapon_time == "time":
-            dic = _build_time(df=df, stat_type=stat_type)
+            dic = get_player_time(df=df, stat_type=stat_type)
         else:
             raise AttributeError("stat_type must be one of the following strings (stats, weapons, time)")
 
