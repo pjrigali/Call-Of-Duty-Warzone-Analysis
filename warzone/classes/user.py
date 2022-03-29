@@ -18,7 +18,7 @@ class User:
     :param info: User input dict.
     :type info: dict
     :example:
-        >>> from warzone.user import User
+        >>> from warzone.classes.user import User
         >>> user_input_dict = {
         >>>     'repo': 'location of saved data',
         >>>     'json_repo': 'location of saved data in single json format',
