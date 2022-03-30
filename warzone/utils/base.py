@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 from pyjr.utils.tools import _to_metatype
 
+
 def normalize(arr: np.ndarray, multi: Optional[bool] = None) -> np.ndarray:
     """
 
