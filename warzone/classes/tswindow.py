@@ -5,7 +5,20 @@ from warzone.utils.class_functions import _build_windows
 
 @dataclass
 class TSWindows:
+    """
+    TSWindows class builds windows based on desired input session.
 
+    :param our_doc_filter: Input DocumentFilter for our.
+    :type our_doc_filter: DocumentFilter
+    :param other_doc_filter: Input DocumentFilter for other.
+    :type other_doc_filter: DocumentFilter
+    :param session_type: Must be {session, game, event, or day}
+    :type session_type: str
+    :param session_value: Window width, only needed when session_type is session, event or game.
+    :type session_value: int
+    :param stat_type: Desired stat to be calculated.
+    :type stat_type: str
+    """
     __slots__ = ('windows', 'stat_type', 'session_type', 'session_value', 'len')
 
     def __init__(self, our_doc_filter: DocumentFilter, other_doc_filter: DocumentFilter,
@@ -18,4 +31,4 @@ class TSWindows:
         self.len = self.windows.__len__()
 
     def __repr__(self):
-        return 'TSWindow'
+        return 'TSWindows'

@@ -5,7 +5,7 @@ import pandas as pd
 
 @dataclass
 class Window:
-
+    """Builds a single window."""
     __slots__ = ('position', 'match_ids', 'team_df', 'lobby_df', 'len', 'games')
 
     def __init__(self, window: int, match_ids: Union[list, tuple], team: pd.DataFrame, lobby: pd.DataFrame):
