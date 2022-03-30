@@ -1,3 +1,11 @@
+"""Hacker class object.
+
+Usage:
+ ./warzone/classes/hacker.py
+
+Author:
+ Peter Rigali - 2022-03-30
+"""
 from dataclasses import dataclass
 from warzone.classes.user import User
 from warzone.utils.class_functions import evaluate_df, uno_username_dict, get_hacker_and_other_df
@@ -5,7 +13,7 @@ from warzone.utils.class_functions import evaluate_df, uno_username_dict, get_ha
 
 @dataclass
 class Hacker:
-
+    """This class is similar to the CallofDuty class, but in regards to hacker data."""
     __slots__ = ['whole', 'name_uno_dic', 'our_df', 'other_df', 'hacker_name_uno_dic']
 
     def __init__(self,

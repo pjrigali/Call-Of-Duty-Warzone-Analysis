@@ -1,3 +1,11 @@
+"""Game class object.
+
+Usage:
+ ./warzone/classes/game.py
+
+Author:
+ Peter Rigali - 2022-03-30
+"""
 from dataclasses import dataclass
 import pandas as pd
 from pyjr.classes.stat import Stat

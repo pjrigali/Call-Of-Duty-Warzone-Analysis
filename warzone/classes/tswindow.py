@@ -1,3 +1,11 @@
+"""TSWindows class object.
+
+Usage:
+ ./warzone/classes/tswindow.py
+
+Author:
+ Peter Rigali - 2022-03-30
+"""
 from dataclasses import dataclass
 from warzone.classes.document_filter import DocumentFilter
 from warzone.utils.class_functions import _build_windows

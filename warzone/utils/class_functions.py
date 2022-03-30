@@ -8,8 +8,9 @@ from warzone.utils.gun_dictionary import gun_dict
 from warzone.classes.game import Game
 from warzone.classes.window import Window
 from warzone.utils.lists import SUM_LST, MU_LST, MAX_LST, HACKER_LST
-from warzone.utils.base import slc
-from pyjr.utils.tools import _to_metatype, _unique_values
+from pyjr.utils.tools.clean import _mtype
+from pyjr.utils.tools.general import _unique_values
+from pyjr.utils.tools.dataframe import slc
 
 
 # User
@@ -598,16 +599,16 @@ def apply_filter(data: pd.DataFrame, col: str, val: Union[str, List[str], int, L
 # Window
 def _get_matchids_day(df: pd.DataFrame):
     """Get matchIDs for the windows based on day."""
-    date_tup = _to_metatype(data=df['startDate'].unique(), dtype='tuple')
+    date_tup = _mtype(d=df['startDate'].unique(), dtype='tuple')
     dic = {}
     for ind, date in enumerate(date_tup):
-        dic[ind] = _to_metatype(data=slc(df, 'startDate', date)['matchID'].unique(), dtype='tuple')
+        dic[ind] = _mtype(d=slc(df, 'startDate', date)['matchID'].unique(), dtype='tuple')
     return dic
 
 
 def _get_matchids_game(df: pd.DataFrame, session_value: int) -> dict:
     """Get matchIDs for the windows based on game count."""
-    id_tup = _to_metatype(data=df['matchID'].unique(), dtype='tuple')
+    id_tup = _mtype(d=df['matchID'].unique(), dtype='tuple')
     count, window = 0, 0
     id_lst = []
     dic = {}
@@ -624,7 +625,7 @@ def _get_matchids_game(df: pd.DataFrame, session_value: int) -> dict:
 
 def _get_matchids_event(df: pd.DataFrame, session_value: int):
     """Get matchIDs for the windows based on a teamPlacement number."""
-    win_ids = _to_metatype(data=slc(df, 'teamPlacement', session_value)['matchID'].unique(), dtype='tuple')
+    win_ids = _mtype(d=slc(df, 'teamPlacement', session_value)['matchID'].unique(), dtype='tuple')
     win_dic = {i: True for i in win_ids}
     window = 0
     dic = {}
@@ -633,7 +634,7 @@ def _get_matchids_event(df: pd.DataFrame, session_value: int):
     for ind, row in df.iterrows():
         if row['matchID'] in win_dic and row['matchID'] not in completed_dic:
             completed_dic[row['matchID']] = True
-            dic[window] = _to_metatype(data=curr_dic.keys(), dtype='tuple')
+            dic[window] = _mtype(d=curr_dic.keys(), dtype='tuple')
             curr_dic = {row['matchID']: True}
             window += 1
         elif row['matchID'] in win_dic and row['matchID'] in completed_dic:

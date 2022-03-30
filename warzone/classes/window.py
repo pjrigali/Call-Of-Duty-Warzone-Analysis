@@ -1,3 +1,11 @@
+"""Window class object.
+
+Usage:
+ ./warzone/classes/window.py
+
+Author:
+ Peter Rigali - 2022-03-30
+"""
 from dataclasses import dataclass
 from typing import Union
 import pandas as pd
