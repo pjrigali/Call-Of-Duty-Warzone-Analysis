@@ -5,9 +5,11 @@ import datetime
 import os
 import random
 from warzone.utils.gun_dictionary import gun_dict
-# from warzone.classes.user import User
-# from warzone.classes.squad import Squad
-from pyjr.utils.tools import _to_metatype
+from warzone.classes.game import Game
+from warzone.classes.window import Window
+from warzone.utils.lists import SUM_LST, MU_LST, MAX_LST
+from pyjr.utils.tools import _to_metatype, _unique_values
+
 
 # User
 # None
@@ -16,30 +18,6 @@ from pyjr.utils.tools import _to_metatype
 # None
 
 # Person
-MU_LST = ['headshots', 'kills', 'deaths', 'longestStreak', 'scorePerMinute', 'distanceTraveled',
-          'percentTimeMoving', 'damageDone', 'damageTaken', 'missionsComplete', 'timePlayed', 'objectiveBrCacheOpen',
-          'objectiveBrKioskBuy', 'objectiveBrMissionPickupTablet', 'objectiveLastStandKill', 'objectiveReviver',
-          'objectiveTeamWiped', 'objectiveLastStandKill', 'objectiveBrDownEnemyCircle1',
-          'objectiveBrDownEnemyCircle2', 'objectiveBrDownEnemyCircle3', 'objectiveBrDownEnemyCircle4',
-          'objectiveBrDownEnemyCircle5', 'objectiveBrDownEnemyCircle6', 'placementPercent', 'headshotRatio']
-"""A list of columns to compute the mean for"""
-
-SUM_LST = ['headshots', 'kills', 'deaths', 'distanceTraveled', 'damageDone', 'damageTaken', 'missionsComplete',
-           'timePlayed', 'objectiveBrCacheOpen', 'objectiveBrKioskBuy', 'objectiveBrMissionPickupTablet',
-           'objectiveLastStandKill', 'objectiveReviver', 'objectiveTeamWiped', 'objectiveLastStandKill',
-           'objectiveBrDownEnemyCircle1', 'objectiveBrDownEnemyCircle2', 'objectiveBrDownEnemyCircle3',
-           'objectiveBrDownEnemyCircle4', 'objectiveBrDownEnemyCircle5', 'objectiveBrDownEnemyCircle6']
-"""A list of columns to compute the sum for"""
-
-MAX_LST = ['headshots', 'kills', 'deaths', 'distanceTraveled', 'damageDone', 'damageTaken', 'missionsComplete',
-           'timePlayed', 'objectiveBrCacheOpen', 'objectiveBrKioskBuy', 'objectiveBrMissionPickupTablet',
-           'objectiveLastStandKill', 'objectiveReviver', 'objectiveTeamWiped', 'objectiveLastStandKill',
-           'objectiveBrDownEnemyCircle1', 'objectiveBrDownEnemyCircle2', 'objectiveBrDownEnemyCircle3',
-           'objectiveBrDownEnemyCircle4', 'objectiveBrDownEnemyCircle5', 'objectiveBrDownEnemyCircle6', 'kdRatio',
-           'headshotRatio']
-"""A list of columns to compute the max for"""
-
-
 def get_indexes_for_player(original_df: pd.DataFrame, uno: str) -> tuple:
     lst = original_df["uno"].tolist()
     return tuple([ind for ind, val in enumerate(lst) if val == uno])
@@ -630,3 +608,116 @@ def apply_filter(data: pd.DataFrame, col: str, val: Union[str, List[str], int, L
             return _accept_str(data=data, col=col, string=dic[val], return_empty=return_empty)
         elif isinstance(val, list):
             return _accept_list(data=data, col=col, lst=[dic[i] for i in val], return_empty=return_empty)
+
+
+# Window
+def _get_matchids_day(df: pd.DataFrame):
+    date_tup = _to_metatype(data=df['startDate'].unique(), dtype='tuple')
+    dic = {}
+    for ind, date in enumerate(date_tup):
+        dic[ind] = _to_metatype(data=df[df['startDate'] == date]['matchID'].unique(), dtype='tuple')
+    return dic
+
+
+def _get_matchids_game(df: pd.DataFrame, session_value: int) -> dict:
+    id_tup = _to_metatype(data=df['matchID'].unique(), dtype='tuple')
+    count, window = 0, 0
+    id_lst = []
+    dic = {}
+    for _id in id_tup:
+        id_lst.append(_id)
+        count += 1
+        if count == session_value:
+            dic[window] = tuple(id_lst)
+            count = 0
+            window += 1
+            id_lst = []
+    return dic
+
+
+def _get_matchids_event(df: pd.DataFrame, session_value: int):
+    win_ids = _to_metatype(data=df[df['teamPlacement'] == session_value]['matchID'].unique(), dtype='tuple')
+    win_dic = {i: True for i in win_ids}
+    window = 0
+    dic = {}
+    completed_dic = {}
+    curr_dic = {}
+    for ind, row in df.iterrows():
+        if row['matchID'] in win_dic and row['matchID'] not in completed_dic:
+            completed_dic[row['matchID']] = True
+            dic[window] = _to_metatype(data=curr_dic.keys(), dtype='tuple')
+            curr_dic = {row['matchID']: True}
+            window += 1
+        elif row['matchID'] in win_dic and row['matchID'] in completed_dic:
+            pass
+        else:
+            curr_dic[row['matchID']] = True
+    return {key - 1: val for key, val in dic.items() if key != 0}
+
+
+def _get_matchids_session(df: pd.DataFrame, session_value: int):
+    id_dic, ind_dic, count, past_game = {}, {}, 0, None
+    for ind, row in df.iterrows():
+        if past_game is None:
+            past_game, id_dic[row['matchID']], ind_dic[count] = row['endDateTime'], True, [row['matchID']]
+            continue
+        elif row['matchID'] in id_dic:
+            ind_dic[count].append(row['matchID'])
+        else:
+            if row['startDateTime'] - past_game <= datetime.timedelta(minutes=session_value):
+                past_game, id_dic[row['matchID']] = row['endDateTime'], True
+                ind_dic[count].append(row['matchID'])
+            else:
+                count += 1
+                past_game, ind_dic[count] = row['endDateTime'], [row['matchID']]
+    return {key: _unique_values(data=val, count=False) for key, val in ind_dic.items()}
+
+
+def _get_indexes(our_df: pd.DataFrame, other_df: pd.DataFrame, win_mat_dic: dict):
+    our_dic, other_dic = {}, {}
+    for key, val in win_mat_dic.items():
+        our_dic[key], other_dic[key] = [], []
+        for _id in val:
+            temp = _unique_values(data=our_df[our_df['matchID'] == _id].index, count=False)
+            for ind in temp:
+                our_dic[key].append(ind)
+            temp = _unique_values(data=other_df[other_df['matchID'] == _id].index, count=False)
+            for ind in temp:
+                other_dic[key].append(ind)
+    return our_dic, other_dic
+
+
+def _get_dfs(our_df: pd.DataFrame, other_df: pd.DataFrame, our_dic: dict, other_dic: dict):
+    for key, val in our_dic.items():
+        our_dic[key] = our_df.iloc[val][['matchID', 'startDateTime', 'endDateTime'] + SUM_LST]
+    for key, val in other_dic.items():
+        other_dic[key] = other_df.iloc[val][['matchID', 'startDateTime', 'endDateTime'] + SUM_LST]
+    return our_dic, other_dic
+
+
+def _build_windows(our_df: pd.DataFrame, other_df: pd.DataFrame, stat_type: str, session_type: str,
+                   session_value: int = None) -> tuple:
+    if session_type == 'day':
+        window_matchid_dic = _get_matchids_day(df=our_df)
+    elif session_type == 'game':
+        window_matchid_dic = _get_matchids_game(df=our_df, session_value=session_value)
+    elif session_type == 'event':
+        window_matchid_dic = _get_matchids_event(df=our_df, session_value=session_value)
+    elif session_type == 'session':
+        window_matchid_dic = _get_matchids_session(df=our_df, session_value=session_value)
+    else:
+        raise AttributeError('Session_type must be {day, game, event, session}')
+    our_ind_dic, other_ind_dic = _get_indexes(our_df=our_df, other_df=other_df, win_mat_dic=window_matchid_dic)
+    our_df_dic, other_df_dic = _get_dfs(our_df=our_df, other_df=other_df, our_dic=our_ind_dic, other_dic=other_ind_dic)
+    win_lst = [Window(window=key, match_ids=val, team=our_df_dic[key], lobby=other_df_dic[key]) for key, val in window_matchid_dic.items()]
+    for window in win_lst:
+        game_lst, count = [], 0
+        for _id in window.match_ids:
+            game = Game(match_id=_id, position=count)
+            game.get_team_lobby_stat(team_data=window.team_df[window.team_df['matchID'] == _id],
+                                     lobby_data=window.lobby_df[window.lobby_df['matchID'] == _id],
+                                     stat_type=stat_type)
+            game_lst.append(game)
+            count += 1
+        window.games = tuple(game_lst)
+    return tuple(win_lst)
