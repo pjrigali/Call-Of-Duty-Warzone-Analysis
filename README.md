@@ -14,18 +14,6 @@ The secondary goal is help the user understand the conditions that affect how th
 
 ## Getting Started
 
-### Dependencies
-
-* numpy
-* matplotlib
-* pandas
-* requests
-* selenium
-* scipy
-* yellowbrick
-* statsmodels
-* scikit-learn
-
 ### Installing
 
 [Pypi Documentation](https://pypi.org/project/warzone-analysis/)
@@ -57,10 +45,9 @@ Once you have a list of Match Ids you can connect to the Call of Duty API.
 
 _For more info see: [Scraping and Api Connection](https://medium.com/@peterjrigali/warzone-package-part-1-b64d753e949c)_
 
-
 ```python
 import warzone
-from warzone.call_of_duty import CallofDuty
+from call_of_duty import CallofDuty
 
 user_input_dict = {'repo': 'location of saved data',
                    'gamertag': 'your Ganertag',
@@ -109,6 +96,10 @@ _Exploring the evidence for Engagement Based Matchmaking_
 
 [Detect Hackers in your Warzone Lobby](https://medium.com/@peterjrigali/how-to-tell-if-hackers-are-in-your-warzone-lobby-part-1-393360c38104)
 _Do lobbies die out quicker when hackers are present?_
+
+## Changelog
+* 2.4.1 - *As-built Release*
+  * This is a functional release.
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
