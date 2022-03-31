@@ -550,6 +550,25 @@ def _get_group_stats(args) -> Dict[str, pd.DataFrame]:
             'raw': data}
 
 
+def _build_sessions(our_df: pd.DataFrame, other_df: pd.DataFrame, session_type: str,
+                    session_value: int = None):
+    """Get sessions outside of windows."""
+    if session_type == 'day':
+        window_matchid_dic = _get_matchids_day(df=our_df)
+    elif session_type == 'game':
+        window_matchid_dic = _get_matchids_game(df=our_df, session_value=session_value)
+    elif session_type == 'event':
+        window_matchid_dic = _get_matchids_event(df=our_df, session_value=session_value)
+    elif session_type == 'session':
+        window_matchid_dic = _get_matchids_session(df=our_df, session_value=session_value)
+    else:
+        raise AttributeError('Session_type must be {day, game, event, session}')
+    our_ind_dic, other_ind_dic = _get_indexes(our_df=our_df, other_df=other_df, win_mat_dic=window_matchid_dic)
+    our_df_dic, other_df_dic = _get_dfs(our_df=our_df, other_df=other_df, our_dic=our_ind_dic, other_dic=other_ind_dic,
+                                        cols=False)
+    return our_df_dic, other_df_dic
+
+
 # DocumentFilter
 def _check_empty(data: pd.DataFrame, return_empty: bool = True) -> pd.DataFrame:
     """Checks if the input dataframe is empty"""
@@ -678,12 +697,18 @@ def _get_indexes(our_df: pd.DataFrame, other_df: pd.DataFrame, win_mat_dic: dict
     return our_dic, other_dic
 
 
-def _get_dfs(our_df: pd.DataFrame, other_df: pd.DataFrame, our_dic: dict, other_dic: dict):
+def _get_dfs(our_df: pd.DataFrame, other_df: pd.DataFrame, our_dic: dict, other_dic: dict, cols: bool = True):
     """Get dataframes."""
-    for key, val in our_dic.items():
-        our_dic[key] = our_df.iloc[val][['matchID', 'startDateTime', 'endDateTime'] + SUM_LST]
-    for key, val in other_dic.items():
-        other_dic[key] = other_df.iloc[val][['matchID', 'startDateTime', 'endDateTime'] + SUM_LST]
+    if cols:
+        for key, val in our_dic.items():
+            our_dic[key] = our_df.iloc[val][['matchID', 'startDateTime', 'endDateTime'] + SUM_LST]
+        for key, val in other_dic.items():
+            other_dic[key] = other_df.iloc[val][['matchID', 'startDateTime', 'endDateTime'] + SUM_LST]
+    else:
+        for key, val in our_dic.items():
+            our_dic[key] = our_df.iloc[val]
+        for key, val in other_dic.items():
+            other_dic[key] = other_df.iloc[val]
     return our_dic, other_dic
 
 
