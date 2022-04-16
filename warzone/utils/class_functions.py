@@ -1,4 +1,4 @@
-from typing import Optional, Dict, Union, List
+from typing import Optional, Dict, Union, List, Tuple
 import pandas as pd
 import numpy as np
 import datetime
@@ -582,7 +582,7 @@ def _check_empty(data: pd.DataFrame, return_empty: bool = True) -> pd.DataFrame:
             return data
 
 
-def _accept_list(data: pd.DataFrame, col: str, lst: Union[List[str], List[int]],
+def _accept_list(data: pd.DataFrame, col: str, lst: Union[List[str], List[int], Tuple[int], Tuple[str]],
                  return_empty: bool = True) -> pd.DataFrame:
     """Handles a list of str's as an input"""
     if col not in data.columns:
@@ -602,7 +602,7 @@ def _accept_str(data: pd.DataFrame, col: str, string: str, return_empty: bool = 
         return _check_empty(data=data[data[col] == string], return_empty=return_empty)
 
 
-def apply_filter(data: pd.DataFrame, col: str, val: Union[str, List[str], int, List[int]],
+def apply_filter(data: pd.DataFrame, col: str, val: Union[str, List[str], int, List[int], Tuple[str], Tuple[int]],
                  dic: Optional[Dict[str, str]] = None, return_empty: bool = True) -> pd.DataFrame:
     """Filters data based on input col and val"""
     if dic is None:
