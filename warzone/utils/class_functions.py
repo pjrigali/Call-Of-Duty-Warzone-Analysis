@@ -98,7 +98,8 @@ def get_player_time(df: pd.DataFrame, stat_type: str):
     elif stat_type == "mean":
         return {"seconds": seconds.mean(), "minutes": minutes.mean(), "hours": hours.mean(), "days": days.mean()}
     elif stat_type == "median":
-        return {"seconds": seconds.median(), "minutes": minutes.median(), "hours": hours.median(), "days": days.median()}
+        return {"seconds": seconds.median(), "minutes": minutes.median(), "hours": hours.median(),
+                "days": days.median()}
     elif stat_type == "max":
         return {"seconds": seconds.max(), "minutes": minutes.max(), "hours": hours.max(), "days": days.max()}
 
@@ -581,7 +582,8 @@ def _check_empty(data: pd.DataFrame, return_empty: bool = True) -> pd.DataFrame:
             return data
 
 
-def _accept_list(data: pd.DataFrame, col: str, lst: Union[List[str], List[int]], return_empty: bool = True) -> pd.DataFrame:
+def _accept_list(data: pd.DataFrame, col: str, lst: Union[List[str], List[int]],
+                 return_empty: bool = True) -> pd.DataFrame:
     """Handles a list of str's as an input"""
     if col not in data.columns:
         raise AttributeError(col + ' not included in the passed dataframe column list')
@@ -688,10 +690,10 @@ def _get_indexes(our_df: pd.DataFrame, other_df: pd.DataFrame, win_mat_dic: dict
     for key, val in win_mat_dic.items():
         our_dic[key], other_dic[key] = [], []
         for _id in val:
-            temp = _unique_values(data=slc(our_df, 'matchID', _id).index, count=False)
+            temp = _unique_values(data=list(slc(our_df, 'matchID', _id).index), count=False)
             for ind in temp:
                 our_dic[key].append(ind)
-            temp = _unique_values(data=slc(other_df, 'matchID', _id).index, count=False)
+            temp = _unique_values(data=list(slc(other_df, 'matchID', _id).index), count=False)
             for ind in temp:
                 other_dic[key].append(ind)
     return our_dic, other_dic
@@ -732,7 +734,7 @@ def _build_windows(our_df: pd.DataFrame, other_df: pd.DataFrame, stat_type: str,
         game_lst, count = [], 0
         for _id in window.match_ids:
             game = Game(match_id=_id, position=count)
-            game.get_team_lobby_stat(team_data=slc(window.team_df, 'matchID', _id),
+            game.add_team_lobby_stat(team_data=slc(window.team_df, 'matchID', _id),
                                      lobby_data=slc(window.lobby_df, 'matchID', _id), stat_type=stat_type)
             game_lst.append(game)
             count += 1
