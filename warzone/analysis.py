@@ -8,10 +8,11 @@ Author:
 """
 from typing import List, Union, Tuple
 import pandas as pd
-import numpy as np
 from scipy import stats
 from warzone.utils.gun_dictionary import gun_dict
 from warzone.classes.document_filter import DocumentFilter
+from pyjr.utils.tools.clean import _prep
+from pyjr.utils.tools.math import _mean
 
 
 def first_top5_bottom_stats(doc_filter: DocumentFilter, col_lst: Union[List[str], str, Tuple[str]]) -> pd.DataFrame:
@@ -138,7 +139,7 @@ def previous_next_placement(doc_filter: DocumentFilter) -> pd.DataFrame:
                 temp_lst_prev.append(data.iloc[prev - 1]['teamPlacement'])
             if prev + 1 < max(temp):
                 temp_lst_next.append(data.iloc[prev + 1]['teamPlacement'])
-        placement_dic[place] = [np.mean(temp_lst_prev), np.mean(temp_lst_next)]
+        placement_dic[place] = [_mean(d=_prep(d=temp_lst_prev)), _mean(d=_prep(d=temp_lst_next))]
     col_lst = ['previous placement', 'next placement']
     return pd.DataFrame.from_dict(placement_dic, orient='index', columns=col_lst).sort_index()
 
@@ -362,7 +363,7 @@ def get_daily_hourly_weekday_stats(doc_filter: DocumentFilter) -> tuple:
                         else:
                             lst.append(dfn.loc[i, val])
                 if val == 'averagePlacement' or val == 'kdRatio':
-                    temp_dic[_hour] = np.mean(lst)
+                    temp_dic[_hour] = _mean(_prep(d=lst))
                 else:
                     temp_dic[_hour] = sum(lst)
             dic[weekday] = temp_dic
