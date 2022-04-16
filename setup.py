@@ -11,8 +11,7 @@ def read_file(*parts):
 setup(
     name='warzone analysis',
     version='2.4.1',
-    # packages=['Classes', 'Utils',],
-    packages=['warzone', ],
+    packages=['warzone', 'warzone.classes', 'warzone.utils'],
     author='Peter Rigali',
     author_email='peterjrigali@gmail.com',
     license='MIT',
