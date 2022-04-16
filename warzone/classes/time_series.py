@@ -7,7 +7,6 @@ Author:
  Peter Rigali - 2021-08-30
 """
 from dataclasses import dataclass
-from typing import List, Optional
 import pandas as pd
 from warzone.classes.document_filter import DocumentFilter
 from warzone.classes.tswindow import TSWindows
