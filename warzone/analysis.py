@@ -6,7 +6,7 @@ Usage:
 Author:
  Peter Rigali - 2021-08-30
 """
-from typing import List, Optional, Union
+from typing import List, Union, Tuple
 import pandas as pd
 import numpy as np
 from scipy import stats
@@ -14,7 +14,7 @@ from warzone.utils.gun_dictionary import gun_dict
 from warzone.classes.document_filter import DocumentFilter
 
 
-def first_top5_bottom_stats(doc_filter: DocumentFilter, col_lst: Union[List[str], str]) -> pd.DataFrame:
+def first_top5_bottom_stats(doc_filter: DocumentFilter, col_lst: Union[List[str], str, Tuple[str]]) -> pd.DataFrame:
     """
 
     Calculate mu, std, var, max, min, skew, kurt for all matches depending on teamPlacement.
@@ -33,14 +33,14 @@ def first_top5_bottom_stats(doc_filter: DocumentFilter, col_lst: Union[List[str]
     """
     data = doc_filter.df
 
-    if type(col_lst) == str:
+    if isinstance(col_lst, str):
         col_lst = [col_lst]
 
     for col in col_lst:
         if col not in data.columns:
             raise AttributeError(col + ' is not in data columns')
 
-    if doc_filter.map_choice == 'mp_d':
+    if doc_filter.mode_choice == 'royale':
         num = 10
         cut_off = 'top_10'
     else:
@@ -63,7 +63,7 @@ def first_top5_bottom_stats(doc_filter: DocumentFilter, col_lst: Union[List[str]
     return base_df
 
 
-def bucket_stats(doc_filter: DocumentFilter, placement: Union[List[int], int],
+def bucket_stats(doc_filter: DocumentFilter, placement: Union[List[int], int, Tuple[str]],
                  col_lst: Union[List[str], str]) -> pd.DataFrame:
     """
     Calculate mu, std, var, max, min, skew, kurt for all matches depending on teamPlacement.
@@ -84,7 +84,7 @@ def bucket_stats(doc_filter: DocumentFilter, placement: Union[List[int], int],
     """
     data = doc_filter.df
 
-    if type(col_lst) == str:
+    if isinstance(col_lst, str):
         col_lst = [col_lst]
 
     if type(placement) == int:
@@ -144,8 +144,8 @@ def previous_next_placement(doc_filter: DocumentFilter) -> pd.DataFrame:
 
 
 def match_difficulty(our_doc_filter: DocumentFilter, other_doc_filter: DocumentFilter,
-                     mu_lst: Optional[List[str]] = None, sum_lst: Optional[List[str]] = None,
-                     test: Optional[bool] = False) -> pd.DataFrame:
+                     mu_lst: Union[List[str], Tuple[str]] = None, sum_lst: Union[List[str], Tuple[str]] = None,
+                     test: bool = False) -> pd.DataFrame:
     """
 
     Calculate the relative match difficulty based on player and player squad stats.
@@ -248,7 +248,7 @@ def match_difficulty(our_doc_filter: DocumentFilter, other_doc_filter: DocumentF
         return diff
 
 
-def get_daily_hourly_weekday_stats(doc_filter: DocumentFilter) -> list:
+def get_daily_hourly_weekday_stats(doc_filter: DocumentFilter) -> tuple:
     """
 
     Calculate kills, deaths, wins, top 5s or 10s, match count, and averagePlacement for every day, week, hour.
@@ -370,7 +370,7 @@ def get_daily_hourly_weekday_stats(doc_filter: DocumentFilter) -> list:
         temp_df.index = hour_index_lst
         final_dic[val] = temp_df.fillna(0.0)
 
-    return [daily_info, hourly_info, weekday_info, final_dic]
+    return (daily_info, hourly_info, weekday_info, final_dic)
 
 
 def get_weapons(doc_filter: DocumentFilter) -> pd.DataFrame:
@@ -429,49 +429,8 @@ def get_weapons(doc_filter: DocumentFilter) -> pd.DataFrame:
     return final_df
 
 
-# def find_hackers(doc_filter: DocumentFilter, y_column: str, col_lst: List[str], std: int = 3) -> List[int]:
-#     """
-#
-#     Calculate hackers based on various Outlier detection methods.
-#
-#     :param doc_filter: Input DocumentFilter.
-#     :type doc_filter: DocumentFilter
-#     :param y_column: A column to consider for Outlier analysis.
-#     :type y_column: str
-#     :param col_lst: A list of columns used for Outlier analysis.
-#     :type col_lst: List[str]
-#     :param std: The std to be considered for as a threshold, default is 3.
-#     :type std: int
-#     :return: Returns an index of suspected hackers.
-#     :rtype: List[int]
-#     :example: *None*
-#     :note: The intent is for a map_choice and mode_choice to be fed into the DocumentFilter.
-#
-#     """
-#     data = doc_filter.df
-#     y_n = np.array(data[y_column])
-#     ind = []
-#     for col in col_lst:
-#         x_n = np.array(data[col])
-#         x_y = stack(x_n, y_n, False)
-#         analysis = [list(outlier_var(arr=x_n, per=0.95, plus=True)),
-#                     list(outlier_std(arr=x_n, _std=std, plus=True)),
-#                     list(outlier_distance(arr=x_y, _std=std, plus=True)),
-#             #         list(outlier_hist(arr=x_n, per=0.75)),
-#             #         list(outlier_knn(arr=x_y, plus=True)),
-#             #         list(outlier_cooks_distance(arr=x_y, return_df=False)),
-#             #         list(outlier_regression(arr=x_y, _std=std))
-#                     ]
-#         ind.append(sum(analysis, []))
-#
-#     temp_dict = {i: 0 for i in set(sum(ind, []))}
-#     for i in sum(ind, []):
-#         temp_dict[i] += 1
-#     return [i for i in temp_dict.keys() if temp_dict[i] >= 3 * len(col_lst)]
-
-
-def meta_weapons(doc_filter: DocumentFilter, top_5_or_10: Optional[bool] = False, top_1: Optional[bool] = False,
-                 col: Optional[str] = None, mu: Optional[bool] = None) -> pd.DataFrame:
+def meta_weapons(doc_filter: DocumentFilter, top_5_or_10: bool = False, top_1: bool = False, col: str = None,
+                 mu: bool = None) -> pd.DataFrame:
     """
 
     Calculate the most popular weapons. Map_choice is required in DocumentFilter if top_5_or_10 or top_1 is True.
@@ -570,9 +529,9 @@ def meta_weapons(doc_filter: DocumentFilter, top_5_or_10: Optional[bool] = False
     return final_df
 
 
-def get_desired_kd(doc_filter: DocumentFilter, desired_kd: float, future_game_count: Optional[int] = 100,
-                   max_kills_per_game: Optional[int] = None, min_deaths_per_game: Optional[int] = None,
-                   use_dist: Optional[bool] = True, optimize: Optional[bool] = True) -> dict:
+def get_desired_kd(doc_filter: DocumentFilter, desired_kd: float, future_game_count: int = 100,
+                   max_kills_per_game: int = None, min_deaths_per_game: int = None, use_dist: bool = True,
+                   optimize: bool = True) -> dict:
     """
 
     Calculates required kills per game, over a desired number of games to get a desired overall kd.
