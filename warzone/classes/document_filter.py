@@ -86,37 +86,36 @@ class DocumentFilter:
             return_empty = args["return_empty"]
             position = args["position"]
 
-        data = input_df.copy()
         if map_choice:
-            data = apply_filter(data=data, col='map', val=map_choice, dic=None, return_empty=return_empty)
+            input_df = apply_filter(data=input_df, col='map', val=map_choice, dic=None, return_empty=return_empty)
 
         if mode_choice:
-            data = apply_filter(data=data, col='mode', val=mode_choice, dic=None, return_empty=return_empty)
+            input_df = apply_filter(data=input_df, col='mode', val=mode_choice, dic=None, return_empty=return_empty)
 
         if team_size:
-            data = apply_filter(data=data, col='teamSize', val=team_size, dic=None, return_empty=return_empty)
+            input_df = apply_filter(data=input_df, col='teamSize', val=team_size, dic=None, return_empty=return_empty)
 
         if username:
             if username_dic is None:
-                username_dic = uno_username_dict(data=data)
-            data = apply_filter(data=data, col='uno', val=username, dic=username_dic, return_empty=return_empty)
+                username_dic = uno_username_dict(data=input_df)
+            input_df = apply_filter(data=input_df, col='uno', val=username, dic=username_dic, return_empty=return_empty)
 
         if uno:
-            data = apply_filter(data=data, col='uno', val=uno, dic=None, return_empty=return_empty)
+            input_df = apply_filter(data=input_df, col='uno', val=uno, dic=None, return_empty=return_empty)
 
         if position:
             if position == 'all':
-                data = data
+                pass
             elif position == 'first':
-                data = apply_filter(data=data, col='teamPlacement', val=[1], dic=None, return_empty=return_empty)
+                input_df = apply_filter(data=input_df, col='teamPlacement', val=[1], dic=None, return_empty=return_empty)
             else:
                 if mode_choice == "royale":
                     val = list(range(1, 10))
                 else:
                     val = list(range(1, 5))
-                data = apply_filter(data=data, col='teamPlacement', val=val, dic=None, return_empty=return_empty)
+                input_df = apply_filter(data=input_df, col='teamPlacement', val=val, dic=None, return_empty=return_empty)
 
-        self.df = data.sort_values(sort_dataframe, ascending=True).reset_index(drop=True)
+        self.df = input_df.sort_values(sort_dataframe, ascending=True).reset_index(drop=True)
         self.unique_match_ids = tuple(self.df['matchID'].unique().tolist())
         self.match_ids = tuple(self.df['matchID'].tolist())
         self.map_choice = map_choice
@@ -146,8 +145,7 @@ class DocumentFilter:
                 else:
                     count += 1
                     past_game, ind_dic[count] = row['endDateTime'], [ind]
-        session_df_dic = {key: self.df.iloc[val] for key, val in ind_dic.items()}
-        return session_df_dic
+        return {key: self.df.iloc[val] for key, val in ind_dic.items()}
 
     def __repr__(self):
         return 'DocumentFilter'
