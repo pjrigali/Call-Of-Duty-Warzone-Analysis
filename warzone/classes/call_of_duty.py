@@ -51,8 +51,8 @@ class CallofDuty:
 
     """
 
-    __slots__ = ["User", "whole_df", "gun_dic", "last_match_date_time", "name_uno_dic", "my_uno", "our_df", "other_df",
-                 "Squad", 'hacker']
+    __slots__ = ("User", "whole_df", "gun_dic", "last_match_date_time", "name_uno_dic", "my_uno", "our_df", "other_df",
+                 "Squad", "hacker")
 
     def __init__(self,
                  user_input_dict: dict,
@@ -66,24 +66,18 @@ class CallofDuty:
         self.whole_df = evaluate_df(file_name=self.User.file_name, repo=self.User.repo,
                                     json_path=self.User.json_repo, build_json=build_json,
                                     from_json=from_json, reset_dtype=reset_dtype)
-
         if streamer_mode:
             streamer_mode_whole(_user_class=self.User, data=self.whole_df)
-
         self.gun_dic = gun_dict
         self.last_match_date_time = self.whole_df['startDateTime'].tolist()[-1]
         self.name_uno_dic = uno_username_dict(data=self.whole_df)
-
         if streamer_mode:
             streamer_mode_gamertags(_user=self.User)
-
         self.my_uno = self.name_uno_dic[self.User.gamertag]
         self.our_df, self.other_df = get_our_and_other_df(data=self.whole_df, _my_uno=self.my_uno)
-
         self.hacker = None
         if hacker_data:
             self.hacker = Hacker(user=self.User, build_json=build_json, from_json=from_json, reset_dtype=reset_dtype)
-
         self.Squad = Squad(squad_lst=self.User.squad_lst, original_df=self.our_df, uno_name_dic=self.name_uno_dic,
                            build_all=squad_data, favorite=self.User.favorite)
 
