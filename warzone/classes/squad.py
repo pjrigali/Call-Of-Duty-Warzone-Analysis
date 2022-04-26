@@ -36,26 +36,26 @@ class Squad:
         for teammate in squad_lst:
             p = Person(gamertag=teammate, original_df=original_df, uno=uno_name_dic[teammate])
             if build_all == False and favorite is not None:
-                p.favorite_dict = {favorite['fav_map']: {favorite['fav_mode']: {favorite['fav_team_size']: {}}}}
-                for stats_weapon_time in ['stats', 'weapons', 'time']:
-                    p.favorite_dict[favorite['fav_map']][favorite['fav_mode']][favorite['fav_team_size']][stats_weapon_time] = {}
+                p.favorite = {favorite['fav_map']: {favorite['fav_mode']: {favorite['fav_team_size']: {}}}}
+                for swt in ['stats', 'weapons', 'time']:
+                    p.favorite[favorite['fav_map']][favorite['fav_mode']][favorite['fav_team_size']][swt] = {}
                     for stat_type in ['sum', 'mean', 'median', 'max']:
                         p.get_performance(map_choice=favorite['fav_map'], mode_choice=favorite['fav_mode'],
                                           team_size=favorite['fav_team_size'], stat_type=stat_type,
-                                          stats_weapon_time=stats_weapon_time, position="all", favorite=True)
+                                          stats_weapon_time=swt, position="all", favorite=True)
             elif build_all == True and favorite is None:
-                p.performance_dict = {}
+                p.performance = {}
                 for _map in ['rebirth', 'verdansk', 'caldera']:
-                    p.performance_dict[_map] = {}
+                    p.performance[_map] = {}
                     for _mode in ['royale', 'resurgence']:
-                        p.performance_dict[_map][_mode] = {}
+                        p.performance[_map][_mode] = {}
                         for _team_size in ['solo', 'duo', 'trio', 'quad']:
-                            p.performance_dict[_map][_mode][_team_size] = {}
-                            for stats_weapon_time in ['stats', 'weapons', 'time']:
-                                p.performance_dict[_map][_mode][_team_size][stats_weapon_time] = {}
+                            p.performance[_map][_mode][_team_size] = {}
+                            for swt in ['stats', 'weapons', 'time']:
+                                p.performance[_map][_mode][_team_size][swt] = {}
                                 for stat_type in ['sum', 'mean', 'median', 'max']:
                                     p.get_performance(map_choice=_map, mode_choice=_mode, team_size=_team_size,
-                                                      stat_type=stat_type, stats_weapon_time=stats_weapon_time,
+                                                      stat_type=stat_type, stats_weapon_time=swt,
                                                       position="all", favorite=False)
             self.squad_stats[teammate] = p
 
