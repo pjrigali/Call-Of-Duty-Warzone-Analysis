@@ -29,14 +29,14 @@ class Person:
 
     """
 
-    __slots__ = ["uno", "gamertag", "index_lst", "performance_dict", "favorite_dict", "_original_df"]
+    __slots__ = ["uno", "gamertag", "index_lst", "performance", "favorite", "_original_df"]
 
     def __init__(self, original_df: pd.DataFrame, uno: str, gamertag: str):
         self.uno = uno
         self.gamertag = gamertag
         self.index_lst = get_indexes_for_player(original_df=original_df, uno=uno)
-        self.performance_dict = None
-        self.favorite_dict = None
+        self.performance = None
+        self.favorite = None
         self._original_df = original_df
 
     def get_performance(self, map_choice, mode_choice, team_size, stat_type: str = 'sum',
@@ -53,9 +53,9 @@ class Person:
             raise AttributeError("stat_type must be one of the following strings (stats, weapons, time)")
 
         if favorite:
-            self.favorite_dict[map_choice][mode_choice][team_size][stats_weapon_time][stat_type] = dic
+            self.favorite[map_choice][mode_choice][team_size][stats_weapon_time][stat_type] = dic
         else:
-            self.performance_dict[map_choice][mode_choice][team_size][stats_weapon_time][stat_type] = dic
+            self.performance[map_choice][mode_choice][team_size][stats_weapon_time][stat_type] = dic
         return dic
 
     def __repr__(self):
