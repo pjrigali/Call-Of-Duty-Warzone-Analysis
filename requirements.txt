@@ -1,7 +1,0 @@
-pandas>=1.2.4
-pyjr>=0.1.1
-numpy>=1.22.3
-requests>=2.25.1
-matplotlib>=3.4.2
-scipy>=1.6.3
-setuptools>=57.0.0

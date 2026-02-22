@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "warzone"
+version = "2.4.1"
+description = "Call of Duty Warzone Analysis"
+readme = "README.md"
+authors = [
+  { name = "Peter Rigali", email = "peterjrigali@gmail.com" }
+]
+license = { text = "MIT" }
+dependencies = [
+    "pandas>=1.2.4",
+    "pyjr>=0.1.1",
+    "numpy>=1.22.3",
+    "requests>=2.25.1",
+    "matplotlib>=3.4.2",
+    "scipy>=1.6.3",
+]
+
+[project.urls]
+Documentation = "https://call-of-duty-warzone-analysis.readthedocs.io/en/latest/intro.html#write-ups-and-examples"
